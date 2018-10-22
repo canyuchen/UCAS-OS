@@ -21,6 +21,20 @@
     mtc0    k0, CP0_STATUS
 .endm
 
+/*
+.macro PUTCHAR ch label
+	  addi  k0,$0,10000
+	\label:
+	addi  k0,k0,-1
+	bne k0,$0,\label
+
+	addi  k0,$0,\ch
+	la    k1,0xbfe48000
+	sb    k0,0(k1)
+.endm
+*/
+//???
+
 LEAF(asm_start)
     mtc0    zero, CP0_STATUS
     mtc0    zero, CP0_WATCHLO
@@ -155,7 +169,7 @@ END(asm_start)
 
     lw      k1, 128(k0)
     mtc0    k1, CP0_STATUS
-    nop
+    nop //???
 
     lw      k1, 132(k0)
     mtc0    k1, CP0_TAGHI
@@ -172,7 +186,7 @@ END(asm_start)
     lw      k1, 144(k0)
     mtc0    k1, CP0_CAUSE
     nop
-    
+
     lw      k1, 148(k0)
     mtc0    k1, CP0_EPC
     nop
@@ -193,9 +207,55 @@ exception_handler_begin:
     // TODO close interrupt
     // jmp exception_handler[i] which decided by CP0_CAUSE
     // Leve2 exception Handler.
-    
+    .set  noat
+    .set  mips32
+
+    CLI //close interrupt
+
+    mfc0  k0, CP0_CAUSE
+    andi  k0, k0, CAUSE_EXCCODE   /* k0 = {exc_code,00} */
+    la    k1, interrupt_handlers
+    add   k0, k0, k1
+    lw    k0, 0(k0)
+    j     k0     /* interrupt_handlers[exc_code](); */
 exception_handler_end:
 END(exception_handler_entry)
+
+NESTED(simple_handler,0,sp)
+    /* SAVE_CONTEXT(KERNEL) */
+    SAVE_CONTEXT(USER)
+
+    mfc0  k0, CP0_CAUSE         /* Read Cause register for IP bits */
+    //mfc0  k1, CP0_STATUS      /* and Status register for IM bits */
+    andi  k0, k0, CAUSE_IPL     /* Keep only IP bits from Cause */
+    //and   k0, k0, k1          /* and mask with IM bits */
+    clz   k0, k0                /* Find first bit set, IP7..IP0; k0 = 16..23 */
+                                /* The CLZ instruction counts the number of leading 
+                                 * zeros in a word. Scan rs and write into rd.
+                                */
+    xori  k0, k0, 0x17          /* 16..23 => 7..0 */
+    add   a0, k0, $0
+
+    mfc0  k0, CP0_CAUSE
+    andi  k0, k0, CAUSE_EXCCODE /* k0 = {exc_code,00} */
+    srl   k0, k0, 2
+    add   a1, k0, $0
+
+    //jal   c_simple_handler
+
+    mfc0  k0, CP0_CAUSE         /* Read Cause register for IP bits */
+    nop
+    andi  k1, k0, CAUSE_IPL     /* Keep only IP bits from Cause */
+    xor   k0, k0, k1
+    mtc0  k0, CP0_CAUSE
+    nop
+
+    //LEAVE_CRITICAL
+    /* RESTORE_CONTEXT(KERNEL) */
+    RESTORE_CONTEXT(USER)
+    j     return_from_exception
+    nop
+END(simple_handler)
 
 NESTED(handle_int, 0, sp)
     // interrupt handler
@@ -210,6 +270,23 @@ END(handle_syscall)
 NESTED(handle_other, 0, sp)
     // other exception handler
 END(handle_other)
+
+/* return CP0_STATUS*/
+LEAF(get_cp0_status)
+  mfc0  v0, CP0_STATUS
+  jr    ra
+END(get_cp0_status)
+
+/* set CP0_STATUS*/
+LEAF(set_cp0_status)
+  mtc0  a0, CP0_STATUS
+  jr    ra
+END(set_cp0_status)
+
+LEAF(return_from_exception)
+	STI
+	eret
+END(return_from_exception)
 
 /*
 .align	2

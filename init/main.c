@@ -31,6 +31,8 @@
 #include "screen.h"
 #include "common.h"
 #include "syscall.h"
+#include "regs.h"
+#include "string.h"
 
 // queue_t ready_queue_init;
 // queue_t block_queue_init;
@@ -56,6 +58,19 @@ uint32_t STACK_MIN = 0xa0f00000;
 uint32_t STACK_SIZE =   0x80000;
 uint32_t STACK_MAX = 0xa2000000;
 
+// defined in entry.S
+extern void exception_handler_start();
+extern void exception_handler_end();
+extern void handle_int();
+extern void handle_syscall();
+extern void simple_handler();
+extern uint32_t get_cp0_status();
+extern void set_cp0_status(uint32_t);
+
+uint32_t exception_handlers[32];
+
+#define EBASE 0xbfc00000
+#define EBASE_OFFSET 0x380
 
 static void init_pcb()
 {
@@ -151,6 +166,12 @@ static void init_pcb()
 
 static void init_exception_handler()
 {
+	int i = 0;
+	for (i = 0; i < 32; ++i) {
+		exception_handlers[i] = simple_handler;
+	}
+	exception_handlers[INT] = handle_int;
+	exception_handlers[SYS] = handle_syscall;
 }
 
 static void init_exception()
@@ -159,8 +180,26 @@ static void init_exception()
 	// 2. Disable all interrupt
 	// 3. Copy the level 2 exception handling code to 0x80000180
 	// 4. reset CP0_COMPARE & CP0_COUNT register
-	
+	init_exception_handler();
 
+	// Copy the level 2 exception handling code to 0x80000180
+	// fill nop
+	bzero(EBASE,EBASE_OFFSET);
+	// copy the exception handler to EBase
+	memcpy(EBASE+EBASE_OFFSET,exception_handler_start,
+		exception_handler_end-exception_handler_start);
+	// When BEV=0, EBASE change to 0x80000000
+	// offset change to 0x180
+	bzero(0x80000000,0x180);
+	memcpy(0x80000180,exception_handler_start,
+		exception_handler_end-exception_handler_start);
+
+	// reset_timer(TIMER_INTERVAL); // 300MHz
+
+	// Get CP0_STATUS and Disable all interrupt
+	uint32_t cp0_status = get_cp0_status();
+	cp0_status |= 0x8001;
+	set_cp0_status(STATUS_CU0 | cp0_status);
 
 }
 
