@@ -159,6 +159,9 @@ static void init_exception()
 	// 2. Disable all interrupt
 	// 3. Copy the level 2 exception handling code to 0x80000180
 	// 4. reset CP0_COMPARE & CP0_COUNT register
+	
+
+
 }
 
 static void init_syscall(void)

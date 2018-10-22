@@ -58,6 +58,7 @@ typedef enum {
     TASK_RUNNING,
     TASK_READY,
     TASK_EXITED,
+    TASK_CREATED,    
 } task_status_t;
 
 typedef enum {
@@ -66,6 +67,11 @@ typedef enum {
     USER_PROCESS,
     USER_THREAD,
 } task_type_t;
+
+typedef enum {
+    KERNEL_MODE,
+    USER_MODE,
+} task_mode_t;
 
 /* Process Control Block */
 typedef struct pcb
@@ -79,6 +85,7 @@ typedef struct pcb
 
     uint32_t entry_point;
 
+    task_mode_t mode;
     /* previous, next pointer */
     void *prev;
     void *next;
@@ -95,6 +102,9 @@ typedef struct pcb
     /* cursor position */
     int cursor_x;
     int cursor_y;
+
+    uint32_t wait_time;
+    uint32_t priority;
 
 } pcb_t;
 
