@@ -70,10 +70,11 @@ extern void set_cp0_status(uint32_t);
 extern void first_entry();
 
 uint32_t exception_handlers[32];
+priority_t my_priority[MAX_PID];
+priority_t now_priority[MAX_PID];
 
 #define EBASE 0xbfc00000
 #define EBASE_OFFSET 0x380
-
 
 static void init_pcb()
 {
@@ -90,11 +91,8 @@ static void init_pcb()
 	uint32_t STACK_TOP = STACK_MIN;
 	for(i = 0; i < num_sched1_tasks; i++)
 	{
-		for(j = 0; j < 32; j++)
-		{
-			pcb[i].kernel_context.regs[j] = 0;	
-			pcb[i].user_context.regs[j] = 0;		
-		}
+		bzero(&(pcb[i].kernel_context), sizeof(pcb[i].kernel_context));
+		bzero(&(pcb[i].user_context  ), sizeof(pcb[i].user_context  ));
 		pcb[i].kernel_context.regs[29] = STACK_TOP;
 		pcb[i].user_context.regs[29] = STACK_TOP + STACK_SIZE;
 		pcb[i].kernel_context.regs[30] = STACK_TOP;
@@ -118,35 +116,28 @@ static void init_pcb()
 		pcb[i].entry_point = sched1_tasks[i]->entry_point;
 
 		//pcb[i].kernel_context.regs[31] = sched1_tasks[i]->entry_point;
-		pcb[i].kernel_context.regs[31] = (uint32_t) &first_entry;
-		pcb[i].user_context.regs[31] = sched2_tasks[i]->entry_point;
+		pcb[i].kernel_context.regs[31] = (uint32_t)first_entry;
+		//pcb[i].user_context.regs[31] = sched2_tasks[i]->entry_point;
 
 		pcb[i].kernel_context.cp0_status = cp0_status_init;
 		pcb[i].user_context.cp0_status = cp0_status_init;
+
+		pcb[i].user_context.cp0_epc = sched1_tasks[k]->entry_point;
 
 		pcb[i].mode = (sched1_tasks[i]->type == KERNEL_PROCESS 
 					|| sched1_tasks[i]->type == KERNEL_THREAD) ? KERNEL_MODE : USER_MODE;
 		my_priority[i] = INITIAL_PRIORITY;
     	now_priority[i] = INITIAL_PRIORITY;
-/*
-		asm(
-			"addi $31, %0, 0x0 \t\n"
-			"lw $31, 320($31)  \t\n"
-			"sw $31, 124($31)  \t\n"
-			:
-			:"r"(&pcb[i])
-		);
-*/
+		pcb[i].priority = INITIAL_PRIORITY;
+		pcb[i].wait_time = 0;
+
 		queue_push(&ready_queue,&pcb[i]);
 	}
 
 	for(k = 0; k < num_lock_tasks; i++, k++)
 	{
-		for(j = 0; j < 32; j++)
-		{
-			pcb[i].kernel_context.regs[j] = 0;	
-			pcb[i].user_context.regs[j] = 0;		
-		}
+		bzero(&(pcb[i].kernel_context), sizeof(pcb[i].kernel_context));
+		bzero(&(pcb[i].user_context  ), sizeof(pcb[i].user_context  ));
 		pcb[i].kernel_context.regs[29] = STACK_TOP;
 		pcb[i].user_context.regs[29] = STACK_TOP + STACK_SIZE;
 		pcb[i].kernel_context.regs[30] = STACK_TOP;
@@ -170,17 +161,22 @@ static void init_pcb()
 		pcb[i].entry_point = lock_tasks[k]->entry_point;
 
 		//pcb[i].kernel_context.regs[31] = sched1_tasks[i]->entry_point;
-		pcb[i].kernel_context.regs[31] = (uint32_t) &first_entry;
-		pcb[i].user_context.regs[31] = lock_tasks[k]->entry_point;
+		pcb[i].kernel_context.regs[31] = (uint32_t)first_entry;
+		//pcb[i].user_context.regs[31] = lock_tasks[k]->entry_point;
 
 		pcb[i].kernel_context.cp0_status = cp0_status_init;
 		pcb[i].user_context.cp0_status = cp0_status_init;
 
-		pcb[i].mode = (sched1_tasks[i]->type == KERNEL_PROCESS 
-					|| sched1_tasks[i]->type == KERNEL_THREAD) ? KERNEL_MODE : USER_MODE;
+		//pcb[i].kernel_context.cp0_epc = lock_tasks[k]->entry_point;
+		pcb[i].user_context.cp0_epc = lock_tasks[k]->entry_point;
 
+		pcb[i].mode = (lock_tasks[k]->type == KERNEL_PROCESS 
+					|| lock_tasks[k]->type == KERNEL_THREAD) ? KERNEL_MODE : USER_MODE;
 		my_priority[i] = INITIAL_PRIORITY;
     	now_priority[i] = INITIAL_PRIORITY;
+		pcb[i].priority = INITIAL_PRIORITY;
+		pcb[i].wait_time = 0;
+
 		queue_push(&ready_queue,&pcb[i]);
 	}
 
@@ -206,23 +202,25 @@ static void init_exception()
 	init_exception_handler();
 
 	// Copy the level 2 exception handling code to 0x80000180
+	// When BEV=1, EBASE is BFC00380
 	// fill nop
 	bzero(EBASE,EBASE_OFFSET);
 	// copy the exception handler to EBase
-	memcpy(EBASE+EBASE_OFFSET,exception_handler_begin,
-		exception_handler_end-exception_handler_begin);
+	memcpy(EBASE+EBASE_OFFSET,exception_handler_begin,\
+		   exception_handler_end-exception_handler_begin);
+
 	// When BEV=0, EBASE change to 0x80000000
 	// offset change to 0x180
 	bzero(0x80000000,0x180);
-	memcpy(0x80000180,exception_handler_begin,
-		exception_handler_end-exception_handler_begin);
+	memcpy(0x80000180,exception_handler_begin,\
+		   exception_handler_end-exception_handler_begin);
 
 	// reset_timer(TIMER_INTERVAL); // 300MHz
 
-	// Get CP0_STATUS and Disable all interrupt
+	// Get CP0_STATUS 
 	uint32_t cp0_status = get_cp0_status();
 	cp0_status |= 0x8001;
-	set_cp0_status(STATUS_CU0 | cp0_status);
+	set_cp0_status(STATUS_CU0 | cp0_status); //CU <= 1, IM7 <= 1, IE <= 1
 
 }
 

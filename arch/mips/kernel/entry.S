@@ -7,7 +7,7 @@
 .macro STI
     //start interrupt
     mfc0    k0, CP0_STATUS
-    li      k1, (STATUS_CU0 | 0x1)
+    li      k1, (STATUS_CU0 | 0x1) //CU <= 1, IE <= 1
     or      k0, k1
     mtc0    k0, CP0_STATUS
 .endm
@@ -17,7 +17,7 @@
     mfc0    k0, CP0_STATUS
     li      k1, (STATUS_CU0 | 0x1)
     or      k0, k1
-    xori    k0, 0x1
+    xori    k0, 0x1 //CU <= 1, IE <= 0
     mtc0    k0, CP0_STATUS
 .endm
 
@@ -41,10 +41,11 @@ LEAF(asm_start)
     mtc0    zero, CP0_WATCHHI
 
     mfc0    t0, CP0_CONFIG
+    nop
     and     t0, ~0x7
     ori     t0, 0x2
     mtc0    t0, CP0_CONFIG
-    
+
     jr  ra
 END(asm_start)
 
@@ -195,6 +196,7 @@ END(asm_start)
 NESTED(do_scheduler, 0, ra)
     .set  noat
     //???
+    //Warning: used $at without ".set noat"
     SAVE_CONTEXT(KERNEL)
     jal     scheduler
     nop
@@ -380,43 +382,4 @@ LEAF(return_from_exception)
 	eret
 END(return_from_exception)
 
-/*
-.align	2
-.globl  save_pcb
-.ent	save_pcb
-.type	save_pcb, @function
-save_pcb:
-    lw $26, current_running
-    sw $0 , ($26)
-    sw $1 , 4($26)  
-    sw $2 , 8($26)  
-    sw $3 , 12($26)
-    sw $4 , 16($26)
-    sw $5 , 20($26)
-    sw $6 , 24($26)
-    sw $7 , 28($26)
-    sw $8 , 32($26)
-    sw $9 , 36($26)
-    sw $10, 40($26)
-    sw $11, 44($26)
-    sw $12, 48($26)
-    sw $13, 52($26)
-    sw $14, 56($26)
-    sw $15, 60($26)
-    sw $16, 64($26)
-    sw $17, 68($26) 
-    sw $18, 72($26)
-    sw $19, 76($26)
-    sw $20, 80($26)
-    sw $21, 84($26)
-    sw $22, 88($26)
-    sw $23, 92($26)
-    sw $24, 96($26)
-    sw $25, 100($26)
-    //sw $26, 104($26)
-    sw $27, 108($26)
-    sw $28, 112($26)
-    sw $29, 116($26)
-    sw $30, 120($26)
-    sw $31, 124($26)
-*/
+

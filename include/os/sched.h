@@ -34,6 +34,11 @@
 
 #define NUM_MAX_TASK 16
 
+#define MAX_PID 1024
+#define MAX_PRIORITY 5
+#define INITIAL_PRIORITY 2
+
+typedef int priority_t;
 /* used to save register infomation */
 typedef struct regs_context
 {
@@ -104,7 +109,7 @@ typedef struct pcb
     int cursor_y;
 
     uint32_t wait_time;
-    uint32_t priority;
+    priority_t priority;
 
 } pcb_t;
 
@@ -132,17 +137,13 @@ extern pid_t process_id;
 extern pcb_t pcb[NUM_MAX_TASK];
 extern uint32_t initial_cp0_status;
 
-void do_scheduler(void);
-void do_sleep(uint32_t);
+extern void do_scheduler(void);
+extern void do_sleep(uint32_t);
 
-void do_block(queue_t *);
-void do_unblock_one(queue_t *);
-void do_unblock_all(queue_t *);
+extern void do_block(queue_t *);
+extern void do_unblock_one(queue_t *);
+extern void do_unblock_all(queue_t *);
 
-typedef int priority_t;
-#define MAX_PID 1024
-#define MAX_PRIORITY 5
-#define INITIAL_PRIORITY 2
 extern priority_t my_priority[MAX_PID];
 extern priority_t now_priority[MAX_PID];
 

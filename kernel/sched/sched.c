@@ -10,9 +10,6 @@ pcb_t pcb[NUM_MAX_TASK];
 /* global process id */
 pid_t process_id = 1;
 
-priority_t my_priority[MAX_PID];
-priority_t now_priority[MAX_PID];
-
 static void check_sleeping()
 {
 }
@@ -51,6 +48,7 @@ void scheduler(void)
     }
 
     current_running = queue_dequeue(&ready_queue);
+    
     if(now_priority[current_running->pid]<0) {
         pcb_t *base = current_running;
         do {
