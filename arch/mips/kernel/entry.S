@@ -193,10 +193,14 @@ END(asm_start)
 .endm
 
 NESTED(do_scheduler, 0, ra)
+    .set  noat
+    //???
     SAVE_CONTEXT(KERNEL)
     jal     scheduler
+    nop
     RESTORE_CONTEXT(KERNEL)
     jr      ra
+    nop
 END(do_scheduler)
 
 .global exception_handler_begin
@@ -214,7 +218,7 @@ exception_handler_begin:
 
     mfc0  k0, CP0_CAUSE
     andi  k0, k0, CAUSE_EXCCODE   /* k0 = {exc_code,00} */
-    la    k1, interrupt_handlers
+    la    k1, exception_handlers
     add   k0, k0, k1
     lw    k0, 0(k0)
     j     k0     /* interrupt_handlers[exc_code](); */
@@ -258,18 +262,106 @@ NESTED(simple_handler,0,sp)
 END(simple_handler)
 
 NESTED(handle_int, 0, sp)
+    .set  noat
+    .set  mips32
     // interrupt handler
     // Leve3 exception Handler.
 
+    /* TODO: timer_irq */
+    /* read int IP and handle clock interrupt or just call do_nothing */
+    SAVE_CONTEXT(USER)
+
+    mfc0  k0, CP0_CAUSE
+    nop
+    andi  k0, k0, CAUSE_IPL
+    clz   k0, k0
+    xori  k0, k0, 0x17
+
+    addiu k1, zero, 7
+    beq   k0, k1, time_irq
+    nop
+
+    jal   clear_int
+
+int_finish:
+    RESTORE_CONTEXT(USER)
+    j     return_from_exception
+    nop
+
+#define TIMER_INTERVAL 150000000
+
+time_irq:
+    li    a0, TIMER_INTERVAL
+    jal   reset_timer
+
+    jal   clear_int
+/*
+    lw    k1, time_elapsed
+    addiu k1, k1, 1000
+    sw    k1, time_elapsed
+    //TEST_NESTED_COUNT
+    bne   k1, zero, int_finish
+    nop
+*/
+    //ENTER_CRITICAL
+    lw    k0, current_running
+    li    k1, 1
+    sw    k1, MODE_POSITION_OFFSET(k0)
+
+    jal   put_current_running
+    nop
+    jal   do_scheduler
+    nop
+
+    lw    k0, current_running
+    sw    zero, MODE_POSITION_OFFSET(k0)
+
+    //LEAVE_CRITICAL
+    j     int_finish
+    nop
+
+clear_int:
+    mfc0  k0, CP0_CAUSE
+    nop
+    andi  k1, k0, CAUSE_IPL
+    xor   k0, k0, k1
+    mtc0  k0, CP0_CAUSE
+    nop
+    jr    ra
+
+    /* TODO:end */
 END(handle_int)
 
 NESTED(handle_syscall, 0, sp)
     // system call handler
+    SAVE_CONTEXT(USER)
+    // RESTORE_CONTEXT(KERNEL)
+    add   a3,a2,$0
+    add   a2,a1,$0
+    add   a1,a0,$0
+    add   a0,v0,$0
+
+    jal   system_call_helper
+
+    //LEAVE_CRITICAL
+    RESTORE_CONTEXT(USER)
+    j     return_from_exception
 END(handle_syscall)
 
 NESTED(handle_other, 0, sp)
     // other exception handler
 END(handle_other)
+
+LEAF(reset_timer)
+    mtc0  $0, CP0_COUNT
+    mtc0  a0, CP0_COMPARE
+    jr    ra
+END(reset_timer)
+
+LEAF(first_entry)
+    //LEAVE_CRITICAL
+    j     int_finish
+END(first_entry)
 
 /* return CP0_STATUS*/
 LEAF(get_cp0_status)

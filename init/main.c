@@ -67,15 +67,19 @@ extern void simple_handler();
 extern uint32_t get_cp0_status();
 extern void set_cp0_status(uint32_t);
 
+extern void first_entry();
+
 uint32_t exception_handlers[32];
 
 #define EBASE 0xbfc00000
 #define EBASE_OFFSET 0x380
 
+
 static void init_pcb()
 {
 	// ready_queue = ready_queue_init;
 	// block_queue = block_queue_init;
+	uint32_t cp0_status_init = 0x10008000;
 
 	queue_init(&ready_queue);
 	queue_init(&block_queue);
@@ -107,14 +111,23 @@ static void init_pcb()
 		pcb[i].next = NULL;
 		pcb[i].pid = i;
 		pcb[i].type = sched1_tasks[i]->type;
-		pcb[i].status = TASK_READY;
+		pcb[i].status = TASK_CREATED;
 		pcb[i].cursor_x = 0;
 		pcb[i].cursor_y = 0;
 
 		pcb[i].entry_point = sched1_tasks[i]->entry_point;
 
-		pcb[i].kernel_context.regs[31] = sched1_tasks[i]->entry_point;
+		//pcb[i].kernel_context.regs[31] = sched1_tasks[i]->entry_point;
+		pcb[i].kernel_context.regs[31] = (uint32_t) &first_entry;
 		pcb[i].user_context.regs[31] = sched2_tasks[i]->entry_point;
+
+		pcb[i].kernel_context.cp0_status = cp0_status_init;
+		pcb[i].user_context.cp0_status = cp0_status_init;
+
+		pcb[i].mode = (sched1_tasks[i]->type == KERNEL_PROCESS 
+					|| sched1_tasks[i]->type == KERNEL_THREAD) ? KERNEL_MODE : USER_MODE;
+		my_priority[i] = INITIAL_PRIORITY;
+    	now_priority[i] = INITIAL_PRIORITY;
 /*
 		asm(
 			"addi $31, %0, 0x0 \t\n"
@@ -150,14 +163,24 @@ static void init_pcb()
 		pcb[i].next = NULL;
 		pcb[i].pid = i;
 		pcb[i].type = lock_tasks[k]->type;
-		pcb[i].status = TASK_READY;
+		pcb[i].status = TASK_CREATED;
 		pcb[i].cursor_x = 0;
 		pcb[i].cursor_y = 0;
 
 		pcb[i].entry_point = lock_tasks[k]->entry_point;
 
-		pcb[i].kernel_context.regs[31] = lock_tasks[k]->entry_point;
+		//pcb[i].kernel_context.regs[31] = sched1_tasks[i]->entry_point;
+		pcb[i].kernel_context.regs[31] = (uint32_t) &first_entry;
+		pcb[i].user_context.regs[31] = lock_tasks[k]->entry_point;
 
+		pcb[i].kernel_context.cp0_status = cp0_status_init;
+		pcb[i].user_context.cp0_status = cp0_status_init;
+
+		pcb[i].mode = (sched1_tasks[i]->type == KERNEL_PROCESS 
+					|| sched1_tasks[i]->type == KERNEL_THREAD) ? KERNEL_MODE : USER_MODE;
+
+		my_priority[i] = INITIAL_PRIORITY;
+    	now_priority[i] = INITIAL_PRIORITY;
 		queue_push(&ready_queue,&pcb[i]);
 	}
 
@@ -168,10 +191,10 @@ static void init_exception_handler()
 {
 	int i = 0;
 	for (i = 0; i < 32; ++i) {
-		exception_handlers[i] = simple_handler;
+		exception_handlers[i] = (uint32_t)simple_handler;
 	}
-	exception_handlers[INT] = handle_int;
-	exception_handlers[SYS] = handle_syscall;
+	exception_handlers[INT] = (uint32_t)handle_int;
+	exception_handlers[SYS] = (uint32_t)handle_syscall;
 }
 
 static void init_exception()
@@ -186,13 +209,13 @@ static void init_exception()
 	// fill nop
 	bzero(EBASE,EBASE_OFFSET);
 	// copy the exception handler to EBase
-	memcpy(EBASE+EBASE_OFFSET,exception_handler_start,
-		exception_handler_end-exception_handler_start);
+	memcpy(EBASE+EBASE_OFFSET,exception_handler_begin,
+		exception_handler_end-exception_handler_begin);
 	// When BEV=0, EBASE change to 0x80000000
 	// offset change to 0x180
 	bzero(0x80000000,0x180);
-	memcpy(0x80000180,exception_handler_start,
-		exception_handler_end-exception_handler_start);
+	memcpy(0x80000180,exception_handler_begin,
+		exception_handler_end-exception_handler_begin);
 
 	// reset_timer(TIMER_INTERVAL); // 300MHz
 
@@ -206,6 +229,22 @@ static void init_exception()
 static void init_syscall(void)
 {
 	// init system call table.
+	int fn;
+
+	for (fn = 0; fn < NUM_SYSCALLS; ++fn) {
+		syscall[fn] = &invalid_syscall;
+	}
+	syscall[SYSCALL_SLEEP] = (int (*)()) &sys_sleep;
+	syscall[SYSCALL_BLOCK] = (int (*)()) &sys_block;
+	syscall[SYSCALL_UNBLOCK_ONE] = (int (*)()) &sys_unblock_one;
+	syscall[SYSCALL_UNBLOCK_ALL] = (int (*)()) &sys_unblock_all;
+	syscall[SYSCALL_WRITE] = (int (*)()) &sys_write;
+	syscall[SYSCALL_READ] = (int (*)()) &sys_read;
+	syscall[SYSCALL_CURSOR] = (int (*)()) &sys_move_cursor;
+	syscall[SYSCALL_REFLUSH] = (int (*)()) &sys_reflush;
+	syscall[SYSCALL_MUTEX_LOCK_INIT] = (int (*)()) &mutex_lock_init;
+	syscall[SYSCALL_MUTEX_LOCK_ACQUIRE] = (int (*)()) &mutex_lock_acquire;
+	syscall[SYSCALL_MUTEX_LOCK_RELEASE] = (int (*)()) &mutex_lock_release;
 }
 
 // jump from bootloader.
@@ -249,6 +288,8 @@ void __attribute__((section(".entry_function"))) _start(void)
 
 	//printk_task1();
 */
+	init_exception();
+	init_syscall();
 
 	while (1)
 	{

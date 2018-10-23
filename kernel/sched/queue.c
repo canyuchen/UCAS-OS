@@ -91,3 +91,25 @@ void *queue_remove(queue_t *queue, void *item)
 
     return (void *)next;
 }
+
+void enqueue(queue_t *queue, void *item)
+{
+    item_t *_item = (item_t *)item;
+    /* queue is empty */
+    if (queue->head == NULL)
+    {
+        queue->head = item;
+        queue->tail = item;
+        _item->next = NULL;
+        _item->prev = NULL;
+    }
+    else
+    {
+        ((item_t *)(queue->head))->prev = item;
+        _item->prev = NULL;
+        _item->next = queue->head;
+        queue->head = item;
+    }
+}
+
+

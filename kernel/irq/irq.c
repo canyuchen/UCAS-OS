@@ -23,3 +23,9 @@ void other_exception_handler()
     // TODO other exception handler
 
 }
+
+/* Round-robin scheduling: Save current_running before preempting */
+void put_current_running(){
+  enqueue(&ready_queue, current_running);
+  current_running->status = TASK_READY;
+}

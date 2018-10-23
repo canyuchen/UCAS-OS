@@ -52,7 +52,7 @@
 #define SYSCALL_MUTEX_LOCK_RELEASE 32
 
 /* syscall function pointer */
-int (*syscall[NUM_SYSCALLS])();
+extern int (*syscall[NUM_SYSCALLS])();
 
 void system_call_helper(int, int, int, int);
 extern int invoke_syscall(int, int, int, int);
@@ -64,6 +64,7 @@ void sys_unblock_one(queue_t *);
 void sys_unblock_all(queue_t *);
 
 void sys_write(char *);
+void sys_read(char *);
 void sys_move_cursor(int, int);
 void sys_reflush();
 
@@ -71,4 +72,6 @@ void mutex_lock_init(mutex_lock_t *);
 void mutex_lock_acquire(mutex_lock_t *);
 void mutex_lock_release(mutex_lock_t *);
 
+void invalid_syscall(void);
+void syscall_error(void);
 #endif

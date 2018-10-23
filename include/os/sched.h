@@ -69,8 +69,8 @@ typedef enum {
 } task_type_t;
 
 typedef enum {
-    KERNEL_MODE,
     USER_MODE,
+    KERNEL_MODE,
 } task_mode_t;
 
 /* Process Control Block */
@@ -138,5 +138,12 @@ void do_sleep(uint32_t);
 void do_block(queue_t *);
 void do_unblock_one(queue_t *);
 void do_unblock_all(queue_t *);
+
+typedef int priority_t;
+#define MAX_PID 1024
+#define MAX_PRIORITY 5
+#define INITIAL_PRIORITY 2
+extern priority_t my_priority[MAX_PID];
+extern priority_t now_priority[MAX_PID];
 
 #endif
