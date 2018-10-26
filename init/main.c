@@ -114,7 +114,7 @@ static void init_pcb()
 
 		//pcb[i].kernel_context.regs[31] = sched1_tasks[i]->entry_point;
 		pcb[i].kernel_context.regs[31] = (uint32_t)first_entry;
-		//pcb[i].user_context.regs[31] = sched2_tasks[i]->entry_point;
+		//pcb[i].user_context.regs[31] = sched1_tasks[i]->entry_point;
 
 		pcb[i].kernel_context.cp0_status = cp0_status_init;
 		pcb[i].user_context.cp0_status = cp0_status_init;
@@ -231,17 +231,16 @@ static void init_syscall(void)
 	for (fn = 0; fn < NUM_SYSCALLS; ++fn) {
 		syscall[fn] = &invalid_syscall;
 	}
-	syscall[SYSCALL_SLEEP] = (int (*)()) &sys_sleep;
-	syscall[SYSCALL_BLOCK] = (int (*)()) &sys_block;
-	syscall[SYSCALL_UNBLOCK_ONE] = (int (*)()) &sys_unblock_one;
-	syscall[SYSCALL_UNBLOCK_ALL] = (int (*)()) &sys_unblock_all;
-	syscall[SYSCALL_WRITE] = (int (*)()) &sys_write;
-	syscall[SYSCALL_READ] = (int (*)()) &sys_read;
-	syscall[SYSCALL_CURSOR] = (int (*)()) &sys_move_cursor;
-	syscall[SYSCALL_REFLUSH] = (int (*)()) &sys_reflush;
-	syscall[SYSCALL_MUTEX_LOCK_INIT] = (int (*)()) &mutex_lock_init;
-	syscall[SYSCALL_MUTEX_LOCK_ACQUIRE] = (int (*)()) &mutex_lock_acquire;
-	syscall[SYSCALL_MUTEX_LOCK_RELEASE] = (int (*)()) &mutex_lock_release;
+	syscall[SYSCALL_SLEEP] = (int (*)()) &do_sleep;
+	syscall[SYSCALL_BLOCK] = (int (*)()) &do_block;
+	syscall[SYSCALL_UNBLOCK_ONE] = (int (*)()) &do_unblock_one;
+	syscall[SYSCALL_UNBLOCK_ALL] = (int (*)()) &do_unblock_all;
+	syscall[SYSCALL_WRITE] = (int (*)()) &screen_write;
+	syscall[SYSCALL_CURSOR] = (int (*)()) &screen_move_cursor;
+	syscall[SYSCALL_REFLUSH] = (int (*)()) &screen_reflush;
+	syscall[SYSCALL_MUTEX_LOCK_INIT] = (int (*)()) &do_mutex_lock_init;
+	syscall[SYSCALL_MUTEX_LOCK_ACQUIRE] = (int (*)()) &do_mutex_lock_acquire;
+	syscall[SYSCALL_MUTEX_LOCK_RELEASE] = (int (*)()) &do_mutex_lock_release;
 }
 
 // jump from bootloader.

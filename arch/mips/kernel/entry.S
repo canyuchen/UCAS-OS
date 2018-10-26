@@ -207,10 +207,11 @@ exception_handler_begin:
 
     mfc0  k0, CP0_CAUSE
     andi  k0, k0, CAUSE_EXCCODE   /* k0 = {exc_code,00} */
+
     la    k1, exception_handlers
     add   k0, k0, k1
     lw    k0, 0(k0)
-    j     k0     /* interrupt_handlers[exc_code](); */
+    j     k0     /* exception_handlers[exc_code](); */
 exception_handler_end:
 END(exception_handler_entry)
 
@@ -316,6 +317,7 @@ NESTED(handle_syscall, 0, sp)
     // system call handler
     SAVE_CONTEXT(USER)
     // RESTORE_CONTEXT(KERNEL)
+
     add   a3,a2,$0
     add   a2,a1,$0
     add   a1,a0,$0

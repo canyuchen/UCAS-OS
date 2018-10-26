@@ -18,11 +18,6 @@ void system_call_helper(int fn, int arg1, int arg2, int arg3)
     int ret_val = 0;
 
     // Call function and return result as usual (ie, "return ret_val");
-    if (fn < 0 || NUM_SYSCALLS <= fn) {
-        // Illegal system call number, call exit instead
-        //fn = SYSCALL_EXIT;
-        syscall_error();
-    }
 
     /* In C's calling convention, caller is responsible for cleaning up
      * the stack. Therefore we don't really need to distinguish between
@@ -43,11 +38,6 @@ void system_call_helper(int fn, int arg1, int arg2, int arg3)
 }
 
 void invalid_syscall(void)
-{
-    //TODO
-}
-
-void syscall_error(void)
 {
     //TODO
 }

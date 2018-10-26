@@ -73,5 +73,4 @@ void mutex_lock_acquire(mutex_lock_t *);
 void mutex_lock_release(mutex_lock_t *);
 
 void invalid_syscall(void);
-void syscall_error(void);
 #endif
