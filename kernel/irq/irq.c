@@ -2,6 +2,7 @@
 #include "time.h"
 #include "sched.h"
 #include "string.h"
+#include "queue.h"
 
 static void irq_timer()
 {
@@ -26,6 +27,7 @@ void other_exception_handler()
 
 /* Round-robin scheduling: Save current_running before preempting */
 void put_current_running(){
-  enqueue(&ready_queue, current_running);
-  current_running->status = TASK_READY;
+    //enqueue(&ready_queue, current_running);
+    queue_push(&ready_queue, current_running);
+    current_running->status = TASK_READY;
 }

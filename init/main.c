@@ -34,11 +34,7 @@
 #include "regs.h"
 #include "string.h"
 
-// queue_t ready_queue_init;
-// queue_t block_queue_init;
-
-// queue_p ready_queue_ptr;
-// queue_p block_queue_ptr;
+int is_init = FALSE;
 
 queue_t ready_queue;
 queue_t block_queue;
@@ -68,6 +64,7 @@ extern uint32_t get_cp0_status();
 extern void set_cp0_status(uint32_t);
 
 extern void first_entry();
+extern void reset_timer();
 
 uint32_t exception_handlers[32];
 priority_t my_priority[MAX_PID];
@@ -122,7 +119,8 @@ static void init_pcb()
 		pcb[i].kernel_context.cp0_status = cp0_status_init;
 		pcb[i].user_context.cp0_status = cp0_status_init;
 
-		pcb[i].user_context.cp0_epc = sched1_tasks[k]->entry_point;
+		pcb[i].user_context.cp0_epc = sched1_tasks[i]->entry_point;
+		//cp0_epc add 4 automatically when encountering interrupt
 
 		pcb[i].mode = (sched1_tasks[i]->type == KERNEL_PROCESS 
 					|| sched1_tasks[i]->type == KERNEL_THREAD) ? KERNEL_MODE : USER_MODE;
@@ -196,9 +194,16 @@ static void init_exception_handler()
 static void init_exception()
 {
 	// 1. Get CP0_STATUS
-	// 2. Disable all interrupt
+	// 2. Disable all interrupt 
 	// 3. Copy the level 2 exception handling code to 0x80000180
 	// 4. reset CP0_COMPARE & CP0_COUNT register
+
+	// Get CP0_STATUS, CP0_STATUS is 0x30400004 initially
+	uint32_t cp0_status = get_cp0_status();
+	cp0_status |= (STATUS_CU0 | 0x1);
+	cp0_status ^= 0x1;
+	set_cp0_status(cp0_status); //CU <= 1, IM7 <= 1, IE <= 0
+
 	init_exception_handler();
 
 	// Copy the level 2 exception handling code to 0x80000180
@@ -215,13 +220,7 @@ static void init_exception()
 	memcpy(0x80000180,exception_handler_begin,\
 		   exception_handler_end-exception_handler_begin);
 
-	// reset_timer(TIMER_INTERVAL); // 300MHz
-
-	// Get CP0_STATUS 
-	uint32_t cp0_status = get_cp0_status();
-	cp0_status |= 0x8001;
-	set_cp0_status(STATUS_CU0 | cp0_status); //CU <= 1, IM7 <= 1, IE <= 1
-
+	reset_timer();
 }
 
 static void init_syscall(void)
@@ -271,29 +270,15 @@ void __attribute__((section(".entry_function"))) _start(void)
 	printk("> [INIT] SCREEN initialization succeeded.\n");
 
 	// TODO Enable interrupt
-
-/*	
-    current_running = queue_dequeue(&ready_queue);
-    current_running->status = TASK_RUNNING;
-	// __asm__ __volatile__(
-	// 	//"lw t0, %0       \n\t"
-	// 	"lw $8, %0       \n\t"
-	// 	"addiu $8,$8,320 \n\t"
-	// 	"jr $8"
-	// 	:
-	// 	:"r"(current_running)
-	// );
-
-	//printk_task1();
-*/
-	init_exception();
-	init_syscall();
+	//Get CP0_STATUS 
+	uint32_t cp0_status = get_cp0_status();
+	cp0_status |= (STATUS_CU0 | 0x1);
+	set_cp0_status(cp0_status); //CU <= 1, IM7 <= 1, IE <= 1
 
 	while (1)
 	{
 		// (QAQQQQQQQQQQQ)
 		// If you do non-preemptive scheduling, you need to use it to surrender control
-		// do_scheduler();
 		do_scheduler();
 	};
 	return;

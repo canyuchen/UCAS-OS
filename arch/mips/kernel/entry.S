@@ -7,7 +7,7 @@
 .macro STI
     //start interrupt
     mfc0    k0, CP0_STATUS
-    li      k1, (STATUS_CU0 | 0x1) //CU <= 1, IE <= 1
+    li      k1, (STATUS_CU0 | 0x1) //CU <= 1, IM7 <= 1, IE <= 1
     or      k0, k1
     mtc0    k0, CP0_STATUS
 .endm
@@ -17,23 +17,10 @@
     mfc0    k0, CP0_STATUS
     li      k1, (STATUS_CU0 | 0x1)
     or      k0, k1
-    xori    k0, 0x1 //CU <= 1, IE <= 0
+    xori    k0, 0x1 //CU <= 1, IM7 <= 1, IE <= 0
     mtc0    k0, CP0_STATUS
 .endm
 
-/*
-.macro PUTCHAR ch label
-	  addi  k0,$0,10000
-	\label:
-	addi  k0,k0,-1
-	bne k0,$0,\label
-
-	addi  k0,$0,\ch
-	la    k1,0xbfe48000
-	sb    k0,0(k1)
-.endm
-*/
-//???
 
 LEAF(asm_start)
     mtc0    zero, CP0_STATUS
@@ -290,10 +277,8 @@ int_finish:
     j     return_from_exception
     nop
 
-#define TIMER_INTERVAL 150000000
-
 time_irq:
-    li    a0, TIMER_INTERVAL
+    //li    a0, TIMER_INTERVAL
     jal   reset_timer
 
     jal   clear_int
@@ -355,6 +340,7 @@ NESTED(handle_other, 0, sp)
 END(handle_other)
 
 LEAF(reset_timer)
+    li    a0, TIMER_INTERVAL
     mtc0  $0, CP0_COUNT
     mtc0  a0, CP0_COMPARE
     jr    ra

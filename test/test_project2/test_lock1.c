@@ -3,7 +3,8 @@
 #include "stdio.h"
 #include "syscall.h"
 
-int is_init = FALSE;
+//int is_init = FALSE;
+extern int is_init;
 static char blank[] = {"                                             "};
 
 /* if you want to use spin lock, you need define SPIN_LOCK */

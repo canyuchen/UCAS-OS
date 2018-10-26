@@ -62,8 +62,6 @@ enum ExcCode
 #define BEV1_EBASE 0xbfc00000
 #define BEV1_OFFSET 0x380
 
-#define TIMER_INTERVAL 150000
-
 void interrupt_helper(uint32_t, uint32_t);
 
 /* exception handler entery */
