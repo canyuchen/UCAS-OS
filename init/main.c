@@ -105,25 +105,25 @@ static void init_pcb()
 		pcb[i].prev = NULL;
 		pcb[i].next = NULL;
 		pcb[i].pid = i;
-		pcb[i].type = sched1_tasks[i]->type;
+		pcb[i].type = sched2_tasks[i]->type;
 		pcb[i].status = TASK_CREATED;
 		pcb[i].cursor_x = 0;
 		pcb[i].cursor_y = 0;
 
-		pcb[i].entry_point = sched1_tasks[i]->entry_point;
+		pcb[i].entry_point = sched2_tasks[i]->entry_point;
 
-		//pcb[i].kernel_context.regs[31] = sched1_tasks[i]->entry_point;
+		//pcb[i].kernel_context.regs[31] = sched2_tasks[i]->entry_point;
 		pcb[i].kernel_context.regs[31] = (uint32_t)first_entry;
-		//pcb[i].user_context.regs[31] = sched1_tasks[i]->entry_point;
+		//pcb[i].user_context.regs[31] = sched2_tasks[i]->entry_point;
 
 		pcb[i].kernel_context.cp0_status = cp0_status_init;
 		pcb[i].user_context.cp0_status = cp0_status_init;
 
-		pcb[i].user_context.cp0_epc = sched1_tasks[i]->entry_point;
+		pcb[i].user_context.cp0_epc = sched2_tasks[i]->entry_point;
 		//cp0_epc add 4 automatically when encountering interrupt
 
-		pcb[i].mode = (sched1_tasks[i]->type == KERNEL_PROCESS 
-					|| sched1_tasks[i]->type == KERNEL_THREAD) ? KERNEL_MODE : USER_MODE;
+		pcb[i].mode = (sched2_tasks[i]->type == KERNEL_PROCESS 
+					|| sched2_tasks[i]->type == KERNEL_THREAD) ? KERNEL_MODE : USER_MODE;
 		my_priority[i] = INITIAL_PRIORITY;
     	now_priority[i] = INITIAL_PRIORITY;
 		pcb[i].priority = INITIAL_PRIORITY;
@@ -235,7 +235,7 @@ static void init_syscall(void)
 	syscall[SYSCALL_BLOCK] = (int (*)()) &do_block;
 	syscall[SYSCALL_UNBLOCK_ONE] = (int (*)()) &do_unblock_one;
 	syscall[SYSCALL_UNBLOCK_ALL] = (int (*)()) &do_unblock_all;
-	syscall[SYSCALL_WRITE] = (int (*)()) &screen_write;
+	syscall[SYSCALL_WRITE] = (int (*)()) &do_write;
 	syscall[SYSCALL_CURSOR] = (int (*)()) &screen_move_cursor;
 	syscall[SYSCALL_REFLUSH] = (int (*)()) &screen_reflush;
 	syscall[SYSCALL_MUTEX_LOCK_INIT] = (int (*)()) &do_mutex_lock_init;
@@ -254,19 +254,19 @@ void __attribute__((section(".entry_function"))) _start(void)
 	//__asm__ __volatile__("addiu $29, $29, -8\n\tsw $31, 28($29)");
 	// init interrupt (^_^)
 	init_exception();
-	printk("> [INIT] Interrupt processing initialization succeeded.\n");
+	//printk("> [INIT] Interrupt processing initialization succeeded.\n");
 
 	// init system call table (0_0)
 	init_syscall();
-	printk("> [INIT] System call initialized successfully.\n");
+	//printk("> [INIT] System call initialized successfully.\n");
 
 	// init Process Control Block (-_-!)
 	init_pcb();
-	printk("> [INIT] PCB initialization succeeded.\n");
+	//printk("> [INIT] PCB initialization succeeded.\n");
 
 	// init screen (QAQ)
 	init_screen();
-	printf("> [INIT] SCREEN initialization succeeded.\n");
+	//printk("> [INIT] SCREEN initialization succeeded.\n");
 
 	// TODO Enable interrupt
 	//Get CP0_STATUS 

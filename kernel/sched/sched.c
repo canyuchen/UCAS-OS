@@ -37,6 +37,9 @@ void scheduler(void)
 void scheduler(void)
 {
 
+    current_running->cursor_x = screen_cursor_x;
+    current_running->cursor_y = screen_cursor_y;
+
     // TODO schedule
     // Modify the current_running pointer.
     if(current_running->status != TASK_BLOCKED){
@@ -66,6 +69,9 @@ void scheduler(void)
     }
     now_priority[current_running->pid]--;
     current_running->status = TASK_RUNNING;
+
+    screen_cursor_x = current_running->cursor_x;
+    screen_cursor_y = current_running->cursor_y;
 }
 
 void do_sleep(uint32_t sleep_time)

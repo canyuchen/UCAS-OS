@@ -53,6 +53,7 @@ void init_screen(void)
     vt100_hidden_cursor();
     vt100_clear();
     screen_clear();
+    //screen_clear();
 }
 
 void screen_clear(void)
@@ -114,4 +115,10 @@ void screen_reflush(void)
 
     /* recover cursor position */
     vt100_move_cursor(screen_cursor_x, screen_cursor_y);
+}
+
+void do_write(char *buff)
+{
+    screen_write(buff);
+    screen_reflush();
 }

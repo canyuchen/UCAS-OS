@@ -84,12 +84,12 @@ typedef struct pcb
     /* register context */
     regs_context_t kernel_context;
     regs_context_t user_context;
-    
+    //312
     uint32_t kernel_stack_top;
     uint32_t user_stack_top;
-
+    //320
     uint32_t entry_point;
-
+    
     task_mode_t mode;
     /* previous, next pointer */
     void *prev;
