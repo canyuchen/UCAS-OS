@@ -214,7 +214,7 @@ exception_handler_begin:
 exception_handler_end:
 END(exception_handler_entry)
 
-NESTED(simple_handler,0,sp)
+NESTED(handle_others,0,sp)
     /* SAVE_CONTEXT(KERNEL) */
     SAVE_CONTEXT(USER)
 
@@ -234,13 +234,13 @@ NESTED(simple_handler,0,sp)
     srl   k0, k0, 2
     add   a1, k0, $0
 
-    //jal   c_simple_handler
+    //jal   c_handle_others
 
     mfc0  k0, CP0_CAUSE         /* Read Cause register for IP bits */
     nop
     andi  k1, k0, CAUSE_IPL     /* Keep only IP bits from Cause */
     xor   k0, k0, k1
-    mtc0  k0, CP0_CAUSE
+    mtc0  k0, CP0_CAUSEk0
     nop
 
     //LEAVE_CRITICAL
@@ -248,7 +248,7 @@ NESTED(simple_handler,0,sp)
     RESTORE_CONTEXT(USER)
     j     return_from_exception
     nop
-END(simple_handler)
+END(handle_others)
 
 NESTED(handle_int, 0, sp)
     .set  noat
@@ -267,7 +267,7 @@ NESTED(handle_int, 0, sp)
     xori  k0, k0, 0x17
 
     addiu k1, zero, 7
-    beq   k0, k1, time_irq
+    beq   k0, k1, irq_timer
     nop
 
     jal   clear_int
@@ -277,26 +277,19 @@ int_finish:
     j     return_from_exception
     nop
 
-time_irq:
-    //li    a0, TIMER_INTERVAL
+irq_timer:
+    // TODO clock interrupt handler.
+    //      scheduler, time counter in here
     jal   reset_timer
 
     jal   clear_int
-/*
-    lw    k1, time_elapsed
-    addiu k1, k1, 1000
-    sw    k1, time_elapsed
-    //TEST_NESTED_COUNT
-    bne   k1, zero, int_finish
-    nop
-*/
+
     //ENTER_CRITICAL
     lw    k0, current_running
     li    k1, 1
     sw    k1, MODE_POSITION_OFFSET(k0)
 
-    jal   put_current_running
-    nop
+    /* Round-robin scheduling: Save current_running before preempting */
     jal   do_scheduler
     nop
 

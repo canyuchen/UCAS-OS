@@ -59,7 +59,7 @@ extern void exception_handler_start();
 extern void exception_handler_end();
 extern void handle_int();
 extern void handle_syscall();
-extern void simple_handler();
+extern void handle_others();
 extern uint32_t get_cp0_status();
 extern void set_cp0_status(uint32_t);
 
@@ -185,7 +185,7 @@ static void init_exception_handler()
 {
 	int i = 0;
 	for (i = 0; i < 32; ++i) {
-		exception_handlers[i] = (uint32_t)simple_handler;
+		exception_handlers[i] = (uint32_t)handle_others;
 	}
 	exception_handlers[INT] = (uint32_t)handle_int;
 	exception_handlers[SYS] = (uint32_t)handle_syscall;
