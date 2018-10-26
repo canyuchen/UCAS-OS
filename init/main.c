@@ -266,7 +266,7 @@ void __attribute__((section(".entry_function"))) _start(void)
 
 	// init screen (QAQ)
 	init_screen();
-	printk("> [INIT] SCREEN initialization succeeded.\n");
+	printf("> [INIT] SCREEN initialization succeeded.\n");
 
 	// TODO Enable interrupt
 	//Get CP0_STATUS 
