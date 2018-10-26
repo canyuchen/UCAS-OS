@@ -240,7 +240,7 @@ NESTED(handle_others,0,sp)
     nop
     andi  k1, k0, CAUSE_IPL     /* Keep only IP bits from Cause */
     xor   k0, k0, k1
-    mtc0  k0, CP0_CAUSEk0
+    mtc0  k0, CP0_CAUSE
     nop
 
     //LEAVE_CRITICAL
