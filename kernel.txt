@@ -3826,7 +3826,7 @@ a0803b4c:	00000000 	nop
 a0803b50:	3c02a080 	lui	v0,0xa080
 a0803b54:	244444f0 	addiu	a0,v0,17648
 a0803b58:	8fc50014 	lw	a1,20(s8)
-a0803b5c:	0c200e59 	jal	a0803964 <printk>
+a0803b5c:	0c200e7b 	jal	a08039ec <printf>
 a0803b60:	00000000 	nop
 a0803b64:	0c200eb4 	jal	a0803ad0 <enable_interrupt>
 a0803b68:	00000000 	nop

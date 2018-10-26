@@ -36,7 +36,7 @@ void printk_task1(void)
         disable_interrupt();
 
         vt100_move_cursor(1, print_location);
-        printk("> [TASK] This task is to test scheduler. (%d)", i);
+        printf("> [TASK] This task is to test scheduler. (%d)", i);
 
         enable_interrupt();
 
