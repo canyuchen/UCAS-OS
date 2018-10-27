@@ -38,6 +38,7 @@ int is_init = FALSE;
 
 queue_t ready_queue;
 queue_t block_queue;
+queue_t sleeping_queue;
 
 pcb_t pcb_init;
 
@@ -81,10 +82,12 @@ static void init_pcb()
 
 	queue_init(&ready_queue);
 	queue_init(&block_queue);
+	queue_init(&sleeping_queue);
 
 	uint32_t i = 0;
 	uint32_t j = 0;
 	uint32_t k = 0;
+	uint32_t l = 0;
 	uint32_t STACK_TOP = STACK_MIN;
 	for(i = 0; i < num_sched1_tasks; i++)
 	{
@@ -128,6 +131,7 @@ static void init_pcb()
     	now_priority[i] = INITIAL_PRIORITY;
 		pcb[i].priority = INITIAL_PRIORITY;
 		pcb[i].wait_time = 0;
+		pcb[i].sleeping_deadline = 0;
 
 		queue_push(&ready_queue,&pcb[i]);
 	}
@@ -174,6 +178,55 @@ static void init_pcb()
     	now_priority[i] = INITIAL_PRIORITY;
 		pcb[i].priority = INITIAL_PRIORITY;
 		pcb[i].wait_time = 0;
+		pcb[i].sleeping_deadline = 0;
+
+		queue_push(&ready_queue,&pcb[i]);
+	}
+
+	for(l = 0; l < num_timer_tasks; i++, l++)
+	{
+		bzero(&(pcb[i].kernel_context), sizeof(pcb[i].kernel_context));
+		bzero(&(pcb[i].user_context  ), sizeof(pcb[i].user_context  ));
+		pcb[i].kernel_context.regs[29] = STACK_TOP;
+		pcb[i].user_context.regs[29] = STACK_TOP + STACK_SIZE;
+		pcb[i].kernel_context.regs[30] = STACK_TOP;
+		pcb[i].user_context.regs[30] = STACK_TOP + STACK_SIZE;
+		pcb[i].kernel_stack_top = STACK_TOP;
+		pcb[i].user_stack_top = STACK_TOP + STACK_SIZE;		
+		STACK_TOP += STACK_SIZE*2;
+		if(STACK_TOP > STACK_MAX)
+		{
+			//TODO
+		}
+
+		pcb[i].prev = NULL;
+		pcb[i].next = NULL;
+		pcb[i].pid = i;
+		//pcb[i].type = timer_tasks[k]->type;
+		pcb[i].type = timer_tasks[l]->type;
+		pcb[i].status = TASK_CREATED;
+		pcb[i].cursor_x = 0;
+		pcb[i].cursor_y = 0;
+
+		pcb[i].entry_point = timer_tasks[l]->entry_point;
+
+		//pcb[i].kernel_context.regs[31] = sched1_tasks[i]->entry_point;
+		pcb[i].kernel_context.regs[31] = (uint32_t)first_entry;
+		//pcb[i].user_context.regs[31] = timer_tasks[k]->entry_point;
+
+		pcb[i].kernel_context.cp0_status = cp0_status_init;
+		pcb[i].user_context.cp0_status = cp0_status_init;
+
+		//pcb[i].kernel_context.cp0_epc = timer_tasks[k]->entry_point;
+		pcb[i].user_context.cp0_epc = timer_tasks[l]->entry_point;
+
+		pcb[i].mode = (timer_tasks[l]->type == KERNEL_PROCESS 
+					|| timer_tasks[l]->type == KERNEL_THREAD) ? KERNEL_MODE : USER_MODE;
+		my_priority[i] = INITIAL_PRIORITY;
+    	now_priority[i] = INITIAL_PRIORITY;
+		pcb[i].priority = INITIAL_PRIORITY;
+		pcb[i].wait_time = 0;
+		pcb[i].sleeping_deadline = 0;
 
 		queue_push(&ready_queue,&pcb[i]);
 	}
@@ -254,19 +307,19 @@ void __attribute__((section(".entry_function"))) _start(void)
 	//__asm__ __volatile__("addiu $29, $29, -8\n\tsw $31, 28($29)");
 	// init interrupt (^_^)
 	init_exception();
-	//printk("> [INIT] Interrupt processing initialization succeeded.\n");
+	printk("> [INIT] Interrupt processing initialization succeeded.\n");
 
 	// init system call table (0_0)
 	init_syscall();
-	//printk("> [INIT] System call initialized successfully.\n");
+	printk("> [INIT] System call initialized successfully.\n");
 
 	// init Process Control Block (-_-!)
 	init_pcb();
-	//printk("> [INIT] PCB initialization succeeded.\n");
+	printk("> [INIT] PCB initialization succeeded.\n");
 
 	// init screen (QAQ)
 	init_screen();
-	//printk("> [INIT] SCREEN initialization succeeded.\n");
+	printk("> [INIT] SCREEN initialization succeeded.\n");
 
 	// TODO Enable interrupt
 	//Get CP0_STATUS 

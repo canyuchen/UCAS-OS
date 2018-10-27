@@ -112,4 +112,39 @@ void enqueue(queue_t *queue, void *item)
     }
 }
 
+void queue_sort(queue_t *queue, void *item, item_comp_t item_comp)
+{
+    item_t *_item = (item_t *)item;
+    item_t *item_next = NULL;
+    item_t *item_prev = NULL;
 
+    if(queue_is_empty(queue)){
+        queue->head = item;
+        queue->tail = item;
+        _item->next = NULL;
+        _item->prev = NULL;
+    }
+    else{
+        while(((item_t *)(queue->head))->next != NULL \
+            // && item_comp(queue,item) == 1){
+             && item_comp(((item_t *)(queue->head)),item) == 1){
+                queue->head = ((item_t *)(queue->head))->next;
+            }
+        if(((item_t *)(queue->head))->next == NULL){
+            ((item_t *)(queue->tail))->next = item;
+            _item->next = NULL;
+            _item->prev = queue->tail;
+            queue->tail = item;
+        }
+        else{
+            item_next = ((item_t *)(queue->head))->next;
+            item_prev = ((item_t *)(queue->head));
+
+            item_prev->next = item;
+            _item->prev = item_prev;
+            item_next->prev = item;
+            _item->next = item_next;
+        }
+        
+    }
+}

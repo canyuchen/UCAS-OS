@@ -36,6 +36,8 @@ typedef struct queue
     void *tail;
 } queue_t;
 
+typedef int (* item_comp_t)(void *, void *);
+
 typedef queue_t* queue_p;
 
 void queue_init(queue_t *queue);
@@ -51,4 +53,5 @@ void *queue_remove(queue_t *queue, void *item);
 
 void enqueue(queue_t *queue, void *item);
 
+void queue_sort(queue_t *queue, void *item, item_comp_t item_comp);
 #endif

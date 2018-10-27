@@ -63,7 +63,8 @@ typedef enum {
     TASK_RUNNING,
     TASK_READY,
     TASK_EXITED,
-    TASK_CREATED,    
+    TASK_CREATED,  
+    TASK_SLEEPING,  
 } task_status_t;
 
 typedef enum {
@@ -111,6 +112,8 @@ typedef struct pcb
     uint32_t wait_time;
     priority_t priority;
 
+    uint32_t sleeping_deadline;
+
 } pcb_t;
 
 /* task information, used to init PCB */
@@ -128,7 +131,8 @@ extern queue_t ready_queue;
 /* block queue to wait */
 extern queue_t block_queue;
 
-//extern queue_p block_queue_ptr;
+/* sleeping queue to be waken up */
+extern queue_t sleeping_queue;
 
 /* current running task PCB */
 extern pcb_t *current_running;

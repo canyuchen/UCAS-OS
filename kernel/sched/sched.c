@@ -10,10 +10,6 @@ pcb_t pcb[NUM_MAX_TASK];
 /* global process id */
 pid_t process_id = 1;
 
-static void check_sleeping()
-{
-}
-
 /*
 void scheduler(void)
 {
@@ -33,9 +29,35 @@ void scheduler(void)
 }
 */
 
+/* TODO:wake up sleeping processes whose deadlines have passed */
+static void check_sleeping()
+{
+    uint32_t current_time = get_timer();
+    //  printf(12, 10, "current time: %d", current_time);
+    pcb_t* temp;
+    while(!queue_is_empty(&sleeping_queue) \
+      && (((pcb_t*) queue_dequeue(&sleeping_queue))-> sleeping_deadline <= current_time)) {
+        temp = queue_dequeue(&sleeping_queue);
+        queue_push(&ready_queue, temp);
+        temp->status = TASK_READY;
+    }
+}
+
+static int deadline_comp(void *item_1, void *item_2)
+{
+    pcb_t *_item_1 = (pcb_t *)item_1;
+    pcb_t *_item_2 = (pcb_t *)item_2;
+    return (_item_2->sleeping_deadline > _item_1->sleeping_deadline) ? 1 : 0 ;
+}
+
 /* Change current_running to the next task */
 void scheduler(void)
 {
+
+    check_sleeping(); // wake up sleeping processes
+    while (queue_is_empty(&ready_queue)){
+        check_sleeping();
+    }
 
     current_running->cursor_x = screen_cursor_x;
     current_running->cursor_y = screen_cursor_y;
@@ -76,7 +98,10 @@ void scheduler(void)
 
 void do_sleep(uint32_t sleep_time)
 {
-    // TODO sleep(seconds)
+    current_running->status = TASK_SLEEPING;
+    current_running->sleeping_deadline = get_timer() + sleep_time;
+    queue_sort(&sleeping_queue, current_running, deadline_comp);
+    do_scheduler();
 }
 
 void do_block(queue_t *queue)

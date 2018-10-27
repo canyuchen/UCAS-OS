@@ -181,7 +181,7 @@ END(asm_start)
 .endm
 
 NESTED(do_scheduler, 0, ra)
-    .set  noat
+    //.set  noat
     //???
     //Warning: used $at without ".set noat"
     SAVE_CONTEXT(KERNEL)
@@ -200,7 +200,7 @@ exception_handler_begin:
     // TODO close interrupt
     // jmp exception_handler[i] which decided by CP0_CAUSE
     // Leve2 exception Handler.
-    .set  noat
+    //.set  noat
     .set  mips32
 
     CLI //close interrupt
@@ -252,7 +252,7 @@ NESTED(handle_others,0,sp)
 END(handle_others)
 
 NESTED(handle_int, 0, sp)
-    .set  noat
+    //.set  noat
     .set  mips32
     // interrupt handler
     // Leve3 exception Handler.
@@ -284,6 +284,10 @@ irq_timer:
     jal   reset_timer
 
     jal   clear_int
+
+    lw    k1, time_elapsed
+    addiu k1, k1, 15
+    sw    k1, time_elapsed
 
     //ENTER_CRITICAL
     lw    k0, current_running
