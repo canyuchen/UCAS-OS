@@ -64,7 +64,8 @@ void scheduler(void)
 
     // TODO schedule
     // Modify the current_running pointer.
-    if(current_running->status != TASK_BLOCKED){
+    if(current_running->status != TASK_BLOCKED \
+    || current_running->status != TASK_SLEEPING){
         current_running->status = TASK_READY;
         if(current_running->entry_point != 0){
             //initial pcb does not need to be pushed to ready_queue

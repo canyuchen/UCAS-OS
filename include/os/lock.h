@@ -30,6 +30,8 @@
 
 #include "queue.h"
 
+#define MUTEX_LOCK
+
 typedef enum {
     UNLOCKED,
     LOCKED,

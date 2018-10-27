@@ -12,8 +12,8 @@ static char blank[] = {"                                             "};
 spin_lock_t spin_lock;
 
 /* if you want to use mutex lock, you need define MUTEX_LOCK */
-#define MUTEX_LOCK
-mutex_lock_t mutex_lock;
+//#define MUTEX_LOCK
+extern mutex_lock_t mutex_lock;
 
 void lock_task1(void)
 {

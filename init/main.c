@@ -33,6 +33,7 @@
 #include "syscall.h"
 #include "regs.h"
 #include "string.h"
+#include "lock.h"
 
 int is_init = FALSE;
 
@@ -73,6 +74,8 @@ priority_t now_priority[MAX_PID];
 
 #define EBASE 0xbfc00000
 #define EBASE_OFFSET 0x380
+
+mutex_lock_t mutex_lock;
 
 static void init_pcb()
 {
@@ -115,9 +118,7 @@ static void init_pcb()
 
 		pcb[i].entry_point = sched2_tasks[i]->entry_point;
 
-		//pcb[i].kernel_context.regs[31] = sched2_tasks[i]->entry_point;
 		pcb[i].kernel_context.regs[31] = (uint32_t)first_entry;
-		//pcb[i].user_context.regs[31] = sched2_tasks[i]->entry_point;
 
 		pcb[i].kernel_context.cp0_status = cp0_status_init;
 		pcb[i].user_context.cp0_status = cp0_status_init;
@@ -162,14 +163,11 @@ static void init_pcb()
 
 		pcb[i].entry_point = lock_tasks[k]->entry_point;
 
-		//pcb[i].kernel_context.regs[31] = sched1_tasks[i]->entry_point;
 		pcb[i].kernel_context.regs[31] = (uint32_t)first_entry;
-		//pcb[i].user_context.regs[31] = lock_tasks[k]->entry_point;
 
 		pcb[i].kernel_context.cp0_status = cp0_status_init;
 		pcb[i].user_context.cp0_status = cp0_status_init;
 
-		//pcb[i].kernel_context.cp0_epc = lock_tasks[k]->entry_point;
 		pcb[i].user_context.cp0_epc = lock_tasks[k]->entry_point;
 
 		pcb[i].mode = (lock_tasks[k]->type == KERNEL_PROCESS 
@@ -202,7 +200,6 @@ static void init_pcb()
 		pcb[i].prev = NULL;
 		pcb[i].next = NULL;
 		pcb[i].pid = i;
-		//pcb[i].type = timer_tasks[k]->type;
 		pcb[i].type = timer_tasks[l]->type;
 		pcb[i].status = TASK_CREATED;
 		pcb[i].cursor_x = 0;
@@ -210,14 +207,11 @@ static void init_pcb()
 
 		pcb[i].entry_point = timer_tasks[l]->entry_point;
 
-		//pcb[i].kernel_context.regs[31] = sched1_tasks[i]->entry_point;
 		pcb[i].kernel_context.regs[31] = (uint32_t)first_entry;
-		//pcb[i].user_context.regs[31] = timer_tasks[k]->entry_point;
 
 		pcb[i].kernel_context.cp0_status = cp0_status_init;
 		pcb[i].user_context.cp0_status = cp0_status_init;
 
-		//pcb[i].kernel_context.cp0_epc = timer_tasks[k]->entry_point;
 		pcb[i].user_context.cp0_epc = timer_tasks[l]->entry_point;
 
 		pcb[i].mode = (timer_tasks[l]->type == KERNEL_PROCESS 
