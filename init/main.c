@@ -255,19 +255,19 @@ void __attribute__((section(".entry_function"))) _start(void)
 	//__asm__ __volatile__("addiu $29, $29, -8\n\tsw $31, 28($29)");
 	// init interrupt (^_^)
 	init_exception();
-	printk("> [INIT] Interrupt processing initialization succeeded.\n");
+	//printk("> [INIT] Interrupt processing initialization succeeded.\n");
 
 	// init system call table (0_0)
 	init_syscall();
-	printk("> [INIT] System call initialized successfully.\n");
+	//printk("> [INIT] System call initialized successfully.\n");
 
 	// init Process Control Block (-_-!)
 	init_pcb();
-	printk("> [INIT] PCB initialization succeeded.\n");
+	//printk("> [INIT] PCB initialization succeeded.\n");
 
 	// init screen (QAQ)
 	init_screen();
-	printk("> [INIT] SCREEN initialization succeeded.\n");
+	//printk("> [INIT] SCREEN initialization succeeded.\n");
 
 	// TODO Enable interrupt
 	//Get CP0_STATUS 
