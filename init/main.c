@@ -231,9 +231,9 @@ static void init_pcb()
 static void init_exception_handler()
 {
 	int i = 0;
-	for (i = 0; i < 32; ++i) {
-		exception_handlers[i] = (uint32_t)handle_others;
-	}
+	// for (i = 0; i < 32; ++i) {
+	// 	exception_handlers[i] = (uint32_t)handle_others;
+	// }
 	exception_handlers[INT] = (uint32_t)handle_int;
 	exception_handlers[SYS] = (uint32_t)handle_syscall;
 }
@@ -246,10 +246,12 @@ static void init_exception()
 	// 4. reset CP0_COMPARE & CP0_COUNT register
 
 	// Get CP0_STATUS, CP0_STATUS is 0x30400004 initially
-	uint32_t cp0_status = get_cp0_status();
-	cp0_status |= (STATUS_CU0 | 0x1);
-	cp0_status ^= 0x1;
-	set_cp0_status(cp0_status); //CU <= 1, IM7 <= 1, IE <= 0
+	// uint32_t cp0_status = get_cp0_status();
+	// cp0_status |= (STATUS_CU0 | 0x1);
+	// cp0_status ^= 0x1;
+	// set_cp0_status(cp0_status); //CU <= 1, IM7 <= 1, IE <= 0
+
+	CLOSE_INTERRUPT;
 
 	init_exception_handler();
 
@@ -317,15 +319,20 @@ void __attribute__((section(".entry_function"))) _start(void)
 
 	// TODO Enable interrupt
 	//Get CP0_STATUS 
-	uint32_t cp0_status = get_cp0_status();
-	cp0_status |= (STATUS_CU0 | 0x1);
-	set_cp0_status(cp0_status); //CU <= 1, IM7 <= 1, IE <= 1
+	// uint32_t cp0_status = get_cp0_status();
+	// cp0_status |= (STATUS_CU0 | 0x1);
+	// set_cp0_status(cp0_status); //CU <= 1, IM7 <= 1, IE <= 1
+
+	START_INTERRUPT;
+
+	//do_scheduler();
 
 	while (1)
 	{
 		// (QAQQQQQQQQQQQ)
 		// If you do non-preemptive scheduling, you need to use it to surrender control
 		do_scheduler();
+		//scheduler();
 	};
 	return;
 }

@@ -4,20 +4,19 @@
 .equ    USER,   156
 .equ    MODE_POSITION_OFFSET, 324
 
+//start interrupt
 .macro STI
-    //start interrupt
     mfc0    k0, CP0_STATUS
-    li      k1, (STATUS_CU0 | 0x1) //CU <= 1, IM7 <= 1, IE <= 1
+    li      k1, 0x1
     or      k0, k1
     mtc0    k0, CP0_STATUS
 .endm
 
+//close interrupt
 .macro CLI 
-    //close interrupt
     mfc0    k0, CP0_STATUS
-    li      k1, (STATUS_CU0 | 0x1)
-    or      k0, k1
-    xori    k0, 0x1 //CU <= 1, IM7 <= 1, IE <= 0
+    li      k1, 0xfffffffe
+    and     k0, k1
     mtc0    k0, CP0_STATUS
 .endm
 
@@ -286,20 +285,12 @@ irq_timer:
     jal   clear_int
 
     lw    k1, time_elapsed
-    addiu k1, k1, 15
+    addi  k1, k1, 15
     sw    k1, time_elapsed
-
-    //ENTER_CRITICAL
-    lw    k0, current_running
-    li    k1, 1
-    sw    k1, MODE_POSITION_OFFSET(k0)
 
     /* Round-robin scheduling: Save current_running before preempting */
     jal   do_scheduler
     nop
-
-    lw    k0, current_running
-    sw    zero, MODE_POSITION_OFFSET(k0)
 
     //LEAVE_CRITICAL
     j     int_finish
@@ -367,4 +358,8 @@ LEAF(return_from_exception)
 	eret
 END(return_from_exception)
 
-
+/* TODO: Test current_running->nested_count, clobbering only eflags */
+.macro TEST_NESTED_COUNT
+  lw      k1, current_running
+  lw      k1, NESTED_COUNT(k1)
+.endm
