@@ -39,27 +39,12 @@
 #define MAX_PRIORITY 5
 #define INITIAL_PRIORITY 2
 
-// #define CLOSE_INTERRUPT \
-// do{ \
-// 	uint32_t cp0_status = get_cp0_status(); \
-// 	cp0_status |= (STATUS_CU0 | 0x1); \
-// 	cp0_status ^= 0x1; \
-// 	set_cp0_status(cp0_status); \
-// }while(0) //CU <= 1, IM7 <= 1, IE <= 0
-
 #define CLOSE_INTERRUPT \
 do{ \
 	uint32_t cp0_status = get_cp0_status(); \
     cp0_status &= 0xfffffffe; \
 	set_cp0_status(cp0_status); \
 }while(0) //IE <= 0
-
-// #define START_INTERRUPT \
-// do{ \
-// 	uint32_t cp0_status = get_cp0_status(); \
-// 	cp0_status |= (STATUS_CU0 | 0x1); \
-// 	set_cp0_status(cp0_status); \
-// }while(0) //CU <= 1, IM7 <= 1, IE <= 1
 
 #define START_INTERRUPT \
 do{ \
