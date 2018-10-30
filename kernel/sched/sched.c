@@ -10,6 +10,11 @@ pcb_t pcb[NUM_MAX_TASK];
 /* global process id */
 pid_t process_id = 1;
 
+static uint32_t get_queue_head_daedline(queue_t *queue)
+{
+    return ((pcb_t *)(queue->head))->sleeping_deadline;
+}
+
 /* TODO:wake up sleeping processes whose deadlines have passed */
 static void check_sleeping()
 {
@@ -17,11 +22,18 @@ static void check_sleeping()
     uint32_t current_time = get_timer();
     //  printf(12, 10, "current time: %d", current_time);
     pcb_t* temp;
+    // while(!queue_is_empty(&sleeping_queue) \
+    //   && (((pcb_t*) queue_dequeue(&sleeping_queue))-> sleeping_deadline <= current_time)) {
+    //     temp = queue_dequeue(&sleeping_queue);
+    //     queue_push(&ready_queue, temp);
+    //     temp->status = TASK_READY;
+    // }
     while(!queue_is_empty(&sleeping_queue) \
-      && (((pcb_t*) queue_dequeue(&sleeping_queue))-> sleeping_deadline <= current_time)) {
+      && (((pcb_t *)(sleeping_queue.head))->sleeping_deadline <= current_time)) {
+      //&& (get_queue_head_daedline(&sleeping_queue) <= current_time)) {
         temp = queue_dequeue(&sleeping_queue);
+        temp->status = TASK_READY;        
         queue_push(&ready_queue, temp);
-        temp->status = TASK_READY;
     }
 }
 
@@ -89,8 +101,9 @@ void do_sleep(uint32_t sleep_time)
         current_running->sleeping_deadline = get_timer() + sleep_time;
         queue_sort(&sleeping_queue, current_running, deadline_comp);
 
-        do_scheduler();        
+    //    do_scheduler();        
     }
+        do_scheduler(); 
 }
 
 void do_block(queue_t *queue)
@@ -100,8 +113,9 @@ void do_block(queue_t *queue)
         current_running->status = TASK_BLOCKED;
         queue_push(&block_queue, current_running);
 
-        do_scheduler();
+    //    do_scheduler();
     }
+        do_scheduler();
 }
 
 void do_unblock_one(queue_t *queue)

@@ -10,6 +10,7 @@ void sleep_task(void)
     int i;
     int print_location_1 = 6;
     int print_location_2 = 7;
+    int print_location_3 = 8;
     int sleep_time = 5;
 
     while (1)
@@ -20,11 +21,17 @@ void sleep_task(void)
             printf("> [TASK] This task is to test sleep(). (%d)\n", i);
         }
 
+        sys_move_cursor(1, print_location_3);
+        printf("%s", blank);
+
         sys_move_cursor(1, print_location_2);
         printf("> [TASK] This task is sleeping, sleep time is %d.\n", sleep_time);
 
         /* call syscall sleep() */
         sys_sleep(sleep_time);
+
+        sys_move_cursor(1, print_location_3);
+        printf("> [TASK] Sleeping time finished.\n");
 
         sys_move_cursor(1, print_location_2);
         printf("%s", blank);

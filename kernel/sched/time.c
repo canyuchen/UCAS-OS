@@ -1,6 +1,7 @@
 #include "time.h"
 
-uint32_t time_elapsed = 0;
+// uint32_t time_elapsed = 0;
+extern uint32_t time_elapsed;
 
 static int MHZ = 300;
 
@@ -11,6 +12,7 @@ uint32_t get_ticks()
 
 uint32_t get_timer()
 {
+    //return time_elapsed / (50);
     return time_elapsed / (50);
 }
 

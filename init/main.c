@@ -56,6 +56,8 @@ uint32_t STACK_MIN = 0xa0f00000;
 uint32_t STACK_SIZE =   0x80000;
 uint32_t STACK_MAX = 0xa2000000;
 
+uint32_t time_elapsed = 0;
+
 // defined in entry.S
 extern void exception_handler_start();
 extern void exception_handler_end();
