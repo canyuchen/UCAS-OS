@@ -127,7 +127,7 @@ void do_unblock_one(queue_t *queue_ptr)
     // unblock the head task from the queue
     pcb_t *block_queue_head_ptr;
 
-    if(!queue_is_empty(&block_queue)){
+    if(!queue_is_empty(queue_ptr)){
         //REVISED: 
         //block_queue_head_ptr = queue_dequeue(&block_queue);
         block_queue_head_ptr = queue_dequeue(queue_ptr);
