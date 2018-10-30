@@ -68,27 +68,6 @@ void scheduler(void)
             queue_push(&ready_queue, current_running);           
         }        
     }
-/*
-    current_running = queue_dequeue(&ready_queue);
-
-
-    if(now_priority[current_running->pid]<0) {
-        pcb_t *base = current_running;
-        do {
-            queue_push(&ready_queue, current_running);
-            current_running = queue_dequeue(&ready_queue);
-            if(now_priority[current_running->pid]>=0) break;
-        } while(base != current_running);
-        if(now_priority[current_running->pid]<0){
-            do {
-                queue_push(&ready_queue, current_running);
-                current_running = queue_dequeue(&ready_queue);
-                now_priority[current_running->pid] = my_priority[current_running->pid];
-            } while(base != current_running);            
-        }
-    }
-*/
-
 
     pcb_t *_current_running = ((pcb_t *)(ready_queue.head));
     while(_current_running != ((pcb_t *)(ready_queue.tail)) \
