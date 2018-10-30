@@ -21,9 +21,6 @@ void sleep_task(void)
             printf("> [TASK] This task is to test sleep(). (%d)\n", i);
         }
 
-        sys_move_cursor(1, print_location_3);
-        printf("%s", blank);
-
         sys_move_cursor(1, print_location_2);
         printf("> [TASK] This task is sleeping, sleep time is %d.\n", sleep_time);
 

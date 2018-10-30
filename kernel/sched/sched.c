@@ -68,8 +68,9 @@ void scheduler(void)
             queue_push(&ready_queue, current_running);           
         }        
     }
-
+/*
     current_running = queue_dequeue(&ready_queue);
+
 
     if(now_priority[current_running->pid]<0) {
         pcb_t *base = current_running;
@@ -86,6 +87,27 @@ void scheduler(void)
             } while(base != current_running);            
         }
     }
+*/
+
+
+    pcb_t *_current_running = ((pcb_t *)(ready_queue.head));
+    while(_current_running != ((pcb_t *)(ready_queue.tail)) \
+        && _current_running->priority < ((pcb_t *)(_current_running->next))->priority){
+            _current_running = ((pcb_t *)(_current_running->next));
+        }
+    if(_current_running->priority < 0){
+        _current_running = ((pcb_t *)(ready_queue.head));
+        while(_current_running != ((pcb_t *)(ready_queue.tail))){
+            _current_running->priority = INITIAL_PRIORITY;
+             _current_running = ((pcb_t *)(_current_running->next));
+        }
+        current_running = queue_dequeue(&ready_queue);
+    }
+    else{
+        current_running = _current_running;        
+        queue_remove(&ready_queue, _current_running);
+    }
+
 
     now_priority[current_running->pid]--;
     current_running->status = TASK_RUNNING;
@@ -106,26 +128,30 @@ void do_sleep(uint32_t sleep_time)
         do_scheduler(); 
 }
 
-void do_block(queue_t *queue)
+void do_block(queue_t *queue_ptr)
 {
     // block the current_running task into the queue
     if(current_running->status == TASK_RUNNING){
         current_running->status = TASK_BLOCKED;
-        queue_push(&block_queue, current_running);
+        //REVISED: 
+        //queue_push(&block_queue, current_running);
+        queue_push(queue_ptr, current_running);
 
     //    do_scheduler();
     }
         do_scheduler();
 }
 
-void do_unblock_one(queue_t *queue)
+void do_unblock_one(queue_t *queue_ptr)
 {
     //CLOSE_INTERRUPT;
     // unblock the head task from the queue
     pcb_t *block_queue_head_ptr;
 
     if(!queue_is_empty(&block_queue)){
-        block_queue_head_ptr = queue_dequeue(&block_queue);
+        //REVISED: 
+        //block_queue_head_ptr = queue_dequeue(&block_queue);
+        block_queue_head_ptr = queue_dequeue(queue_ptr);
         block_queue_head_ptr->status = TASK_READY;
         queue_push(&ready_queue, block_queue_head_ptr);
     }
