@@ -25,6 +25,7 @@ void do_mutex_lock_init(mutex_lock_t *lock)
     lock->status = UNLOCKED;
 }
 
+
 void do_mutex_lock_acquire(mutex_lock_t *lock)
 {
     // if(lock->status == LOCKED){
