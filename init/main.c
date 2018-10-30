@@ -78,6 +78,8 @@ priority_t now_priority[MAX_PID];
 #define EBASE_OFFSET 0x380
 
 mutex_lock_t mutex_lock;
+mutex_lock_t mutex_lock_1;
+mutex_lock_t mutex_lock_2;
 
 static void init_pcb()
 {
@@ -88,6 +90,9 @@ static void init_pcb()
 	queue_init(&ready_queue);
 	queue_init(&block_queue);
 	queue_init(&sleeping_queue);
+
+	queue_init(&(mutex_lock_1.mutex_lock_queue));
+	queue_init(&(mutex_lock_2.mutex_lock_queue));
 
 	uint32_t i = 0;
 	uint32_t j = 0;

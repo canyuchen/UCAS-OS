@@ -17,9 +17,10 @@ int num_sched1_tasks = 3;
 // int num_lock_tasks = 2;
 
 struct task_info task2_4 = {(uint32_t)&lock_task1, USER_PROCESS};
-struct task_info task2_5 = {(uint32_t)&lock_task2, USER_PROCESS};
-struct task_info *lock_tasks[16] = {&task2_4, &task2_5};
-int num_lock_tasks = 2;
+// struct task_info task2_5 = {(uint32_t)&lock_task2, USER_PROCESS};
+// struct task_info *lock_tasks[16] = {&task2_4, &task2_5};
+struct task_info *lock_tasks[16] = {&task2_4};
+int num_lock_tasks = 1;
 
 /* [TASK4] task group to test interrupt */
 // When the task is running, please implement the following system call :

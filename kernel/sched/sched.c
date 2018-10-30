@@ -107,6 +107,27 @@ void do_sleep(uint32_t sleep_time)
         do_scheduler(); 
 }
 
+static int priority_comp(void *item_1, void *item_2)
+{
+    pcb_t *_item_1 = (pcb_t *)item_1;
+    pcb_t *_item_2 = (pcb_t *)item_2;
+    return (_item_2->priority > _item_1->priority) ? 1 : 0 ;
+}
+
+// void do_block(queue_t *queue_ptr)
+// {
+//     // block the current_running task into the queue
+//     if(current_running->status == TASK_RUNNING){
+//         current_running->status = TASK_BLOCKED;
+//         //REVISED: 
+//         //queue_push(&block_queue, current_running);
+//         queue_push(queue_ptr, current_running);
+
+//     //    do_scheduler();
+//     }
+//         do_scheduler();
+// }
+
 void do_block(queue_t *queue_ptr)
 {
     // block the current_running task into the queue
@@ -114,12 +135,27 @@ void do_block(queue_t *queue_ptr)
         current_running->status = TASK_BLOCKED;
         //REVISED: 
         //queue_push(&block_queue, current_running);
-        queue_push(queue_ptr, current_running);
-
+        //queue_push(queue_ptr, current_running);
+        queue_sort(queue_ptr, current_running, priority_comp);
     //    do_scheduler();
     }
         do_scheduler();
 }
+
+// void do_unblock_one(queue_t *queue_ptr)
+// {
+//     //CLOSE_INTERRUPT;
+//     // unblock the head task from the queue
+//     pcb_t *block_queue_head_ptr;
+
+//     if(!queue_is_empty(queue_ptr)){
+//         //REVISED: 
+//         //block_queue_head_ptr = queue_dequeue(&block_queue);
+//         block_queue_head_ptr = queue_dequeue(queue_ptr);
+//         block_queue_head_ptr->status = TASK_READY;
+//         queue_push(&ready_queue, block_queue_head_ptr);
+//     }
+// }
 
 void do_unblock_one(queue_t *queue_ptr)
 {
@@ -127,6 +163,7 @@ void do_unblock_one(queue_t *queue_ptr)
     // unblock the head task from the queue
     pcb_t *block_queue_head_ptr;
 
+    // if(!queue_is_empty(&block_queue)){
     if(!queue_is_empty(queue_ptr)){
         //REVISED: 
         //block_queue_head_ptr = queue_dequeue(&block_queue);

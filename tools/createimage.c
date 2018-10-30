@@ -107,7 +107,6 @@ void extended_opt(Elf32_Phdr *boot_phdr_ptr, int k_phnum, Elf32_Phdr *kernel_phd
 	return;
 }
 
-
 int main(int argc, char *argv[])
 {
 	FILE **image_file_ptrr, *boot_file_ptr, *kernel_file_ptr;
