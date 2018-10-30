@@ -2,7 +2,7 @@
 
 .equ    KERNEL, 0
 .equ    USER,   156
-.equ    MODE_POSITION_OFFSET, 324
+.equ    TASK_MODE_OFFSET, 324
 
 //start interrupt
 .macro STI
@@ -20,6 +20,11 @@
     mtc0    k0, CP0_STATUS
 .endm
 
+/* TODO: Test current_running->nested_count, clobbering only eflags */
+.macro TEST_TASK_MODE
+    lw      k1, current_running
+    lw      k1, TASK_MODE_OFFSET(k1)
+.endm
 
 LEAF(asm_start)
     mtc0    zero, CP0_STATUS
@@ -288,9 +293,20 @@ irq_timer:
     addi  k1, k1, 15
     sw    k1, time_elapsed
 
+    TEST_TASK_MODE
+    beq   k1, zero, int_finish
+    nop
+
+    lw    k0, current_running
+    sw    zero, TASK_MODE_OFFSET(k0)
+
     /* Round-robin scheduling: Save current_running before preempting */
     jal   do_scheduler
     nop
+
+    lw    k0, current_running
+    li    k1, 1
+    sw    k1, TASK_MODE_OFFSET(k0)
 
     //LEAVE_CRITICAL
     j     int_finish
@@ -357,9 +373,3 @@ LEAF(return_from_exception)
 	STI
 	eret
 END(return_from_exception)
-
-/* TODO: Test current_running->nested_count, clobbering only eflags */
-.macro TEST_NESTED_COUNT
-  lw      k1, current_running
-  lw      k1, NESTED_COUNT(k1)
-.endm

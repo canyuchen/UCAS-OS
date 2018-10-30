@@ -35,7 +35,7 @@
 #include "string.h"
 #include "lock.h"
 
-int is_init = FALSE;
+int is_init = 0;
 
 queue_t ready_queue;
 queue_t block_queue;
@@ -92,7 +92,7 @@ static void init_pcb()
 	uint32_t k = 0;
 	uint32_t l = 0;
 	uint32_t STACK_TOP = STACK_MIN;
-	for(i = 0; i < num_sched1_tasks; i++)
+	for(i = 0; i < num_sched2_tasks; i++)
 	{
 		bzero(&(pcb[i].kernel_context), sizeof(pcb[i].kernel_context));
 		bzero(&(pcb[i].user_context  ), sizeof(pcb[i].user_context  ));
@@ -123,6 +123,8 @@ static void init_pcb()
 		pcb[i].kernel_context.cp0_status = cp0_status_init;
 		pcb[i].user_context.cp0_status = cp0_status_init;
 
+		//pcb[i].kernel_context.cp0_epc = timer_tasks[l]->entry_point;
+		//???
 		pcb[i].user_context.cp0_epc = sched2_tasks[i]->entry_point;
 		//cp0_epc add 4 automatically when encountering interrupt
 
@@ -168,6 +170,8 @@ static void init_pcb()
 		pcb[i].kernel_context.cp0_status = cp0_status_init;
 		pcb[i].user_context.cp0_status = cp0_status_init;
 
+		//pcb[i].kernel_context.cp0_epc = timer_tasks[l]->entry_point;
+		//???
 		pcb[i].user_context.cp0_epc = lock_tasks[k]->entry_point;
 
 		pcb[i].mode = (lock_tasks[k]->type == KERNEL_PROCESS 
@@ -212,6 +216,8 @@ static void init_pcb()
 		pcb[i].kernel_context.cp0_status = cp0_status_init;
 		pcb[i].user_context.cp0_status = cp0_status_init;
 
+		//pcb[i].kernel_context.cp0_epc = timer_tasks[l]->entry_point;
+		//???
 		pcb[i].user_context.cp0_epc = timer_tasks[l]->entry_point;
 
 		pcb[i].mode = (timer_tasks[l]->type == KERNEL_PROCESS 
@@ -245,12 +251,6 @@ static void init_exception()
 	// 3. Copy the level 2 exception handling code to 0x80000180
 	// 4. reset CP0_COMPARE & CP0_COUNT register
 
-	// Get CP0_STATUS, CP0_STATUS is 0x30400004 initially
-	// uint32_t cp0_status = get_cp0_status();
-	// cp0_status |= (STATUS_CU0 | 0x1);
-	// cp0_status ^= 0x1;
-	// set_cp0_status(cp0_status); //CU <= 1, IM7 <= 1, IE <= 0
-
 	CLOSE_INTERRUPT;
 
 	init_exception_handler();
@@ -258,14 +258,14 @@ static void init_exception()
 	// Copy the level 2 exception handling code to 0x80000180
 	// When BEV=1, EBASE is BFC00380
 	// fill nop
-	bzero(EBASE,EBASE_OFFSET);
+	//bzero(EBASE,EBASE_OFFSET);
 	// copy the exception handler to EBase
 	memcpy(EBASE+EBASE_OFFSET,exception_handler_begin,\
 		   exception_handler_end-exception_handler_begin);
 
 	// When BEV=0, EBASE change to 0x80000000
 	// offset change to 0x180
-	bzero(0x80000000,0x180);
+	//bzero(0x80000000,0x180);
 	memcpy(0x80000180,exception_handler_begin,\
 		   exception_handler_end-exception_handler_begin);
 
@@ -318,10 +318,6 @@ void __attribute__((section(".entry_function"))) _start(void)
 	//printk("> [INIT] SCREEN initialization succeeded.\n");
 
 	// TODO Enable interrupt
-	//Get CP0_STATUS 
-	// uint32_t cp0_status = get_cp0_status();
-	// cp0_status |= (STATUS_CU0 | 0x1);
-	// set_cp0_status(cp0_status); //CU <= 1, IM7 <= 1, IE <= 1
 
 	START_INTERRUPT;
 

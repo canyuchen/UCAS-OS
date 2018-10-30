@@ -105,8 +105,8 @@ typedef enum {
 } task_type_t;
 
 typedef enum {
+    KERNEL_MODE,    
     USER_MODE,
-    KERNEL_MODE,
 } task_mode_t;
 
 /* Process Control Block */

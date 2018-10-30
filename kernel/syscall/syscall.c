@@ -17,6 +17,8 @@ void system_call_helper(int fn, int arg1, int arg2, int arg3)
 {
     int ret_val = 0;
 
+    current_running->mode = KERNEL_MODE;
+
     // Call function and return result as usual (ie, "return ret_val");
 
     /* In C's calling convention, caller is responsible for cleaning up
@@ -26,13 +28,19 @@ void system_call_helper(int fn, int arg1, int arg2, int arg3)
     */
     ret_val = syscall[fn] (arg1,arg2,arg3);
     
+    current_running->mode = USER_MODE;
 
     // We can not leave the critical section we enter here before we
     // return in syscall_entry.
     // This is due to a potential race condition on a scratch variable
     // used by syscall_entry.
     current_running->user_context.regs[2] = ret_val;
-    current_running->user_context.cp0_epc = current_running->user_context.cp0_epc + 4;
+
+    if(fn != SYSCALL_MUTEX_LOCK_ACQUIRE){
+        current_running->user_context.cp0_epc = current_running->user_context.cp0_epc + 4;        
+    }
+
+    // current_running->user_context.cp0_epc = current_running->user_context.cp0_epc + 4;
     // printf(20, 10, "syscall: %d, nested_count: %d", fn, current_running->nested_count);
 
     // leave_critical() will be called during restoring context.
