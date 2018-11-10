@@ -25,10 +25,30 @@
  * THE SOFTWARE. 
  * 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * */
+#define _PROJECT_3_
+#undef _PROJECT_3_
+
+#ifdef _PROJECT_3_
+
+#ifndef INCLUDE_SYNC_H_
+#define INCLUDE_SYNC_H_
+
+#include "cond.h"
+#include "sem.h"
+#include "barrier.h"
+#include "lock.h"
+
+#endif
+
+#endif
+
+#ifndef _PROJECT_3_
 
 #ifndef INCLUDE_SYNC_H_
 #define INCLUDE_SYNC_H_
 
 #include "lock.h"
+
+#endif
 
 #endif

@@ -24,6 +24,46 @@
  * 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * */
 
+#define _PROJECT_3_
+#undef _PROJECT_3_
+
+#ifdef _PROJECT_3_
+
+#ifndef INCLUDE_CONSOLE_H_
+#define INCLUDE_CONSOLE_H_
+
+extern int screen_cursor_x;
+extern int screen_cursor_y;
+
+#define SCREEN_WIDTH  80
+#define SCREEN_HEIGHT 30
+
+void vt100_move_cursor(int, int);
+
+/* configuring screen properties */
+void init_screen(void);
+
+/* clear screen */
+void screen_clear(int, int);
+
+/* reflush screen buffer */
+void screen_reflush(void);
+
+/* screen write string */
+void screen_write_ch(char ch);
+void screen_write(char *buff);
+
+/* move cursor */
+void screen_move_cursor(int x, int y);
+
+void do_write(char *buff);
+
+#endif
+
+#endif
+
+#ifndef _PROJECT_3_
+
 #ifndef INCLUDE_CONSOLE_H_
 #define INCLUDE_CONSOLE_H_
 
@@ -48,5 +88,7 @@ void screen_write(char *buff);
 void screen_move_cursor(int x, int y);
 
 void do_write(char *buff);
+
+#endif
 
 #endif

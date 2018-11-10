@@ -267,13 +267,13 @@ static void init_exception()
 	// fill nop
 	//bzero(EBASE,EBASE_OFFSET);
 	// copy the exception handler to EBase
-	memcpy(EBASE+EBASE_OFFSET,exception_handler_begin,\
+	memcpy((uint8_t *)(EBASE+EBASE_OFFSET),(uint8_t *)exception_handler_begin,\
 		   exception_handler_end-exception_handler_begin);
 
 	// When BEV=0, EBASE change to 0x80000000
 	// offset change to 0x180
 	//bzero(0x80000000,0x180);
-	memcpy(0x80000180,exception_handler_begin,\
+	memcpy((uint8_t *)0x80000180, (uint8_t *)exception_handler_begin,\
 		   exception_handler_end-exception_handler_begin);
 
 	reset_timer();

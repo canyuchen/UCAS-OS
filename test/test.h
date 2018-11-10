@@ -23,6 +23,23 @@
  * 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * */
 
+#define _PROJECT_3_
+#undef _PROJECT_3_
+
+
+#ifdef _PROJECT_3_
+
+#ifndef INCLUDE_TEST_H_
+#define INCLUDE_TEST_H_
+
+#include "test3.h"
+
+#endif
+
+#endif
+
+#ifndef _PROJECT_3_
+
 #ifndef INCLUDE_TEST_H_
 #define INCLUDE_TEST_H_
 
@@ -40,5 +57,7 @@ extern int num_timer_tasks;
 
 extern struct task_info *sched2_tasks[16];
 extern int num_sched2_tasks;
+
+#endif
 
 #endif
