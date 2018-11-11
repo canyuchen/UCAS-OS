@@ -285,7 +285,7 @@ static void init_syscall(void)
 	int fn;
 
 	for (fn = 0; fn < NUM_SYSCALLS; ++fn) {
-		syscall[fn] = &invalid_syscall;
+		syscall[fn] = (int (*)()) &invalid_syscall;
 	}
 	syscall[SYSCALL_SLEEP] = (int (*)()) &do_sleep;
 	syscall[SYSCALL_BLOCK] = (int (*)()) &do_block;

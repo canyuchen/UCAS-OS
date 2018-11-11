@@ -56,6 +56,7 @@ void write_bootblock(FILE **image_file_ptrr, FILE *boot_file_ptr, Elf32_Ehdr *bo
 
 void write_kernel(FILE **image_file_ptrr, FILE *kernel_file_ptr, Elf32_Ehdr *kernel_ehdr_ptr, Elf32_Phdr *kernel_phdr_ptr)
 {
+/*
 	int i = 1;
 	void *buffer = calloc(kernel_phdr_ptr->p_filesz, sizeof(i));
 	fseek(kernel_file_ptr, kernel_phdr_ptr->p_offset, 0);
@@ -64,12 +65,23 @@ void write_kernel(FILE **image_file_ptrr, FILE *kernel_file_ptr, Elf32_Ehdr *ker
 	fwrite(buffer, kernel_phdr_ptr->p_filesz, 1, *image_file_ptrr);
 	free(buffer);
 	return;	
+*/
+	int i = 1;
+	void *buffer = calloc(kernel_phdr_ptr->p_memsz, sizeof(i));
+	fseek(kernel_file_ptr, kernel_phdr_ptr->p_offset, 0);
+	fread(buffer, kernel_phdr_ptr->p_memsz, 1, kernel_file_ptr);
+	bzero(buffer + kernel_phdr_ptr->p_filesz, kernel_phdr_ptr->p_memsz - kernel_phdr_ptr->p_filesz);
+	fseek(*image_file_ptrr, 512L, 0);
+	fwrite(buffer, kernel_phdr_ptr->p_memsz, 1, *image_file_ptrr);
+	free(buffer);
+	return;	
 }
 
 int count_kernel_sectors(Elf32_Ehdr *kernel_header_ptr, Elf32_Phdr *kernel_phdr_ptr)
 {
 	int i;
-	i = kernel_header_ptr->e_phnum * kernel_phdr_ptr->p_filesz;
+	//i = kernel_header_ptr->e_phnum * kernel_phdr_ptr->p_filesz;
+	i = kernel_header_ptr->e_phnum * kernel_phdr_ptr->p_memsz;
 	if(i % 512 == 0)
 		return i >> 9;
 	else return (i >> 9) + 1;
@@ -103,7 +115,8 @@ void extended_opt(Elf32_Phdr *boot_phdr_ptr, int k_phnum, Elf32_Phdr *kernel_phd
 	printf("\tthe image\'s vatural address of segment in memory: 0x%X\n", kernel_phdr_ptr->p_vaddr);
 	printf("\tthe file image size of segment:  0x%X\n", kernel_phdr_ptr->p_filesz); 
 	printf("\tthe memory image size of segment:  0x%X\n", kernel_phdr_ptr->p_memsz);
-	printf("\tthe size of write to the OS image:  0x%X\n", kernel_phdr_ptr->p_filesz);
+	//printf("\tthe size of write to the OS image:  0x%X\n", kernel_phdr_ptr->p_filesz);
+	printf("\tthe size of write to the OS image:  0x%X\n", kernel_phdr_ptr->p_memsz);
 	return;
 }
 
