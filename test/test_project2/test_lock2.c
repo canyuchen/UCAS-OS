@@ -315,6 +315,10 @@ void lock_task2(void)
 #include "stdio.h"
 #include "syscall.h"
 
+#include "sched.h"
+
+extern pcb_t *current_running;
+
 //int is_init = FALSE;
 extern int is_init;
 static char blank[] = {"                                                              "};
@@ -350,6 +354,13 @@ void lock_task1(void)
                         is_init = TRUE;
                 }
 
+#ifdef DEBUG_P_2
+                sys_move_cursor(1, 13);
+                printf("%s", blank);
+
+                sys_move_cursor(1, 13);
+                printf("> [LOCK TASK1] current running priority : %d.\n", current_running->priority);
+#endif
                 sys_move_cursor(1, print_location_1);
                 printf("%s", blank);
 
@@ -442,7 +453,13 @@ void lock_task2(void)
 #endif
                         is_init = TRUE;
                 }
+#ifdef DEBUG_P_2
+                sys_move_cursor(1, 14);
+                printf("%s", blank);
 
+                sys_move_cursor(1, 14);
+                printf("> [LOCK TASK2] current running priority : %d.\n", current_running->priority);
+#endif
                 sys_move_cursor(1, print_location);
                 printf("%s", blank);
 
@@ -505,7 +522,13 @@ void lock_task3(void)
 #endif
                         is_init = TRUE;
                 }
+#ifdef DEBUG_P_2
+                sys_move_cursor(1, 15);
+                printf("%s", blank);
 
+                sys_move_cursor(1, 15);
+                printf("> [LOCK TASK3] current running priority : %d.\n", current_running->priority);
+#endif
                 sys_move_cursor(1, print_location);
                 printf("%s", blank);
 
@@ -568,7 +591,13 @@ void lock_task4(void)
 #endif
                         is_init = TRUE;
                 }
+#ifdef DEBUG_P_2
+                sys_move_cursor(1, 16);
+                printf("%s", blank);
 
+                sys_move_cursor(1, 16);
+                printf("> [LOCK TASK4] current running priority : %d.\n", current_running->priority);
+#endif
                 sys_move_cursor(1, print_location);
                 printf("%s", blank);
 

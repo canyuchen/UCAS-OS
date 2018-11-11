@@ -111,7 +111,7 @@ void enqueue(queue_t *queue, void *item)
         queue->head = item;
     }
 }
-
+/*
 void queue_sort(queue_t *queue, void *item, item_comp_t item_comp)
 {
     item_t *_item = (item_t *)item;
@@ -128,12 +128,13 @@ void queue_sort(queue_t *queue, void *item, item_comp_t item_comp)
         void *head = queue->head;
         while(((item_t *)(queue->head))->next != NULL \
             // && item_comp(queue,item) == 1){
-             && item_comp(((item_t *)(queue->head)),item) == 1){
-            // && item_comp(item, ((item_t *)(queue->head))) == 1){
+            // && item_comp(((item_t *)(queue->head)),item) == 1){
+            // && item_comp(((item_t *)(queue->head)),item) == 0){
+             && item_comp(item, ((item_t *)(queue->head))) == 1){
                 queue->head = ((item_t *)(queue->head))->next;
             }
         if(((item_t *)(queue->head))->next == NULL 
-            && item_comp(((item_t *)(queue->head)),item) == 1){
+            && item_comp(((item_t *)(queue->head)),item) == 0){
             ((item_t *)(queue->tail))->next = item;
             // ((item_t *)(queue->head))->next == item;
             _item->next = NULL;
@@ -143,7 +144,7 @@ void queue_sort(queue_t *queue, void *item, item_comp_t item_comp)
             queue->head = head;
         }
         else if(head == queue->head
-                && item_comp(((item_t *)(queue->head)),item) == 0) {
+                && item_comp(((item_t *)(queue->head)),item) == 1) {
             _item->prev = NULL;
             _item->next = queue->head;
             ((item_t *)(queue->head))->next = item;
@@ -163,3 +164,4 @@ void queue_sort(queue_t *queue, void *item, item_comp_t item_comp)
         
     }
 }
+*/

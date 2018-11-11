@@ -16,6 +16,7 @@ static uint32_t get_queue_head_daedline(queue_t *queue)
 }
 
 /* TODO:wake up sleeping processes whose deadlines have passed */
+/*
 static void check_sleeping()
 {
     //CLOSE_INTERRUPT;
@@ -34,6 +35,22 @@ static void check_sleeping()
         temp = queue_dequeue(&sleeping_queue);
         temp->status = TASK_READY;        
         queue_push(&ready_queue, temp);
+    }
+}
+*/
+
+static void check_sleeping()
+{
+    uint32_t current_time = get_timer();
+    if(queue_is_empty(&sleeping_queue)) return;
+    pcb_t* temp = (pcb_t *)sleeping_queue.head;
+    while(temp->next != NULL){
+        if(temp->sleeping_deadline < current_time){
+            queue_remove(&sleeping_queue, temp);            
+            temp->status = TASK_READY;
+            queue_push(&ready_queue, temp);
+        }
+        temp = (pcb_t *)temp->next;
     }
 }
 
@@ -72,23 +89,30 @@ void scheduler(void)
     pcb_t *_current_running = ((pcb_t *)(ready_queue.head));
     while(_current_running != ((pcb_t *)(ready_queue.tail)) \
         && _current_running->priority < ((pcb_t *)(_current_running->next))->priority){
-            _current_running = ((pcb_t *)(_current_running->next));
-        }
-    if(_current_running->priority < 0){
+        _current_running = ((pcb_t *)(_current_running->next));
+    }
+
+/*
+    if(_current_running->priority <= 0){
         _current_running = ((pcb_t *)(ready_queue.head));
         while(_current_running != ((pcb_t *)(ready_queue.tail))){
             _current_running->priority = INITIAL_PRIORITY;
              _current_running = ((pcb_t *)(_current_running->next));
         }
+        _current_running->priority = INITIAL_PRIORITY;
         current_running = queue_dequeue(&ready_queue);
     }
     else{
         current_running = _current_running;        
         queue_remove(&ready_queue, _current_running);
     }
+*/
 
-    now_priority[current_running->pid]--;
-    //current_running->priority--;
+    current_running = _current_running;        
+    queue_remove(&ready_queue, _current_running);
+
+    //now_priority[current_running->pid]--;
+    current_running->priority--;
 
     //current_running = queue_dequeue(&ready_queue);
     current_running->status = TASK_RUNNING;
@@ -102,7 +126,8 @@ void do_sleep(uint32_t sleep_time)
     if(current_running->status == TASK_RUNNING){
         current_running->status = TASK_SLEEPING;
         current_running->sleeping_deadline = get_timer() + sleep_time;
-        queue_sort(&sleeping_queue, current_running, deadline_comp);
+        // queue_sort(&sleeping_queue, current_running, deadline_comp);
+        queue_push(&sleeping_queue, current_running);
 
     //    do_scheduler();        
     }
@@ -123,13 +148,14 @@ void do_block(queue_t *queue_ptr)
         current_running->status = TASK_BLOCKED;
         //REVISED: 
         //queue_push(&block_queue, current_running);
-        //queue_push(queue_ptr, current_running);
-        queue_sort(queue_ptr, current_running, priority_comp);
+        queue_push(queue_ptr, current_running);
+        //queue_sort(queue_ptr, current_running, priority_comp);
     //    do_scheduler();
     }
         do_scheduler();
 }
 
+/*
 void do_unblock_one(queue_t *queue_ptr)
 {
     //CLOSE_INTERRUPT;
@@ -143,6 +169,26 @@ void do_unblock_one(queue_t *queue_ptr)
         block_queue_head_ptr = queue_dequeue(queue_ptr);
         block_queue_head_ptr->status = TASK_READY;
         queue_push(&ready_queue, block_queue_head_ptr);
+    }
+}
+*/
+
+void do_unblock_one(queue_t *queue_ptr)
+{
+    //CLOSE_INTERRUPT;
+    // unblock the head task from the queue
+    pcb_t *unblock_one_ptr;
+
+    if(!queue_is_empty(queue_ptr)){
+        pcb_t *_unblock_one_ptr = ((pcb_t *)(queue_ptr->head));
+        while(_unblock_one_ptr != ((pcb_t *)(queue_ptr->tail)) \
+            && _unblock_one_ptr->priority < ((pcb_t *)(_unblock_one_ptr->next))->priority){
+            _unblock_one_ptr = ((pcb_t *)(_unblock_one_ptr->next));
+        }
+        unblock_one_ptr = _unblock_one_ptr;
+        queue_remove(queue_ptr, _unblock_one_ptr);
+        unblock_one_ptr->status = TASK_READY;
+        queue_push(&ready_queue, unblock_one_ptr);
     }
 }
 

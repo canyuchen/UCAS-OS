@@ -29,6 +29,8 @@
 #ifndef INCLUDE_SCHEDULER_H_
 #define INCLUDE_SCHEDULER_H_
 
+#define DEBUG_P_2
+
 #include "type.h"
 #include "queue.h"
 #include "regs.h"
@@ -37,7 +39,7 @@
 
 #define MAX_PID 1024
 #define MAX_PRIORITY 5
-#define INITIAL_PRIORITY 2
+#define INITIAL_PRIORITY 4
 
 #define CLOSE_INTERRUPT \
 do{ \

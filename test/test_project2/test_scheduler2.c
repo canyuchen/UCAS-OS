@@ -3,7 +3,12 @@
 #include "test2.h"
 #include "syscall.h"
 
-static char blank[] = {"                    "};
+#include "sched.h"
+
+static char blank[] = {"                                                              "};
+extern pcb_t *current_running;
+
+// static char blank[] = {"                    "};
 static char plane1[] = {"    ___         _   "};
 static char plane2[] = {"| __\\_\\______/_|  "};
 static char plane3[] = {"<[___\\_\\_______|  "};
@@ -13,11 +18,24 @@ void printf_task1(void)
 {
     int i;
     int print_location = 1;
+// #ifdef DEBUG_P_2
+//     sys_move_cursor(1, 17);
+//     printf("%s", blank);
 
+//     sys_move_cursor(1, 17);
+//     printf("> [PRINTF TASK1] current running priority : %d.\n", current_running->priority);
+// #endif
     for (i = 0;; i++)
     {
         sys_move_cursor(1, print_location);
-        printf("> [TASK] This task is to test scheduler. (%d)", i);
+        printf("> [PRINTF TASK1] This task is to test scheduler. (%d)", i);
+#ifdef DEBUG_P_2
+        // sys_move_cursor(1, 17);
+        // printf("%s", blank);
+
+        sys_move_cursor(1, 17);
+        printf("> [PRINTF TASK1] current running priority : %d.\n", current_running->priority);
+#endif
     }
 }
 
@@ -25,11 +43,24 @@ void printf_task2(void)
 {
     int i;
     int print_location = 2;
+// #ifdef DEBUG_P_2
+//     sys_move_cursor(1, 18);
+//     printf("%s", blank);
 
+//     sys_move_cursor(1, 18);
+//     printf("> [PRINTF TASK2] current running priority : %d.\n", current_running->priority);
+// #endif
     for (i = 0;; i++)
     {
         sys_move_cursor(1, print_location);
-        printf("> [TASK] This task is to test scheduler. (%d)", i);
+        printf("> [PRINTF TASK2] This task is to test scheduler. (%d)", i);
+#ifdef DEBUG_P_2
+        // sys_move_cursor(1, 18);
+        // printf("%s", blank);
+
+        sys_move_cursor(1, 18);
+        printf("> [PRINTF TASK2] current running priority : %d.\n", current_running->priority);
+#endif
     }
 }
 
