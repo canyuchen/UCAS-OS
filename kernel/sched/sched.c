@@ -87,8 +87,10 @@ void scheduler(void)
         queue_remove(&ready_queue, _current_running);
     }
 
-
     now_priority[current_running->pid]--;
+    //current_running->priority--;
+
+    //current_running = queue_dequeue(&ready_queue);
     current_running->status = TASK_RUNNING;
 
     screen_cursor_x = current_running->cursor_x;
