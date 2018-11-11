@@ -91,8 +91,8 @@ static void init_pcb()
 	queue_init(&block_queue);
 	queue_init(&sleeping_queue);
 
-	queue_init(&(mutex_lock_1.mutex_lock_queue));
-	queue_init(&(mutex_lock_2.mutex_lock_queue));
+	// queue_init(&(mutex_lock_1.mutex_lock_queue));
+	// queue_init(&(mutex_lock_2.mutex_lock_queue));
 
 	uint32_t i = 0;
 	uint32_t j = 0;

@@ -24,6 +24,7 @@ void do_mutex_lock_init(mutex_lock_t *lock)
 {
     lock->status = UNLOCKED;
 	//queue_init(&(lock->mutex_lock_queue));
+    queue_init(&(lock->mutex_lock_queue));
 }
 
 
