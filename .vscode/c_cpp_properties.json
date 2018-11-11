@@ -41,7 +41,8 @@
                 "${workspaceFolder}/test/test_project2",
                 "${workspaceFolder}/drivers",
                 "${workspaceFolder}/arch/mips/include",
-                "${workspaceFolder}/test/test_project3"
+                "${workspaceFolder}/test/test_project3",
+                "${workspaceFolder}/libs"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
