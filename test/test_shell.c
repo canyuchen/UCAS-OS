@@ -29,6 +29,8 @@
 #include "stdio.h"
 #include "screen.h"
 #include "syscall.h"
+#include "string.h"
+#include "sched.h"
 
 static void disable_interrupt()
 {
@@ -44,6 +46,9 @@ static void enable_interrupt()
     set_cp0_status(cp0_status);
 }
 
+/*@FUNCTION return : character if input is not NONE
+ *                           0 if input is NONE
+ */                    
 static char read_uart_ch(void)
 {
     char ch = 0;
@@ -84,15 +89,84 @@ static struct task_info *test_tasks[16] = {&task1, &task2, &task3,
                                            &task13, &task14, &task15};
 static int num_test_tasks = 15;
 
+#define INPUT_BUFFER_MAX_LENGTH 1000
+#define MAX_COMMAND 100
+
+typedef struct InputBuffer {
+    char *buffer;
+    int32_t buffer_length;
+    int32_t input_length;
+    int pointer;
+} InputBuffer_t;
+
+InputBuffer_t inputBuffer;
+char *Command[MAX_COMMAND];
+
+static void init_InputBuffer(InputBuffer_t *p)
+{
+    p->buffer = NULL;
+    p->buffer_length = INPUT_BUFFER_MAX_LENGTH;
+    p->input_length = 0;
+    p->pointer = 0;
+}
+
+static void init_Command(char *Command[])
+{
+    Command[0] = "ps";
+    Command[1] = "spawn";
+    Command[2] = "exec";
+}
+
 void test_shell()
 {
+    sys_move_cursor(1, 15);
+    printf("-----------------COMMAND-------------------");
+    sys_move_cursor(1, 16);
+    printf("> root@UCAS_OS: ");
+
+    int i = 0;
+    InputBuffer_t *inputBuffer_ptr = &inputBuffer;
+    init_InputBuffer(inputBuffer_ptr);
+    //init_Command(Command);
+
     while (1)
     {
+        // sys_screen_clear();
+        // sys_move_cursor(1, 40);
+        // printf("-----------------COMMAND-------------------");
+        // // sys_move_cursor(1, 41);
+        // printf("\n> root@UCAS_OS: ");
+
         // read command from UART port
         disable_interrupt();
         char ch = read_uart_ch();
         enable_interrupt();
 
         // TODO solve command
+        if(ch != 0){
+            // sys_move_cursor(1, 17+i);
+            printf("%c", ch);        
+            // *(inputBuffer_ptr->buffer + i) = ch;
+            // inputBuffer_ptr->input_length++;
+            // i++;
+            // if(ch == '\n'){
+            //     if(inputBuffer_ptr->buffer == 'p' && (inputBuffer_ptr->buffer+1) == 's'){
+            //         printf("\n[PROCESS TABLE]\n");
+            //     }
+            // }            
+        }
+        // if(ch != 0){
+        //     // printf("%c", ch);        
+        //     *(inputBuffer_ptr->buffer + i) = ch;
+        //     printf("%s", inputBuffer_ptr->buffer);
+        //     // inputBuffer_ptr->input_length++;
+        //     // i++;
+        //     // if(ch == '\n'){
+        //     //     if(inputBuffer_ptr->buffer == 'p' && (inputBuffer_ptr->buffer+1) == 's'){
+        //     //         printf("\n[PROCESS TABLE]\n");
+        //     //     }
+        //     // }            
+        // }
     }
 }
+

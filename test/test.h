@@ -32,7 +32,9 @@
 #ifndef INCLUDE_TEST_H_
 #define INCLUDE_TEST_H_
 
-#include "test3.h"
+#include "test_project3/test3.h"
+
+extern void test_shell();
 
 #endif
 

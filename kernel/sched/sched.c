@@ -71,6 +71,10 @@ void scheduler(void)
     //CLOSE_INTERRUPT;
     check_sleeping(); // wake up sleeping processes
     while (queue_is_empty(&ready_queue)){
+        //BUG P3!!!!!
+        if(queue_is_empty(&sleeping_queue)){
+            break;
+        }
         check_sleeping();
     }
 
@@ -200,3 +204,31 @@ void do_unblock_all(queue_t *queue)
         do_unblock_one(&block_queue);
     }
 }
+
+
+void do_spawn(task_info_t *task_info)
+{
+
+}
+
+void do_exit()
+{
+
+}
+
+int  do_getpid()
+{
+
+}
+
+void do_waitpid(int n)
+{
+
+}
+
+void do_kill(int n)
+{
+
+}
+
+

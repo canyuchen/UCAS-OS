@@ -34,8 +34,15 @@ void bzero(void *dest, uint32_t len)
 
 int strcmp(char *str1, char *str2)
 {
+/*
 	while (*str1 && *str2 && (*str1++ == *str2++))
 	{
+	};
+*/
+	while (*str1 && *str2 && (*str1 == *str2))
+	{
+		str1++;
+		str2++;
 	};
 
 	if (*str1 == '\0' && *str2 == '\0')

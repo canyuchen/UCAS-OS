@@ -3,6 +3,7 @@
     "files.associations": {
         "regs.h": "c",
         "lock.h": "c",
-        "screen.h": "c"
+        "screen.h": "c",
+        "string.h": "c"
     }
 }

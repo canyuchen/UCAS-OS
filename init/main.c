@@ -81,6 +81,7 @@ mutex_lock_t mutex_lock;
 mutex_lock_t mutex_lock_1;
 mutex_lock_t mutex_lock_2;
 
+/*
 static void init_pcb()
 {
 	// ready_queue = ready_queue_init;
@@ -240,6 +241,69 @@ static void init_pcb()
 
 	current_running->entry_point = 0;
 }
+*/
+
+static void init_pcb()
+{
+	// ready_queue = ready_queue_init;
+	// block_queue = block_queue_init;
+	uint32_t cp0_status_init = 0x10008000;
+
+	queue_init(&ready_queue);
+	queue_init(&block_queue);
+	queue_init(&sleeping_queue);
+
+	// uint32_t i = 0;
+	// uint32_t j = 0;
+	// uint32_t k = 0;
+	// uint32_t l = 0;
+	uint32_t STACK_TOP = STACK_MIN;
+
+	bzero(&(pcb[0].kernel_context), sizeof(pcb[0].kernel_context));
+	bzero(&(pcb[0].user_context  ), sizeof(pcb[0].user_context  ));
+	pcb[0].kernel_context.regs[29] = STACK_TOP;
+	pcb[0].user_context.regs[29] = STACK_TOP + STACK_SIZE;
+	pcb[0].kernel_context.regs[30] = STACK_TOP;
+	pcb[0].user_context.regs[30] = STACK_TOP + STACK_SIZE;
+	pcb[0].kernel_stack_top = STACK_TOP;
+	pcb[0].user_stack_top = STACK_TOP + STACK_SIZE;		
+	STACK_TOP += STACK_SIZE*2;
+	if(STACK_TOP > STACK_MAX)
+	{
+		//TODO
+	}
+
+	pcb[0].prev = NULL;
+	pcb[0].next = NULL;
+	pcb[0].pid = 1;
+	pcb[0].type = USER_PROCESS;
+	pcb[0].status = TASK_CREATED;
+	pcb[0].cursor_x = 0;
+	pcb[0].cursor_y = 0;
+
+	pcb[0].entry_point = (uint32_t)&test_shell;
+
+	pcb[0].kernel_context.regs[31] = (uint32_t)first_entry;
+
+	pcb[0].kernel_context.cp0_status = cp0_status_init;
+	pcb[0].user_context.cp0_status = cp0_status_init;
+
+	//pcb[0].kernel_context.cp0_epc = timer_tasks[l]->entry_point;
+	//???
+	pcb[0].user_context.cp0_epc = pcb[0].entry_point;
+	//cp0_epc add 4 automatically when encountering interrupt
+
+	pcb[0].mode = USER_MODE;
+	// my_priority[i] = INITIAL_PRIORITY;
+	// now_priority[i] = INITIAL_PRIORITY;
+	pcb[0].priority = INITIAL_PRIORITY;
+	pcb[0].wait_time = 0;
+	pcb[0].sleeping_deadline = 0;
+
+	queue_push(&ready_queue,&pcb[0]);
+
+	current_running->entry_point = 0;
+}
 
 static void init_exception_handler()
 {
@@ -297,6 +361,21 @@ static void init_syscall(void)
 	syscall[SYSCALL_MUTEX_LOCK_INIT] = (int (*)()) &do_mutex_lock_init;
 	syscall[SYSCALL_MUTEX_LOCK_ACQUIRE] = (int (*)()) &do_mutex_lock_acquire;
 	syscall[SYSCALL_MUTEX_LOCK_RELEASE] = (int (*)()) &do_mutex_lock_release;
+	syscall[SYSCALL_SCREEN_CLEAR] = (int (*)()) &screen_clear;
+	syscall[SYSCALL_SEMAPHORE_INIT] = (int (*)()) &do_semaphore_init;
+	syscall[SYSCALL_SEMAPHORE_UP] = (int (*)()) &do_semaphore_up;
+	syscall[SYSCALL_SEMAPHORE_DOWN] = (int (*)()) &do_semaphore_down;
+	syscall[SYSCALL_CONDITION_INIT] = (int (*)()) &do_condition_init;
+	syscall[SYSCALL_CONDITION_WAIT] = (int (*)()) &do_condition_wait;
+	syscall[SYSCALL_CONDITION_SIGNAL] = (int (*)()) &do_condition_signal;
+	syscall[SYSCALL_CONDITION_BROADCAST] = (int (*)()) &do_condition_broadcast;
+	syscall[SYSCALL_BARRIER_INIT] = (int (*)()) &do_barrier_init;
+	syscall[SYSCALL_BARRIER_WAIT] = (int (*)()) &do_barrier_wait;
+	syscall[SYSCALL_EXIT] = (int (*)()) &do_exit;
+	syscall[SYSCALL_WAITPID] = (int (*)()) &do_waitpid;
+	syscall[SYSCALL_GETPID] = (int (*)()) &do_getpid;
+	syscall[SYSCALL_SPAWN] = (int (*)()) &do_spawn;
+	syscall[SYSCALL_KILL] = (int (*)()) &do_kill;
 }
 
 // jump from bootloader.

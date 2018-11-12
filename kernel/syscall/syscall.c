@@ -91,6 +91,11 @@ void sys_move_cursor(int x, int y)
     invoke_syscall(SYSCALL_CURSOR, x, y, IGNORE);
 }
 
+void sys_screen_clear()
+{
+    invoke_syscall(SYSCALL_SCREEN_CLEAR, IGNORE, IGNORE, IGNORE);
+}
+
 void mutex_lock_init(mutex_lock_t *lock)
 {
     invoke_syscall(SYSCALL_MUTEX_LOCK_INIT, (int)lock, IGNORE, IGNORE);
@@ -105,4 +110,76 @@ void mutex_lock_release(mutex_lock_t *lock)
 {
     invoke_syscall(SYSCALL_MUTEX_LOCK_RELEASE, (int)lock, IGNORE, IGNORE);
 }
+
+void semaphore_init(semaphore_t *semaphore, int n)
+{
+    invoke_syscall(SYSCALL_SEMAPHORE_INIT, (int)semaphore, n, IGNORE);
+}
+
+void semaphore_up(semaphore_t *semaphore)
+{
+    invoke_syscall(SYSCALL_SEMAPHORE_UP, (int)semaphore, IGNORE, IGNORE);
+}
+
+void semaphore_down(semaphore_t *semaphore)
+{
+    invoke_syscall(SYSCALL_SEMAPHORE_DOWN, (int)semaphore, IGNORE, IGNORE);
+}
+
+
+void condition_init(condition_t *condition)
+{
+    invoke_syscall(SYSCALL_CONDITION_INIT, (int)condition, IGNORE, IGNORE);
+}
+
+void condition_wait(mutex_lock_t *lock, condition_t *condition)
+{
+    invoke_syscall(SYSCALL_CONDITION_WAIT, (int)lock, (int)condition, IGNORE);
+}
+
+void condition_signal(condition_t *condition)
+{
+    invoke_syscall(SYSCALL_CONDITION_SIGNAL, (int)condition, IGNORE, IGNORE);
+}
+
+void condition_broadcast(condition_t *condition)
+{
+    invoke_syscall(SYSCALL_CONDITION_BROADCAST, (int)condition, IGNORE, IGNORE);
+}
+
+void barrier_init(barrier_t *barrier, int n)
+{
+    invoke_syscall(SYSCALL_BARRIER_INIT, n, IGNORE, IGNORE);
+}
+
+void barrier_wait(barrier_t *barrier)
+{
+    invoke_syscall(SYSCALL_BARRIER_WAIT, (int)barrier, IGNORE, IGNORE);
+}
+
+void sys_spawn(task_info_t *task_info)
+{
+    invoke_syscall(SYSCALL_SPAWN, (int)task_info, IGNORE, IGNORE);
+}
+
+void sys_exit()
+{
+    invoke_syscall(SYSCALL_EXIT, IGNORE, IGNORE, IGNORE);
+}
+
+int sys_getpid()
+{
+    invoke_syscall(SYSCALL_GETPID, IGNORE, IGNORE, IGNORE);
+}
+
+void sys_waitpid(int n)
+{
+    invoke_syscall(SYSCALL_WAITPID, n, IGNORE, IGNORE);
+}
+
+void sys_kill(int n)
+{
+    invoke_syscall(SYSCALL_KILL, n, IGNORE, IGNORE);
+}
+
 

@@ -30,6 +30,8 @@
 #define INCLUDE_SCHEDULER_H_
 
 #define DEBUG_P_2
+#define _PROJECT_3_
+//#undef _PROJECT_3_
 
 #include "type.h"
 #include "queue.h"
@@ -136,6 +138,9 @@ typedef struct pcb
 /* task information, used to init PCB */
 typedef struct task_info
 {
+#ifdef _PROJECT_3_
+    char *task_name;
+#endif
     uint32_t entry_point;
     task_type_t type;
 } task_info_t;
@@ -164,6 +169,12 @@ extern void do_sleep(uint32_t);
 extern void do_block(queue_t *);
 extern void do_unblock_one(queue_t *);
 extern void do_unblock_all(queue_t *);
+
+extern void do_spawn(task_info_t *task_info);
+extern void do_exit();
+extern int  do_getpid();
+extern void do_waitpid(int n);
+extern void do_kill(int n); 
 
 extern priority_t my_priority[MAX_PID];
 extern priority_t now_priority[MAX_PID];

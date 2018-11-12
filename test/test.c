@@ -1,3 +1,10 @@
+#define _PROJECT_3_
+//#undef _PROJECT_3_
+
+#ifdef _PROJECT_3_
+
+#endif
+#ifndef _PROJECT_3_
 #include "test.h"
 
 /* [TASK1] [TASK3] task group to test do_scheduler() */
@@ -39,3 +46,4 @@ struct task_info task2_10 = {(uint32_t)&drawing_task2, USER_PROCESS};
 struct task_info *sched2_tasks[16] = {&task2_8, &task2_9, &task2_10};
 int num_sched2_tasks = 3;
 
+#endif
