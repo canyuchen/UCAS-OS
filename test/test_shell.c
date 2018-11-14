@@ -185,23 +185,14 @@ void test_shell()
 
         // TODO solve command
         if(ch != 0){
-            // sys_move_cursor(1, 17+i);
             printf("%c", ch);        
             *(inputBuffer_ptr->buffer + i) = ch;
             inputBuffer_ptr->input_length++;
             i++;
             //if(ch == '\n'){ //BUG???
             if(ch == '\r'){
-                // if(strcmp(Command[0], inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 2){
-                //     sys_ps();
-                // }             
-            /*
-                if(inputBuffer_ptr->buffer == 'p' && (inputBuffer_ptr->buffer+1) == 's'){
-                    printf("\n[PROCESS TABLE]\n");
-                }
-            */
-                if(*(inputBuffer_ptr->buffer) == 'p' && *(inputBuffer_ptr->buffer+1) == 's'){
-                    // printf("[PROCESS TABLE]\n");
+                if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'p' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 's'){
                     sys_ps();
                 }
                 inputBuffer_ptr->pointer = i;
