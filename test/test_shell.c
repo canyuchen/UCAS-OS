@@ -223,6 +223,17 @@ void test_shell()
                     }
                     printf("> root@UCAS_OS: ");
                 }
+                if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'c' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'l'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'e'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'a'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 'r'){
+                    sys_screen_clear();
+                    sys_move_cursor(1, 15);
+                    printf("-----------------COMMAND-------------------\n");
+                    printf("> root@UCAS_OS: ");
+                }
+
                 inputBuffer_ptr->pointer = i;
             }            
         }
