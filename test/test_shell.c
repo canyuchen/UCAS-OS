@@ -105,7 +105,10 @@ typedef enum {
     COMMAND_PARSING_INVALID
 } PARSING_t;
 
+process_show_t ProcessShow[20];
+
 char Buffer[INPUT_BUFFER_MAX_LENGTH];
+
 InputBuffer_t inputBuffer;
 char *Command[MAX_COMMAND] = {"ps", "clear", "spawn", "exec", "kill"};
 
@@ -164,6 +167,22 @@ static PARSING_t command_parsing(InputBuffer_t *inputBuffer_ptr, int parsing_sig
     }
 }
 
+#define ENUM_TYPE_CASE(x)   case x: return(#x);
+
+static inline const char *status_type_to_string(task_status_t status)
+{
+    switch (status)
+    {
+        ENUM_TYPE_CASE(TASK_BLOCKED)
+        ENUM_TYPE_CASE(TASK_RUNNING)
+        ENUM_TYPE_CASE(TASK_READY)  
+        ENUM_TYPE_CASE(TASK_EXITED)
+        ENUM_TYPE_CASE(TASK_CREATED)
+        ENUM_TYPE_CASE(TASK_SLEEPING)
+    }
+    return "Invalid Status";
+}
+
 void test_shell()
 {
     sys_move_cursor(1, 15);
@@ -189,11 +208,20 @@ void test_shell()
             *(inputBuffer_ptr->buffer + i) = ch;
             inputBuffer_ptr->input_length++;
             i++;
-            //if(ch == '\n'){ //BUG???
+            //if(ch == '\n'){ //BUG???//!!!!!!
             if(ch == '\r'){
                 if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'p' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 's'){
                     sys_ps();
+                    printf("[PROCESS TABLE]\n");
+                    // printk("[0] PID : %d STATUS : TASK_RUNNING\n", current_running->pid);
+                    // printk("> root@UCAS_OS: ");
+                    int j = 0;
+                    while(ProcessShow[j].num >= 0){
+                        printf("[%d] PID : %d STATUS : %s\n", ProcessShow[j].num, ProcessShow[j].pid, status_type_to_string(ProcessShow[j].status));
+                        j++;
+                    }
+                    printf("> root@UCAS_OS: ");
                 }
                 inputBuffer_ptr->pointer = i;
             }            

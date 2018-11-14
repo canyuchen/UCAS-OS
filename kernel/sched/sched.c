@@ -209,17 +209,25 @@ void do_ps()
 {
     int i = 1;
     pcb_t *head = ((pcb_t *)(ready_queue.head));
-    printk("\n[PROCESS TABLE]\n");
-    screen_cursor_add(0, 2);
-    printk("[0] PID : %d STATUS : TASK_RUNNING\n", current_running->pid);
+
+    // printk("\n[PROCESS TABLE]\n");
+    // // screen_cursor_add(0, 2);
+    // printk("[0] PID : %d STATUS : TASK_RUNNING\n", current_running->pid);
+    ProcessShow[0].num = 0;
+    ProcessShow[0].pid = current_running->pid;
+    ProcessShow[0].status = current_running->status;
     while(head != ((pcb_t *)(ready_queue.tail))){
-        printk("[%d] PID : %d STATUS : TASK_READY\n", i, head->pid);
-        screen_cursor_add(0,1);
+        // printk("[%d] PID : %d STATUS : TASK_READY\n", i, head->pid);
+        // screen_cursor_add(0,1);
+        ProcessShow[i].num = i;
+        ProcessShow[i].pid = head->pid;
+        ProcessShow[i].status = head->status;
         head = ((pcb_t *)(head->next));
         i++;
     }
-    printk("> root@UCAS_OS: ");
-    screen_cursor_add(16,0);
+    ProcessShow[i].num = -1;
+    // printk("> root@UCAS_OS: ");
+    // screen_cursor_add(16,2);
 }
 
 void do_spawn(task_info_t *task_info)

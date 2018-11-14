@@ -145,6 +145,15 @@ typedef struct task_info
     task_type_t type;
 } task_info_t;
 
+typedef struct process_show {
+    int num;
+    int pid;
+    // char *status;
+    task_status_t status;
+} process_show_t;
+
+extern process_show_t ProcessShow[20];
+
 /* ready queue to run */
 extern queue_t ready_queue;
 
