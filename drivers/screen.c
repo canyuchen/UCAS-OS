@@ -160,6 +160,12 @@ void screen_write(char *buff)
     }
 }
 
+void screen_cursor_add(int x, int y)
+{
+    screen_cursor_x += x;
+    screen_cursor_y += y;
+}
+
 /* 
  * This function is used to print the serial port when the clock 
  * interrupt is triggered. However, we need to pay attention to 

@@ -210,12 +210,16 @@ void do_ps()
     int i = 1;
     pcb_t *head = ((pcb_t *)(ready_queue.head));
     printk("\n[PROCESS TABLE]\n");
+    screen_cursor_add(0, 2);
     printk("[0] PID : %d STATUS : TASK_RUNNING\n", current_running->pid);
     while(head != ((pcb_t *)(ready_queue.tail))){
         printk("[%d] PID : %d STATUS : TASK_READY\n", i, head->pid);
+        screen_cursor_add(0,1);
         head = ((pcb_t *)(head->next));
         i++;
     }
+    printk("> root@UCAS_OS: ");
+    screen_cursor_add(16,0);
 }
 
 void do_spawn(task_info_t *task_info)
