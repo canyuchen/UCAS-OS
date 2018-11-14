@@ -233,6 +233,7 @@ void test_shell()
                     printf("-----------------COMMAND-------------------\n");
                     printf("> root@UCAS_OS: ");
                 }
+                
 
                 inputBuffer_ptr->pointer = i;
             }            
