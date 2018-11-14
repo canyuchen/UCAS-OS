@@ -205,6 +205,18 @@ void do_unblock_all(queue_t *queue)
     }
 }
 
+void do_ps()
+{
+    int i = 1;
+    pcb_t *head = ((pcb_t *)(ready_queue.head));
+    printk("\n[PROCESS TABLE]\n");
+    printk("[0] PID : %d STATUS : TASK_RUNNING\n", current_running->pid);
+    while(head != ((pcb_t *)(ready_queue.tail))){
+        printk("[%d] PID : %d STATUS : TASK_READY\n", i, head->pid);
+        head = ((pcb_t *)(head->next));
+        i++;
+    }
+}
 
 void do_spawn(task_info_t *task_info)
 {

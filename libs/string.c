@@ -50,6 +50,11 @@ int strcmp(char *str1, char *str2)
 		return 0;
 	}
 
+	if (*str1 == '\0' && *str2 == '\n')
+	{
+		return 2;
+	}
+
 	if (*str1 == '\0')
 	{
 		return -1;
@@ -70,4 +75,54 @@ char *strcpy(char *dest, char *src)
 	*dest = '\0';
 
 	return tmp;
+}
+
+/* Reverse a string, Page 62 */
+void reverse(char *s)
+{
+    int c, i, j;
+
+    for (i = 0, j = strlen(s) - 1; i < j; i++, j--) {
+        c = s[i];
+        s[i] = s[j];
+        s[j] = c;
+    }
+}
+
+/* Convert an integer to an ASCII string, base 16 */
+void itohex(uint32_t n, char *s)
+{
+    int i, d;
+
+    i = 0;
+    do {
+        d = n % 16;
+        if (d < 10)
+            s[i++] = d + '0';
+        else
+            s[i++] = d - 10 + 'a';
+    } while ((n /= 16) > 0);
+    s[i++] = 0;
+    reverse(s);
+}
+
+/* Convert an integer to an ASCII string, Page 64 */
+void itoa(uint32_t n, char *s)
+{
+    int i;
+
+    i = 0;
+    do {
+        s[i++] = n % 10 + '0';
+    } while ((n /= 10) > 0);
+    s[i++] = 0;
+    reverse(s);
+}
+
+/* Convert an ASCII string (like "234") to an integer */
+uint32_t atoi(char *s)
+{
+    int n;
+    for (n = 0; *s >= '0' && *s <= '9'; n = n * 10 + *s++ - '0');
+    return n;
 }

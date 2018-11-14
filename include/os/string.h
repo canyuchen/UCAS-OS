@@ -44,4 +44,16 @@ char *strcat(char *dest, char *src);
 
 int strlen(char *src);
 
+/* Reverse a string, Page 62 */
+void reverse(char *s);
+
+/* Convert an integer to an ASCII string, base 16 */
+void itohex(uint32_t n, char *s);
+
+/* Convert an integer to an ASCII string, Page 64 */
+void itoa(uint32_t n, char *s);
+
+/* Convert an ASCII string (like "234") to an integer */
+uint32_t atoi(char *s);
+
 #endif

@@ -182,4 +182,7 @@ void sys_kill(int n)
     invoke_syscall(SYSCALL_KILL, n, IGNORE, IGNORE);
 }
 
-
+void sys_ps()
+{
+    invoke_syscall(SYSCALL_PS, IGNORE, IGNORE, IGNORE);
+}

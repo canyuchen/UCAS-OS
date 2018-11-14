@@ -170,6 +170,7 @@ extern void do_block(queue_t *);
 extern void do_unblock_one(queue_t *);
 extern void do_unblock_all(queue_t *);
 
+extern void do_ps();
 extern void do_spawn(task_info_t *task_info);
 extern void do_exit();
 extern int  do_getpid();

@@ -303,6 +303,8 @@ static void init_pcb()
 	queue_push(&ready_queue,&pcb[0]);
 
 	current_running->entry_point = 0;
+	current_running->pid = 0;
+	//pcb[0] = pcb_init; ???
 }
 
 static void init_exception_handler()
@@ -376,6 +378,7 @@ static void init_syscall(void)
 	syscall[SYSCALL_GETPID] = (int (*)()) &do_getpid;
 	syscall[SYSCALL_SPAWN] = (int (*)()) &do_spawn;
 	syscall[SYSCALL_KILL] = (int (*)()) &do_kill;
+	syscall[SYSCALL_PS] = (int (*)()) &do_ps;
 }
 
 // jump from bootloader.

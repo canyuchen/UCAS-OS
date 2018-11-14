@@ -68,6 +68,7 @@
 #define SYSCALL_GETPID 44
 #define SYSCALL_SPAWN 45
 #define SYSCALL_KILL 46
+#define SYSCALL_PS 47
 
 /* syscall function pointer */
 extern int (*syscall[NUM_SYSCALLS])();
@@ -108,5 +109,6 @@ extern void sys_exit();
 extern int  sys_getpid();
 extern void sys_waitpid(int n);
 extern void sys_kill(int n);
+extern void sys_ps();
 
 #endif
