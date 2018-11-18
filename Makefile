@@ -1,6 +1,6 @@
 CC = mipsel-linux-gcc
 
-all: clean createimage image asm # floppy
+all: clean createimage image asm1 asm2 asm3 asm4 asm5 # floppy
 
 SRC_BOOT 	= ./arch/mips/boot/bootblock.S
 
@@ -56,5 +56,13 @@ floppy:
 	sudo fdisk -l /dev/sdb
 	sudo dd if=image of=/dev/sdb conv=notrunc
 
-asm:
+asm1:
 	mipsel-linux-objdump -d main > kernel.txt
+asm2:
+	hexdump image > image.txt
+asm3:
+	hexdump disk > disk.txt
+asm4:
+	hexdump createimage > createimage.txt
+asm5:
+	hexdump bootblock > bootblock.txt
