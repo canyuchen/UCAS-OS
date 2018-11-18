@@ -31,6 +31,7 @@
 #include "syscall.h"
 #include "string.h"
 #include "sched.h"
+#include "queue.h"
 
 static void disable_interrupt()
 {
@@ -121,6 +122,14 @@ static void init_InputBuffer(InputBuffer_t *p)
     p->pointer = 0;
 }
 
+static void init_ProcessShow()
+{
+    int i = 0;
+    for(;i < 20; i++){
+        ProcessShow[i].num = 0;
+    }
+}
+
 /*
 static void init_Command(char *Command[])
 {
@@ -131,6 +140,7 @@ static void init_Command(char *Command[])
 }
 */
 
+/*
 static int command_cmp(char *str1, char *str2)
 {
 	while (*str1 && *str2 && (*str1 == *str2)){
@@ -166,6 +176,7 @@ static PARSING_t command_parsing(InputBuffer_t *inputBuffer_ptr, int parsing_sig
         return COMMAND_PARSING_INVALID;
     }
 }
+*/
 
 #define ENUM_TYPE_CASE(x)   case x: return(#x);
 
@@ -189,11 +200,12 @@ void test_shell()
     printf("-----------------COMMAND-------------------\n");
     printf("> root@UCAS_OS: ");
 
-    int i = 0;
-    int parsing_sign = -1;
+    int i = 0, k = 0;
+    // int parsing_sign = -1;
 
     InputBuffer_t *inputBuffer_ptr = &inputBuffer;
     init_InputBuffer(inputBuffer_ptr);
+    init_ProcessShow();
 
     while (1)
     {
@@ -214,11 +226,10 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 's'){
                     sys_ps();
                     printf("[PROCESS TABLE]\n");
-                    // printk("[0] PID : %d STATUS : TASK_RUNNING\n", current_running->pid);
-                    // printk("> root@UCAS_OS: ");
                     int j = 0;
                     while(ProcessShow[j].num >= 0){
-                        printf("[%d] PID : %d STATUS : %s\n", ProcessShow[j].num, ProcessShow[j].pid, status_type_to_string(ProcessShow[j].status));
+                        printf("[%d] PID : %d STATUS : %s\n", ProcessShow[j].num, \
+                               ProcessShow[j].pid, status_type_to_string(ProcessShow[j].status));
                         j++;
                     }
                     printf("> root@UCAS_OS: ");
@@ -233,7 +244,37 @@ void test_shell()
                     printf("-----------------COMMAND-------------------\n");
                     printf("> root@UCAS_OS: ");
                 }
-                
+                if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'e' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'x'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'e'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'c'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == ' '
+                && (k = atoi(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5)) >= 0
+                && k <= 14 ){
+                    printf("exec test_tasks[%d].\n", k);
+                    sys_spawn(test_tasks[k]);
+                    printf("> root@UCAS_OS: ");
+                }                
+                // if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 's' 
+                // && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'p'
+                // && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'a'
+                // && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'w'
+                // && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 'n'){
+                    
+                // }   
+                if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'k' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'i'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'l'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'l'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == ' '
+                && (k = atoi(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5)) >= 0
+                && k <= 14 ){
+                    printf("kill process PID = %d\n", k);
+                    sys_kill(k);
+                    // sys_move_cursor(0, 8);
+                    // printf("%d :", check_in_queue(&ready_queue, &pcb[1]));
+                    printf("> root@UCAS_OS: ");
+                }      
 
                 inputBuffer_ptr->pointer = i;
             }            

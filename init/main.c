@@ -52,9 +52,12 @@ pcb_t *current_running = &pcb_init;
  * The first stack should be placed at location STACK_MIN
  * Only memory below STACK_MAX should be used for stacks
  */
-uint32_t STACK_MIN = 0xa0f00000;
-uint32_t STACK_SIZE =   0x80000;
-uint32_t STACK_MAX = 0xa2000000;
+// uint32_t STACK_MIN = 0xa0f00000;
+// uint32_t STACK_SIZE =   0x80000;
+// uint32_t STACK_MAX = 0xa2000000;
+uint32_t STACK_TOP = STACK_MIN;
+
+uint32_t PID = 2;
 
 uint32_t time_elapsed = 0;
 
@@ -247,64 +250,88 @@ static void init_pcb()
 {
 	// ready_queue = ready_queue_init;
 	// block_queue = block_queue_init;
-	uint32_t cp0_status_init = 0x10008000;
+	// uint32_t cp0_status_init = 0x10008000;
+
+	int i = 0;
+	for(;i < NUM_MAX_TASK; i++){
+		pcb[i].status = TASK_EXITED;
+	}
+
+	Lock[0] = &lock1;
+	Lock[1] = &lock2;
+
+	for(i = 0; i < MAX_LOCK_NUM_TOTAL; i++){
+		Lock[i]->status = UNLOCKED;
+		queue_init(&(Lock[i]->mutex_lock_queue));
+	}
 
 	queue_init(&ready_queue);
 	queue_init(&block_queue);
 	queue_init(&sleeping_queue);
 
+	queue_init(&(pcb[1].waiting_queue));
+
 	// uint32_t i = 0;
 	// uint32_t j = 0;
 	// uint32_t k = 0;
 	// uint32_t l = 0;
-	uint32_t STACK_TOP = STACK_MIN;
+	// uint32_t STACK_TOP = STACK_MIN;
 
-	bzero(&(pcb[0].kernel_context), sizeof(pcb[0].kernel_context));
-	bzero(&(pcb[0].user_context  ), sizeof(pcb[0].user_context  ));
-	pcb[0].kernel_context.regs[29] = STACK_TOP;
-	pcb[0].user_context.regs[29] = STACK_TOP + STACK_SIZE;
-	pcb[0].kernel_context.regs[30] = STACK_TOP;
-	pcb[0].user_context.regs[30] = STACK_TOP + STACK_SIZE;
-	pcb[0].kernel_stack_top = STACK_TOP;
-	pcb[0].user_stack_top = STACK_TOP + STACK_SIZE;		
+	bzero(&(pcb[1].kernel_context), sizeof(pcb[1].kernel_context));
+	bzero(&(pcb[1].user_context  ), sizeof(pcb[1].user_context  ));
+	// bzero(pcb[1].lock, LOCK_MAX_NUM);
+	//???
+	int j = 0;
+	for(; j < LOCK_MAX_NUM; j++){
+		pcb[i].lock[j] = NULL;
+	}
+	pcb[1].kernel_context.regs[29] = STACK_TOP;
+	pcb[1].user_context.regs[29] = STACK_TOP + STACK_SIZE;
+	pcb[1].kernel_context.regs[30] = STACK_TOP;
+	pcb[1].user_context.regs[30] = STACK_TOP + STACK_SIZE;
+	pcb[1].kernel_stack_top = STACK_TOP;
+	pcb[1].user_stack_top = STACK_TOP + STACK_SIZE;		
 	STACK_TOP += STACK_SIZE*2;
 	if(STACK_TOP > STACK_MAX)
 	{
 		//TODO
 	}
 
-	pcb[0].prev = NULL;
-	pcb[0].next = NULL;
-	pcb[0].pid = 1;
-	pcb[0].type = USER_PROCESS;
-	pcb[0].status = TASK_CREATED;
-	pcb[0].cursor_x = 0;
-	pcb[0].cursor_y = 0;
+	pcb[1].prev = NULL;
+	pcb[1].next = NULL;
+	pcb[1].pid = 1;
+	pcb[1].type = USER_PROCESS;
+	pcb[1].status = TASK_CREATED;
+	pcb[1].cursor_x = 0;
+	pcb[1].cursor_y = 0;
 
-	pcb[0].entry_point = (uint32_t)&test_shell;
+	pcb[1].entry_point = (uint32_t)&test_shell;
 
-	pcb[0].kernel_context.regs[31] = (uint32_t)first_entry;
+	pcb[1].kernel_context.regs[31] = (uint32_t)first_entry;
 
-	pcb[0].kernel_context.cp0_status = cp0_status_init;
-	pcb[0].user_context.cp0_status = cp0_status_init;
+	pcb[1].kernel_context.cp0_status = CP0_STATUS_INIT;
+	pcb[1].user_context.cp0_status = CP0_STATUS_INIT;
 
-	//pcb[0].kernel_context.cp0_epc = timer_tasks[l]->entry_point;
+	pcb[1].kernel_context.cp0_epc = pcb[1].entry_point;
 	//???
-	pcb[0].user_context.cp0_epc = pcb[0].entry_point;
+	pcb[1].user_context.cp0_epc = pcb[1].entry_point;
 	//cp0_epc add 4 automatically when encountering interrupt
 
-	pcb[0].mode = USER_MODE;
+	pcb[1].mode = USER_MODE;
 	// my_priority[i] = INITIAL_PRIORITY;
 	// now_priority[i] = INITIAL_PRIORITY;
-	pcb[0].priority = INITIAL_PRIORITY;
-	pcb[0].wait_time = 0;
-	pcb[0].sleeping_deadline = 0;
+	pcb[1].priority = INITIAL_PRIORITY;
+	pcb[1].wait_time = 0;
+	pcb[1].sleeping_deadline = 0;
+	pcb[1].lock_num = 0;
 
-	queue_push(&ready_queue,&pcb[0]);
+	queue_push(&ready_queue,&pcb[1]);
+
+	current_running->status = TASK_CREATED;
 
 	current_running->entry_point = 0;
 	current_running->pid = 0;
-	//pcb[0] = pcb_init; ???
+	//pcb[0] = pcb_init; //ERROR!!!
 }
 
 static void init_exception_handler()
@@ -408,7 +435,7 @@ void __attribute__((section(".entry_function"))) _start(void)
 
 	// TODO Enable interrupt
 
-	START_INTERRUPT;
+	// START_INTERRUPT;
 
 	//do_scheduler();
 

@@ -36,12 +36,20 @@
 #include "type.h"
 #include "queue.h"
 #include "regs.h"
+#include "lock.h"
 
 #define NUM_MAX_TASK 16
 
 #define MAX_PID 1024
 #define MAX_PRIORITY 5
 #define INITIAL_PRIORITY 4
+
+#define STACK_MIN 0xa0f00000
+#define STACK_SIZE 0x80000
+#define STACK_MAX 0xa2000000
+#define CP0_STATUS_INIT 0x10008000
+#define LOCK_MAX_NUM 10
+#define MAX_LOCK_NUM_TOTAL 2
 
 #define CLOSE_INTERRUPT \
 do{ \
@@ -130,6 +138,11 @@ typedef struct pcb
 
     uint32_t wait_time;
     priority_t priority;
+    
+    mutex_lock_t *lock[LOCK_MAX_NUM];
+    uint32_t lock_num;
+
+    queue_t waiting_queue;
 
     uint32_t sleeping_deadline;
 
@@ -171,6 +184,10 @@ extern pid_t process_id;
 
 extern pcb_t pcb[NUM_MAX_TASK];
 extern uint32_t initial_cp0_status;
+extern uint32_t PID;
+extern uint32_t STACK_TOP;
+
+extern void first_entry();
 
 extern void do_scheduler(void);
 extern void do_sleep(uint32_t);
@@ -188,5 +205,11 @@ extern void do_kill(int n);
 
 extern priority_t my_priority[MAX_PID];
 extern priority_t now_priority[MAX_PID];
+
+extern mutex_lock_t *Lock[MAX_LOCK_NUM_TOTAL];
+
+extern mutex_lock_t lock1;
+extern mutex_lock_t lock2;
+extern mutex_lock_t *Lock[MAX_LOCK_NUM_TOTAL];
 
 #endif

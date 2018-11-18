@@ -58,6 +58,19 @@ void *queue_dequeue(queue_t *queue)
     return (void *)temp;
 }
 
+int check_in_queue(queue_t *queue, void *item)
+{
+    item_t *head = queue->head;
+    item_t *tail = queue->tail;
+    while(head != NULL){
+        if(head == (item_t *)item){
+            return 1;
+        }
+        head = head->next;
+    } 
+    return 0;
+}
+
 /* remove this item and return next item */
 void *queue_remove(queue_t *queue, void *item)
 {

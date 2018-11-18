@@ -7,17 +7,21 @@
 //start interrupt
 .macro STI
     mfc0    k0, CP0_STATUS
+    nop
     li      k1, 0x1
     or      k0, k1
     mtc0    k0, CP0_STATUS
+    nop
 .endm
 
 //close interrupt
 .macro CLI 
     mfc0    k0, CP0_STATUS
+    nop
     li      k1, 0xfffffffe
     and     k0, k1
     mtc0    k0, CP0_STATUS
+    nop
 .endm
 
 /* TODO: Test current_running->nested_count, clobbering only eflags */
@@ -27,17 +31,21 @@
 .endm
 
 LEAF(asm_start)
+    .set    noreorder
     mtc0    zero, CP0_STATUS
+    nop
     mtc0    zero, CP0_WATCHLO
+    nop
     mtc0    zero, CP0_WATCHHI
-
+    nop
     mfc0    t0, CP0_CONFIG
     nop
     and     t0, ~0x7
     ori     t0, 0x2
     mtc0    t0, CP0_CONFIG
-
+    nop
     jr  ra
+    nop
 END(asm_start)
 
 .macro SAVE_CONTEXT offset
@@ -185,6 +193,7 @@ END(asm_start)
 .endm
 
 NESTED(do_scheduler, 0, ra)
+    .set    noreorder
     //.set  noat
     //???
     //Warning: used $at without ".set noat"
@@ -200,6 +209,7 @@ END(do_scheduler)
 .global exception_handler_end
 
 NESTED(exception_handler_entry, 0, sp)   
+    .set    noreorder
 exception_handler_begin:
     // TODO close interrupt
     // jmp exception_handler[i] which decided by CP0_CAUSE
@@ -210,31 +220,36 @@ exception_handler_begin:
     CLI //close interrupt
 
     mfc0  k0, CP0_CAUSE
+    nop
     andi  k0, k0, CAUSE_EXCCODE   /* k0 = {exc_code,00} */
 
     la    k1, exception_handlers
     add   k0, k0, k1
     lw    k0, 0(k0)
     j     k0     /* exception_handlers[exc_code](); */
+    nop
 exception_handler_end:
 END(exception_handler_entry)
 
 NESTED(handle_others,0,sp)
+    .set    noreorder
     /* SAVE_CONTEXT(KERNEL) */
     SAVE_CONTEXT(USER)
 
     mfc0  k0, CP0_CAUSE         /* Read Cause register for IP bits */
+    nop
     //mfc0  k1, CP0_STATUS      /* and Status register for IM bits */
     andi  k0, k0, CAUSE_IPL     /* Keep only IP bits from Cause */
     //and   k0, k0, k1          /* and mask with IM bits */
     clz   k0, k0                /* Find first bit set, IP7..IP0; k0 = 16..23 */
-                                /* The CLZ instruction counts the number of leading 
+    nop                         /* The CLZ instruction counts the number of leading 
                                  * zeros in a word. Scan rs and write into rd.
                                 */
     xori  k0, k0, 0x17          /* 16..23 => 7..0 */
     add   a0, k0, $0
 
     mfc0  k0, CP0_CAUSE
+    nop
     andi  k0, k0, CAUSE_EXCCODE /* k0 = {exc_code,00} */
     srl   k0, k0, 2
     add   a1, k0, $0
@@ -256,6 +271,7 @@ NESTED(handle_others,0,sp)
 END(handle_others)
 
 NESTED(handle_int, 0, sp)
+    .set    noreorder
     //.set  noat
     .set  mips32
     // interrupt handler
@@ -269,6 +285,7 @@ NESTED(handle_int, 0, sp)
     nop
     andi  k0, k0, CAUSE_IPL
     clz   k0, k0
+    nop
     xori  k0, k0, 0x17
 
     addiu k1, zero, 7
@@ -276,7 +293,7 @@ NESTED(handle_int, 0, sp)
     nop
 
     jal   clear_int
-
+    nop
 int_finish:
     RESTORE_CONTEXT(USER)
     j     return_from_exception
@@ -286,9 +303,9 @@ irq_timer:
     // TODO clock interrupt handler.
     //      scheduler, time counter in here
     jal   reset_timer
-
+    nop
     jal   clear_int
-
+    nop
     lw    k1, time_elapsed
     addi  k1, k1, 15
     sw    k1, time_elapsed
@@ -320,11 +337,12 @@ clear_int:
     mtc0  k0, CP0_CAUSE
     nop
     jr    ra
-
+    nop
     /* TODO:end */
 END(handle_int)
 
 NESTED(handle_syscall, 0, sp)
+    .set    noreorder
     // system call handler
     SAVE_CONTEXT(USER)
     // RESTORE_CONTEXT(KERNEL)
@@ -334,42 +352,73 @@ NESTED(handle_syscall, 0, sp)
     add   a1,a0,$0
     add   a0,v0,$0
 
+    mfc0 k1, CP0_EPC
+    nop
     jal   system_call_helper
+    nop
+    mfc0 k1, CP0_EPC
+    nop
 
     //LEAVE_CRITICAL
     RESTORE_CONTEXT(USER)
+    nop
+    mfc0 k1, CP0_EPC
+    nop
     j     return_from_exception
+    nop
 END(handle_syscall)
-
+/*
 NESTED(handle_other, 0, sp)
     // other exception handler
 END(handle_other)
-
+*/
 LEAF(reset_timer)
+    .set    noreorder
     li    a0, TIMER_INTERVAL
     mtc0  $0, CP0_COUNT
+    nop
     mtc0  a0, CP0_COMPARE
+    nop
     jr    ra
+    nop
 END(reset_timer)
 
 LEAF(first_entry)
+    .set    noreorder
     //LEAVE_CRITICAL
+
+    // jal   clear_int
+    jal   reset_timer
+    nop
     j     int_finish
+    nop
 END(first_entry)
 
 /* return CP0_STATUS*/
 LEAF(get_cp0_status)
-  mfc0  v0, CP0_STATUS
-  jr    ra
+    .set    noreorder
+    mfc0  v0, CP0_STATUS
+    nop
+    jr    ra
+    nop
 END(get_cp0_status)
 
 /* set CP0_STATUS*/
 LEAF(set_cp0_status)
-  mtc0  a0, CP0_STATUS
-  jr    ra
+    .set    noreorder
+    mtc0  a0, CP0_STATUS
+    nop
+    jr    ra
+    nop
 END(set_cp0_status)
 
 LEAF(return_from_exception)
+    .set    noreorder
+    // jal   reset_timer
 	STI
+    mfc0 k1, CP0_EPC
+    nop
 	eret
+    nop
+    // STI
 END(return_from_exception)

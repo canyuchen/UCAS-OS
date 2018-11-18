@@ -200,8 +200,8 @@ void do_unblock_all(queue_t *queue)
 {
     //CLOSE_INTERRUPT;
     // unblock all task in the queue
-    while(!queue_is_empty(&block_queue)){
-        do_unblock_one(&block_queue);
+    while(!queue_is_empty(queue)){
+        do_unblock_one(queue);
     }
 }
 
@@ -216,7 +216,9 @@ void do_ps()
     ProcessShow[0].num = 0;
     ProcessShow[0].pid = current_running->pid;
     ProcessShow[0].status = current_running->status;
-    while(head != ((pcb_t *)(ready_queue.tail))){
+    // while(head != ((pcb_t *)(ready_queue.tail))){
+    // while(head != ((pcb_t *)(ready_queue.tail)) ){
+    while(head != NULL ){
         // printk("[%d] PID : %d STATUS : TASK_READY\n", i, head->pid);
         // screen_cursor_add(0,1);
         ProcessShow[i].num = i;
@@ -225,6 +227,15 @@ void do_ps()
         head = ((pcb_t *)(head->next));
         i++;
     }
+/*
+    while(!queue_is_empty(&ready_queue)){
+        pcb_t *head = queue_dequeue(&(ready_queue));        
+        ProcessShow[i].num = i;
+        ProcessShow[i].pid = head->pid;
+        ProcessShow[i].status = head->status;
+        i++;
+    }
+*/
     ProcessShow[i].num = -1;
     // printk("> root@UCAS_OS: ");
     // screen_cursor_add(16,2);
@@ -232,27 +243,175 @@ void do_ps()
 
 void do_spawn(task_info_t *task_info)
 {
+    //TO_IMPROVE
+    int i = 0;
+    while(pcb[i].status != TASK_EXITED){
+        i++;
+        if(i >= NUM_MAX_TASK){
+            //ERROR handle
+            return;
+        }
+    }
 
+    queue_init(&(pcb[i].waiting_queue));
+
+	bzero(&(pcb[i].kernel_context), sizeof(pcb[i].kernel_context));
+	bzero(&(pcb[i].user_context  ), sizeof(pcb[i].user_context  ));
+	// bzero(&(pcb[i].lock), LOCK_MAX_NUM);
+	// bzero(pcb[i].lock, LOCK_MAX_NUM);
+	//???
+	int j = 0;
+	for(; j < LOCK_MAX_NUM; j++){
+		pcb[i].lock[j] = NULL;
+	}
+    pcb[i].kernel_context.regs[29] = STACK_TOP;
+	pcb[i].user_context.regs[29] = STACK_TOP + STACK_SIZE;
+	pcb[i].kernel_context.regs[30] = STACK_TOP;
+	pcb[i].user_context.regs[30] = STACK_TOP + STACK_SIZE;
+	pcb[i].kernel_stack_top = STACK_TOP;
+	pcb[i].user_stack_top = STACK_TOP + STACK_SIZE;		
+	STACK_TOP += STACK_SIZE*2;
+	if(STACK_TOP > STACK_MAX)
+	{
+		//TODO
+	}
+
+	pcb[i].prev = NULL;
+	pcb[i].next = NULL;
+	pcb[i].pid = PID;
+	pcb[i].type = task_info->type;
+	pcb[i].status = TASK_CREATED;
+	pcb[i].cursor_x = 0;
+	pcb[i].cursor_y = 0;
+
+	pcb[i].entry_point = task_info->entry_point;
+
+	pcb[i].kernel_context.regs[31] = (uint32_t)first_entry;
+
+	pcb[i].kernel_context.cp0_status = CP0_STATUS_INIT;
+	pcb[i].user_context.cp0_status = CP0_STATUS_INIT;
+
+	pcb[i].kernel_context.cp0_epc = pcb[i].entry_point;
+	//???
+	pcb[i].user_context.cp0_epc = pcb[i].entry_point;
+	//cp0_epc add 4 automatically when encountering interrupt
+
+	pcb[i].mode = USER_MODE;
+	// my_priority[i] = INITIAL_PRIORITY;
+	// now_priority[i] = INITIAL_PRIORITY;
+	pcb[i].priority = INITIAL_PRIORITY;
+	pcb[i].wait_time = 0;
+	pcb[i].sleeping_deadline = 0;
+    pcb[i].lock_num = 0;
+
+    PID++;
+	queue_push(&ready_queue,&pcb[i]); 
 }
 
 void do_exit()
 {
+    int i = 0;
+    for(;i<LOCK_MAX_NUM;i++){
+        if(current_running->lock[i] != 0){
+            do_mutex_lock_release(current_running->lock[i]);
+        }
+    }
 
+    while(!queue_is_empty(&(current_running->waiting_queue))){
+        pcb_t *head = queue_dequeue(&(current_running->waiting_queue));
+        head->status = TASK_READY;
+        queue_push(&ready_queue, head);
+    }
+
+    current_running->status = TASK_EXITED;
+    do_scheduler();
 }
 
 int  do_getpid()
 {
-
+    return current_running->pid;
 }
 
 void do_waitpid(int n)
 {
-
+    int i = 0;
+    while(pcb[i].pid != n){
+        i++;
+        if(i >= NUM_MAX_TASK){
+            //ERROR
+            return;
+        }
+    }
+    if(pcb[i].status != TASK_EXITED){
+        current_running->status = TASK_BLOCKED;
+        queue_push(&(pcb[i].waiting_queue), current_running);
+        do_scheduler();
+    }
 }
 
 void do_kill(int n)
 {
+    int i = 0;
+    while(pcb[i].pid != n){
+        i++;
+        if(i >= NUM_MAX_TASK){
+            //ERROR
+            return;
+        }
+    }
+    if(pcb[i].status != TASK_EXITED){
+        if(pcb[i].status == TASK_READY){
+            // pcb_t *head = ready_queue.head;
+            // while(head != ready_queue.tail && head->pid != n){
+            //     head = head->next;
+            // }
+            // queue_remove(&ready_queue, head);
+            queue_remove(&ready_queue, &pcb[i]);
+        }
+        else if(pcb[i].status == TASK_BLOCKED){
+            int k = 0;
+            for(;k<MAX_LOCK_NUM_TOTAL;k++){
+                if(check_in_queue(&(Lock[k]->mutex_lock_queue), &pcb[i])){
+                    queue_remove(&(Lock[k]->mutex_lock_queue), &pcb[i]);
+                }
+            }
+        }
+        else if(pcb[i].status == TASK_SLEEPING){
+            // pcb_t *head = sleeping_queue.head;
+            // while(head != sleeping_queue.tail && head->pid != n){
+            //     head = head->next;
+            // }
+            // queue_remove(&sleeping_queue, head);
+            queue_remove(&sleeping_queue, &pcb[i]);
+        }
+        else if(pcb[i].status == TASK_CREATED){
+            // pcb_t *head = ready_queue.head;
+            // while(head != ready_queue.tail && head->pid != n){
+            //      head = head->next;
+            // }
+            // queue_remove(&ready_queue, head);      
+            queue_remove(&ready_queue, &pcb[i]);     
+        }
 
+        current_running->status = TASK_EXITED;
+
+        int j = 0;
+        for(;j<LOCK_MAX_NUM;j++){
+            if(pcb[i].lock[j] != 0){
+                do_mutex_lock_release(pcb[i].lock[j]);
+            }
+        }
+
+        while(!queue_is_empty(&(pcb[i].waiting_queue))){
+            pcb_t *head = queue_dequeue(&(pcb[i].waiting_queue));
+            head->status = TASK_READY;
+            queue_push(&ready_queue, head);
+        }
+    }
+
+    if(current_running->pid == n){
+        do_scheduler();
+    }
 }
 
 

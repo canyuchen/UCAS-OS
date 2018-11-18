@@ -35,10 +35,14 @@ void system_call_helper(int fn, int arg1, int arg2, int arg3)
     // This is due to a potential race condition on a scratch variable
     // used by syscall_entry.
     current_running->user_context.regs[2] = ret_val;
-
+/*
     if(fn != SYSCALL_MUTEX_LOCK_ACQUIRE){
         current_running->user_context.cp0_epc = current_running->user_context.cp0_epc + 4;        
     }
+*/
+    //TOOOOOOOOO FOOLISH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    current_running->user_context.cp0_epc = current_running->user_context.cp0_epc + 4;
 
     // current_running->user_context.cp0_epc = current_running->user_context.cp0_epc + 4;
     // printf(20, 10, "syscall: %d, nested_count: %d", fn, current_running->nested_count);
