@@ -31,7 +31,7 @@ void producer_task(void)
         // condition_signal(&condition);
         condition_broadcast(&condition);
 
-        sys_sleep(1);
+        sys_sleep(2);
     }
 
     sys_exit();
@@ -59,6 +59,8 @@ void consumer_task1(void)
         printf("> [TASK] Total consumed %d products.", sum_consumption);
 
         mutex_lock_release(&mutex);
+
+        sys_sleep(1);
     }
 }
 
@@ -85,5 +87,6 @@ void consumer_task2(void)
 
         mutex_lock_release(&mutex);
 
+        sys_sleep(1);
     }
 }
