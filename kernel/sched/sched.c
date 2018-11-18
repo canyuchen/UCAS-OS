@@ -368,45 +368,47 @@ void do_kill(int n)
             // queue_remove(&ready_queue, head);
             queue_remove(&ready_queue, &pcb[i]);
         }
-        // else if(pcb[i].status == TASK_BLOCKED){
-        //     int k = 0;
-        //     for(;k<MAX_LOCK_NUM_TOTAL;k++){
-        //         if(check_in_queue(&(Lock[k]->mutex_lock_queue), &pcb[i])){
-        //             queue_remove(&(Lock[k]->mutex_lock_queue), &pcb[i]);
-        //         }
-        //     }
-        // }
-        // else if(pcb[i].status == TASK_SLEEPING){
-        //     // pcb_t *head = sleeping_queue.head;
-        //     // while(head != sleeping_queue.tail && head->pid != n){
-        //     //     head = head->next;
-        //     // }
-        //     // queue_remove(&sleeping_queue, head);
-        //     queue_remove(&sleeping_queue, &pcb[i]);
-        // }
-        // else if(pcb[i].status == TASK_CREATED){
-        //     // pcb_t *head = ready_queue.head;
-        //     // while(head != ready_queue.tail && head->pid != n){
-        //     //      head = head->next;
-        //     // }
-        //     // queue_remove(&ready_queue, head);      
-        //     queue_remove(&ready_queue, &pcb[i]);     
-        // }
+        else if(pcb[i].status == TASK_BLOCKED){
+            int k = 0;
+            for(;k<MAX_LOCK_NUM_TOTAL;k++){
+                if(check_in_queue(&(Lock[k]->mutex_lock_queue), &pcb[i])){
+                    queue_remove(&(Lock[k]->mutex_lock_queue), &pcb[i]);
+                }
+            }
+        }
+        else if(pcb[i].status == TASK_SLEEPING){
+            // pcb_t *head = sleeping_queue.head;
+            // while(head != sleeping_queue.tail && head->pid != n){
+            //     head = head->next;
+            // }
+            // queue_remove(&sleeping_queue, head);
+            queue_remove(&sleeping_queue, &pcb[i]);
+        }
+        else if(pcb[i].status == TASK_CREATED){
+            // pcb_t *head = ready_queue.head;
+            // while(head != ready_queue.tail && head->pid != n){
+            //      head = head->next;
+            // }
+            // queue_remove(&ready_queue, head);      
+            queue_remove(&ready_queue, &pcb[i]);     
+        }
 
         // current_running->status = TASK_EXITED;
+        // TOOOOOOOOOOOOOOOOOOOOOOOOOO FOOLISH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        pcb[i].status = TASK_EXITED;
 
-        // int j = 0;
-        // for(;j<LOCK_MAX_NUM;j++){
-        //     if(pcb[i].lock[j] != 0){
-        //         do_mutex_lock_release(pcb[i].lock[j]);
-        //     }
-        // }
+        int j = 0;
+        for(;j<LOCK_MAX_NUM;j++){
+            if(pcb[i].lock[j] != 0){
+                do_mutex_lock_release(pcb[i].lock[j]);
+            }
+        }
 
-        // while(!queue_is_empty(&(pcb[i].waiting_queue))){
-        //     pcb_t *head = queue_dequeue(&(pcb[i].waiting_queue));
-        //     head->status = TASK_READY;
-        //     queue_push(&ready_queue, head);
-        // }
+        while(!queue_is_empty(&(pcb[i].waiting_queue))){
+            pcb_t *head = queue_dequeue(&(pcb[i].waiting_queue));
+            head->status = TASK_READY;
+            queue_push(&ready_queue, head);
+        }
     }
 
     if(current_running->pid == n){
