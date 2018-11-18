@@ -39,19 +39,23 @@ static void check_sleeping()
 }
 */
 
-static void check_sleeping()
+static int check_sleeping()
 {
     uint32_t current_time = get_timer();
     if(queue_is_empty(&sleeping_queue)) return;
-    pcb_t* temp = (pcb_t *)sleeping_queue.head;
-    while(temp->next != NULL){
+    pcb_t* temp = (pcb_t *)(sleeping_queue.head);
+    //while(temp->next != NULL){
+    //!!!!!!!!!!
+    while(temp != NULL){
         if(temp->sleeping_deadline < current_time){
             queue_remove(&sleeping_queue, temp);            
             temp->status = TASK_READY;
             queue_push(&ready_queue, temp);
+            return 1;
         }
-        temp = (pcb_t *)temp->next;
+        temp = (pcb_t *)(temp->next);
     }
+    return 0;
 }
 
 static int deadline_comp(void *item_1, void *item_2)
@@ -67,7 +71,7 @@ void scheduler(void)
 
     current_running->cursor_x = screen_cursor_x;
     current_running->cursor_y = screen_cursor_y;
-
+/*
     //CLOSE_INTERRUPT;
     check_sleeping(); // wake up sleeping processes
     while (queue_is_empty(&ready_queue)){
@@ -77,7 +81,7 @@ void scheduler(void)
         }
         check_sleeping();
     }
-
+*/
     // TODO schedule
     // Modify the current_running pointer.
     // if(current_running->status != TASK_BLOCKED \
@@ -88,6 +92,16 @@ void scheduler(void)
             //initial pcb does not need to be pushed to ready_queue
             queue_push(&ready_queue, current_running);           
         }        
+    }
+
+    //CLOSE_INTERRUPT;
+    check_sleeping(); // wake up sleeping processes
+    while (queue_is_empty(&ready_queue)){
+        //BUG P3!!!!!
+        if(queue_is_empty(&sleeping_queue)){
+            break;
+        }
+        check_sleeping();
     }
 
     pcb_t *_current_running = ((pcb_t *)(ready_queue.head));
@@ -112,11 +126,16 @@ void scheduler(void)
     }
 */
 
-    current_running = _current_running;        
-    queue_remove(&ready_queue, _current_running);
+    // current_running = _current_running;        
+    // queue_remove(&ready_queue, _current_running);
+
+    // //now_priority[current_running->pid]--;
+    // current_running->priority--;
 
     //now_priority[current_running->pid]--;
     current_running->priority--;
+    current_running = _current_running;        
+    queue_remove(&ready_queue, _current_running);
 
     //current_running = queue_dequeue(&ready_queue);
     current_running->status = TASK_RUNNING;
@@ -404,11 +423,12 @@ void do_kill(int n)
             }
         }
 
-        while(!queue_is_empty(&(pcb[i].waiting_queue))){
-            pcb_t *head = queue_dequeue(&(pcb[i].waiting_queue));
-            head->status = TASK_READY;
-            queue_push(&ready_queue, head);
-        }
+        // while(!queue_is_empty(&(pcb[i].waiting_queue))){
+        //     pcb_t *head = queue_dequeue(&(pcb[i].waiting_queue));
+        //     head->status = TASK_READY;
+        //     queue_push(&ready_queue, head);
+        // }
+        clear_waiting_queue(&(pcb[i].waiting_queue));
     }
 
     if(current_running->pid == n){

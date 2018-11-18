@@ -22,10 +22,33 @@ void semaphore_add_task1(void)
         global_count++; 
         semaphore_up(&semaphore);
 
+        sys_move_cursor(0, 4);
+        printf("%d :", check_in_queue(&ready_queue, &pcb[1]));
+        printf("%d :", queue_is_empty(&ready_queue));
+        printf("%d :", ((pcb_t *)(ready_queue.head))->pid);
+        // if(!(((pcb_t *)(ready_queue.head))->next))
+        //     printf("%d :", ((pcb_t *)(((pcb_t *)(ready_queue.head))->next))->pid);
+
+
         sys_move_cursor(0, print_location);
         printf("> [TASK] current global value %d. (%d)", global_count, i + 1);
 
+        sys_move_cursor(0, 5);
+        printf("%d :", check_in_queue(&ready_queue, &pcb[1]));
+        printf("%d :", queue_is_empty(&ready_queue));
+        printf("%d :", ((pcb_t *)(ready_queue.head))->pid);
+        // if(!(((pcb_t *)(ready_queue.head))->next))
+        //     printf("%d :", ((pcb_t *)(((pcb_t *)(ready_queue.head))->next))->pid);
+
         sys_sleep(1);
+
+        sys_move_cursor(0, 6);
+        printf("%d :", check_in_queue(&ready_queue, &pcb[1]));
+        printf("%d :", queue_is_empty(&ready_queue));
+        printf("%d :", ((pcb_t *)(ready_queue.head))->pid);
+        // if(!(((pcb_t *)(ready_queue.head))->next))
+        //     printf("%d :", ((pcb_t *)(((pcb_t *)(ready_queue.head))->next))->pid);
+
     }
 
     sys_exit();
@@ -47,7 +70,7 @@ void semaphore_add_task2(void)
         sys_move_cursor(0, print_location);
         printf("> [TASK] current global value %d. (%d)", global_count, i + 1);
 
-        sys_sleep(1);
+        //sys_sleep(1);
     }
 
     sys_exit();
@@ -69,7 +92,7 @@ void semaphore_add_task3(void)
         sys_move_cursor(0, print_location);
         printf("> [TASK] current global value %d. (%d)", global_count, i + 1);
 
-        sys_sleep(1);
+        //sys_sleep(1);
     }
 
     sys_exit();

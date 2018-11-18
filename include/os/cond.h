@@ -3,9 +3,10 @@
 
 #include "lock.h"
 #include "queue.h"
+#include "sched.h"
 
-typedef struct condition
-{
+typedef struct condition{
+    queue_t waiting_queue;
 } condition_t;
 
 void do_condition_init(condition_t *condition);

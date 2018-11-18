@@ -56,4 +56,7 @@ void enqueue(queue_t *queue, void *item);
 void queue_sort(queue_t *queue, void *item, item_comp_t item_comp);
 
 int check_in_queue(queue_t *queue, void *item);
+
+void clear_waiting_queue(queue_t *queue);
+
 #endif

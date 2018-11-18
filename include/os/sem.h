@@ -3,9 +3,11 @@
 
 #include "queue.h"
 #include "type.h"
+#include "sched.h"
 
-typedef struct semaphore
-{
+typedef struct semaphore{
+    int sem_value;
+    queue_t waiting_queue;
 } semaphore_t;
 
 void do_semaphore_init(semaphore_t *, int);

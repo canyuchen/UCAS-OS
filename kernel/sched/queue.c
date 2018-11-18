@@ -71,6 +71,15 @@ int check_in_queue(queue_t *queue, void *item)
     return 0;
 }
 
+void clear_waiting_queue(queue_t *queue)
+{
+    while(!queue_is_empty(queue)){
+        pcb_t *head = queue_dequeue(queue);
+        head->status = TASK_READY;
+        queue_push(&ready_queue, head);
+    }
+}
+
 /* remove this item and return next item */
 void *queue_remove(queue_t *queue, void *item)
 {
