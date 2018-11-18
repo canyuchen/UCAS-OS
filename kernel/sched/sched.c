@@ -76,6 +76,8 @@ void scheduler(void)
     check_sleeping(); // wake up sleeping processes
     while (queue_is_empty(&ready_queue)){
         //BUG P3!!!!!
+        //TOOOOOOOOOOOOOOOOOOOO FOOLISH!!!!!!!!!!!
+        //DEAD LOOP!!!!!!!!!!!!!!!!!!!!!!
         if(queue_is_empty(&sleeping_queue)){
             break;
         }
