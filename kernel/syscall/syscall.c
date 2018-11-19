@@ -150,10 +150,19 @@ void condition_broadcast(condition_t *condition)
 {
     invoke_syscall(SYSCALL_CONDITION_BROADCAST, (int)condition, IGNORE, IGNORE);
 }
-
+/*
 void barrier_init(barrier_t *barrier, int n)
 {
     invoke_syscall(SYSCALL_BARRIER_INIT, n, IGNORE, IGNORE);
+}
+
+//TOOOOOOOOOOOOOOOOOOOOOO FOOLISH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+*/
+
+void barrier_init(barrier_t *barrier, int n)
+{
+    invoke_syscall(SYSCALL_BARRIER_INIT, (int)barrier, n, IGNORE);
 }
 
 void barrier_wait(barrier_t *barrier)

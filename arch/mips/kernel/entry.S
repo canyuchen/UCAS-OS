@@ -233,38 +233,48 @@ END(exception_handler_entry)
 
 NESTED(handle_others,0,sp)
     .set    noreorder
+
+    mfc0 k1, CP0_STATUS
+    nop
+    mfc0 k1, CP0_CAUSE
+    nop
+
     /* SAVE_CONTEXT(KERNEL) */
     SAVE_CONTEXT(USER)
 
-    mfc0  k0, CP0_CAUSE         /* Read Cause register for IP bits */
-    nop
-    //mfc0  k1, CP0_STATUS      /* and Status register for IM bits */
-    andi  k0, k0, CAUSE_IPL     /* Keep only IP bits from Cause */
-    //and   k0, k0, k1          /* and mask with IM bits */
-    clz   k0, k0                /* Find first bit set, IP7..IP0; k0 = 16..23 */
-    nop                         /* The CLZ instruction counts the number of leading 
-                                 * zeros in a word. Scan rs and write into rd.
-                                */
-    xori  k0, k0, 0x17          /* 16..23 => 7..0 */
-    add   a0, k0, $0
-
-    mfc0  k0, CP0_CAUSE
-    nop
-    andi  k0, k0, CAUSE_EXCCODE /* k0 = {exc_code,00} */
-    srl   k0, k0, 2
-    add   a1, k0, $0
-
-    //jal   c_handle_others
-
-    mfc0  k0, CP0_CAUSE         /* Read Cause register for IP bits */
-    nop
-    andi  k1, k0, CAUSE_IPL     /* Keep only IP bits from Cause */
-    xor   k0, k0, k1
-    mtc0  k0, CP0_CAUSE
-    nop
+//    mfc0  k0, CP0_CAUSE         /* Read Cause register for IP bits */
+//    nop
+//    //mfc0  k1, CP0_STATUS      /* and Status register for IM bits */
+//    andi  k0, k0, CAUSE_IPL     /* Keep only IP bits from Cause */
+//    //and   k0, k0, k1          /* and mask with IM bits */
+//    clz   k0, k0                /* Find first bit set, IP7..IP0; k0 = 16..23 */
+//    nop                         /* The CLZ instruction counts the number of leading 
+//                                 * zeros in a word. Scan rs and write into rd.
+//                                */
+//    xori  k0, k0, 0x17          /* 16..23 => 7..0 */
+//    add   a0, k0, $0
+//    
+//    mfc0  k0, CP0_CAUSE
+//    nop
+//    andi  k0, k0, CAUSE_EXCCODE /* k0 = {exc_code,00} */
+//    srl   k0, k0, 2
+//    add   a1, k0, $0
+//    
+//    //jal   c_handle_others
+//    
+//    mfc0  k0, CP0_CAUSE         /* Read Cause register for IP bits */
+//    nop
+//    andi  k1, k0, CAUSE_IPL     /* Keep only IP bits from Cause */
+//    xor   k0, k0, k1
+//    mtc0  k0, CP0_CAUSE
+//    nop
 
     //LEAVE_CRITICAL
     /* RESTORE_CONTEXT(KERNEL) */
+
+    jal   do_scheduler
+    nop
+    
     RESTORE_CONTEXT(USER)
     j     return_from_exception
     nop

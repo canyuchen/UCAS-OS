@@ -17,7 +17,7 @@ SRC_LIBS	= ./libs/string.c ./libs/printk.c ./libs/mailbox.c
 
 #SRC_TEST	= ./test/test.c
 SRC_TEST	= ./test/test.c ./test/test_shell.c
-SRC_TEST2	= ./test/test_project2/test_scheduler1.c ./test/test_project2/test_scheduler2.c ./test/test_project2/test_lock2.c ./test/test_project2/test_sleep.c ./test/test_project2/test_timer.c 
+#SRC_TEST2	= ./test/test_project2/test_scheduler1.c ./test/test_project2/test_scheduler2.c ./test/test_project2/test_lock2.c ./test/test_project2/test_sleep.c ./test/test_project2/test_timer.c 
 #SRC_TEST2	= ./test/test_project2/test_scheduler1.c ./test/test_project2/test_scheduler2.c ./test/test_project2/test_lock1.c ./test/test_project2/test_sleep.c ./test/test_project2/test_timer.c 
 #P3 : add SRC_TEST3
 SRC_TEST3   = ./test/test_project3/test_barrier.c ./test/test_project3/test_condition.c ./test/test_project3/test_kill.c ./test/test_project3/test_sanguo.c ./test/test_project3/test_semaphore.c

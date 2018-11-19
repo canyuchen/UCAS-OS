@@ -34,6 +34,7 @@
 #include "regs.h"
 #include "string.h"
 #include "lock.h"
+#include "barrier.h"
 
 int is_init = 0;
 
@@ -83,6 +84,14 @@ priority_t now_priority[MAX_PID];
 mutex_lock_t mutex_lock;
 mutex_lock_t mutex_lock_1;
 mutex_lock_t mutex_lock_2;
+
+// extern barrier_t barrier;
+// extern int barrier_is_init;
+// extern int barrier_num_task;
+
+// barrier_t barrier;
+// int barrier_is_init = 0;
+// int barrier_num_task = 3;
 
 /*
 static void init_pcb()
@@ -252,6 +261,8 @@ static void init_pcb()
 	// block_queue = block_queue_init;
 	// uint32_t cp0_status_init = 0x10008000;
 
+    // barrier_init(&barrier, barrier_num_task);
+
 	int i = 0;
 	for(;i < NUM_MAX_TASK; i++){
 		pcb[i].status = TASK_EXITED;
@@ -337,9 +348,9 @@ static void init_pcb()
 static void init_exception_handler()
 {
 	int i = 0;
-	// for (i = 0; i < 32; ++i) {
-	// 	exception_handlers[i] = (uint32_t)handle_others;
-	// }
+	for (i = 0; i < 32; ++i) {
+		exception_handlers[i] = (uint32_t)handle_others;
+	}
 	exception_handlers[INT] = (uint32_t)handle_int;
 	exception_handlers[SYS] = (uint32_t)handle_syscall;
 }
