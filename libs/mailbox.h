@@ -1,11 +1,24 @@
 #ifndef INCLUDE_MAIL_BOX_
 #define INCLUDE_MAIL_BOX_
 
-typedef struct mailbox
-{
+#include "sem.h"
 
+#define MAX_MBOX_LENGTH 32
+#define MAX_MESSAGE_LENGTH 32
+#define MBOX_NAME_LENGTH 32
+
+typedef struct message{
+	/* TODO */
+    char value[MAX_MESSAGE_LENGTH];
+} message_t;
+
+typedef struct mailbox{
+    char name[MBOX_NAME_LENGTH];
+    int count;
+    int ptr;
+    semaphore_t send, recv;
+    message_t msg[MAX_MBOX_LENGTH];
 } mailbox_t;
-
 
 void mbox_init();
 mailbox_t *mbox_open(char *);
