@@ -91,10 +91,6 @@ void barrier_task2(void)
     {
         barrier_is_init = 1;
 
-        // barrier->max_num = goal;
-        // barrier->not_arrive_num = goal;
-        // queue_init(&(barrier->waiting_queue));
-
         barrier_init(&barrier, barrier_num_task);
     }
 
@@ -120,10 +116,6 @@ void barrier_task3(void)
     if (!barrier_is_init)
     {
         barrier_is_init = 1;
-
-        // barrier->max_num = goal;
-        // barrier->not_arrive_num = goal;
-        // queue_init(&(barrier->waiting_queue));
 
         barrier_init(&barrier, barrier_num_task);
     }

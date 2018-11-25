@@ -115,7 +115,6 @@ char *Command[MAX_COMMAND] = {"ps", "clear", "spawn", "exec", "kill"};
 
 static void init_InputBuffer(InputBuffer_t *p)
 {
-    //p->buffer = NULL;
     p->buffer = Buffer;
     p->buffer_length = INPUT_BUFFER_MAX_LENGTH;
     p->input_length = 0;
@@ -129,54 +128,6 @@ static void init_ProcessShow()
         ProcessShow[i].num = 0;
     }
 }
-
-/*
-static void init_Command(char *Command[])
-{
-    Command[0] = "ps";
-    Command[1] = "spawn";
-    Command[2] = "exec";
-    Command[3] = "kill";
-}
-*/
-
-/*
-static int command_cmp(char *str1, char *str2)
-{
-	while (*str1 && *str2 && (*str1 == *str2)){
-		str1++;
-		str2++;
-	};
-    if(*str1 == '\0' && str2 == '\n'){
-        return 1;
-    }
-    else if(*str1 == '\0' && (str2 == ' ') || (str2 == '\t')){
-        return 2;
-    }
-    else if(*str1 == '\0'){
-        return 0;
-    }
-}
-
-static PARSING_t command_parsing(InputBuffer_t *inputBuffer_ptr, int parsing_sign)
-{
-    //TODO
-    int i, k;
-    for(i = 0; i < MAX_COMMAND; i++){
-        k = command_cmp(Command[i], inputBuffer_ptr->buffer + inputBuffer_ptr->pointer);
-        if(k == 1){
-            parsing_sign = i;
-        }
-        else if(k == 2){
-
-        }
-    }
-
-    if(i == 4 && !command_cmp(Command[i], inputBuffer_ptr->buffer + inputBuffer_ptr->pointer)){
-        return COMMAND_PARSING_INVALID;
-    }
-}
-*/
 
 #define ENUM_TYPE_CASE(x)   case x: return(#x);
 
@@ -201,7 +152,6 @@ void test_shell()
     printf("> root@UCAS_OS: ");
 
     int i = 0, k = 0;
-    // int parsing_sign = -1;
 
     InputBuffer_t *inputBuffer_ptr = &inputBuffer;
     init_InputBuffer(inputBuffer_ptr);
@@ -220,7 +170,6 @@ void test_shell()
             *(inputBuffer_ptr->buffer + i) = ch;
             inputBuffer_ptr->input_length++;
             i++;
-            //if(ch == '\n'){ //BUG???//!!!!!!
             if(ch == '\r'){
                 if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'p' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 's'){
@@ -254,14 +203,7 @@ void test_shell()
                     printf("exec test_tasks[%d].\n", k);
                     sys_spawn(test_tasks[k]);
                     printf("> root@UCAS_OS: ");
-                }                
-                // if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 's' 
-                // && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'p'
-                // && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'a'
-                // && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'w'
-                // && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 'n'){
-                    
-                // }   
+                }                 
                 if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'k' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'i'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'l'
@@ -271,8 +213,6 @@ void test_shell()
                 && k <= 14 ){
                     printf("kill process PID = %d\n", k);
                     sys_kill(k);
-                    // sys_move_cursor(0, 8);
-                    // printf("%d :", check_in_queue(&ready_queue, &pcb[1]));
                     printf("> root@UCAS_OS: ");
                 }      
 

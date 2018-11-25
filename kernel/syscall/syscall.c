@@ -7,47 +7,19 @@
 /* syscall function pointer */
 int (*syscall[NUM_SYSCALLS])();
 
-/* This function handles executing a given syscall, and returns the result
-   to syscall_entry in entry.S, from where it is returned to the calling
-   process. Before we get here, syscall_entry() will have stored the
-   context of the process making the syscall, and entered a critical
-   section (through enter_critical()).
-*/
 void system_call_helper(int fn, int arg1, int arg2, int arg3)
 {
     int ret_val = 0;
 
     current_running->mode = KERNEL_MODE;
 
-    // Call function and return result as usual (ie, "return ret_val");
-
-    /* In C's calling convention, caller is responsible for cleaning up
-     * the stack. Therefore we don't really need to distinguish between
-     * different argument numbers. Just pass all 3 arguments and it will
-     * work 
-    */
     ret_val = syscall[fn] (arg1,arg2,arg3);
     
     current_running->mode = USER_MODE;
 
-    // We can not leave the critical section we enter here before we
-    // return in syscall_entry.
-    // This is due to a potential race condition on a scratch variable
-    // used by syscall_entry.
     current_running->user_context.regs[2] = ret_val;
-/*
-    if(fn != SYSCALL_MUTEX_LOCK_ACQUIRE){
-        current_running->user_context.cp0_epc = current_running->user_context.cp0_epc + 4;        
-    }
-*/
-    //TOOOOOOOOO FOOLISH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     current_running->user_context.cp0_epc = current_running->user_context.cp0_epc + 4;
-
-    // current_running->user_context.cp0_epc = current_running->user_context.cp0_epc + 4;
-    // printf(20, 10, "syscall: %d, nested_count: %d", fn, current_running->nested_count);
-
-    // leave_critical() will be called during restoring context.
 }
 
 void invalid_syscall(void)
@@ -150,15 +122,6 @@ void condition_broadcast(condition_t *condition)
 {
     invoke_syscall(SYSCALL_CONDITION_BROADCAST, (int)condition, IGNORE, IGNORE);
 }
-/*
-void barrier_init(barrier_t *barrier, int n)
-{
-    invoke_syscall(SYSCALL_BARRIER_INIT, n, IGNORE, IGNORE);
-}
-
-//TOOOOOOOOOOOOOOOOOOOOOO FOOLISH!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-*/
 
 void barrier_init(barrier_t *barrier, int n)
 {
