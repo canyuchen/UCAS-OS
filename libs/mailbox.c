@@ -11,6 +11,7 @@ void mbox_init()
     for(; i < MAX_NUM_BOX; i++){
         mboxs[i].name[0] = 0;
         mboxs[i].count = 0;
+        do_mutex_lock_init(&(mboxs[i].lock));
     }
 }
 
@@ -25,6 +26,7 @@ mailbox_t *mbox_open(char *name)
     }
     for(i = 0; i < MAX_NUM_BOX; i++){
         if(mboxs[i].count == 0){
+            do_mutex_lock_init(&(mboxs[i].lock));
             memcpy(mboxs[i].name, name, strlen(name)+1);
             mboxs[i].count++;
             mboxs[i].ptr = 0;
@@ -42,16 +44,20 @@ void mbox_close(mailbox_t *mailbox)
 
 void mbox_send(mailbox_t *mailbox, void *msg, int msg_length)
 {
+    do_mutex_lock_acquire(&(mailbox->lock));
     do_semaphore_down(&(mailbox->send));
     mailbox->ptr = (mailbox->ptr + 1) % MAX_MBOX_LENGTH;
     memcpy(&(mailbox->msg[mailbox->ptr]), msg, msg_length);
     do_semaphore_up(&(mailbox->recv));
+    do_mutex_lock_release(&(mailbox->lock));
 }
 
 void mbox_recv(mailbox_t *mailbox, void *msg, int msg_length)
 {
+    do_mutex_lock_acquire(&(mailbox->lock));
     do_semaphore_down(&(mailbox->recv));
     memcpy(msg, &(mailbox->msg[mailbox->ptr]), msg_length);
     mailbox->ptr = (mailbox->ptr + MAX_MBOX_LENGTH - 1) % MAX_MBOX_LENGTH;   
     do_semaphore_up(&(mailbox->send)); 
+    do_mutex_lock_release(&(mailbox->lock));
 }

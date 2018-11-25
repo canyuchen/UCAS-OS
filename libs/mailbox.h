@@ -2,6 +2,7 @@
 #define INCLUDE_MAIL_BOX_
 
 #include "sem.h"
+#include "lock.h"
 
 #define MAX_MBOX_LENGTH 32
 #define MAX_MESSAGE_LENGTH 32
@@ -16,6 +17,7 @@ typedef struct mailbox{
     char name[MBOX_NAME_LENGTH];
     int count;
     int ptr;
+    mutex_lock_t lock;
     semaphore_t send, recv;
     message_t msg[MAX_MBOX_LENGTH];
 } mailbox_t;
