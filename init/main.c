@@ -35,6 +35,7 @@
 #include "string.h"
 #include "lock.h"
 #include "barrier.h"
+#include "mailbox.h"
 
 int is_init = 0;
 
@@ -61,6 +62,8 @@ uint32_t STACK_TOP = STACK_MIN;
 uint32_t PID = 2;
 
 uint32_t time_elapsed = 0;
+
+extern mailbox_t mboxs[MAX_NUM_BOX];
 
 // defined in entry.S
 extern void exception_handler_start();
@@ -270,6 +273,10 @@ static void init_pcb()
 
 	Lock[0] = &lock1;
 	Lock[1] = &lock2;
+
+	for(i = 2; i < MAX_LOCK_NUM_TOTAL; i++){
+		Lock[i] = &(mboxs[i-2].lock);
+	}
 
 	for(i = 0; i < MAX_LOCK_NUM_TOTAL; i++){
 		Lock[i]->status = UNLOCKED;

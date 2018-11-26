@@ -20,7 +20,7 @@ static int check_sleeping()
     uint32_t current_time = get_timer();
     if(queue_is_empty(&sleeping_queue)) return;
     pcb_t* temp = (pcb_t *)(sleeping_queue.head);
-    
+
     while(temp != NULL){
         if(temp->sleeping_deadline < current_time){
             queue_remove(&sleeping_queue, temp);            
@@ -132,12 +132,13 @@ void do_unblock_all(queue_t *queue)
 
 void do_ps()
 {
-    int i = 1;
+    int i = 1, j = 0;
     pcb_t *head = ((pcb_t *)(ready_queue.head));
 
     ProcessShow[0].num = 0;
     ProcessShow[0].pid = current_running->pid;
     ProcessShow[0].status = current_running->status;
+/*
     while(head != NULL ){
         ProcessShow[i].num = i;
         ProcessShow[i].pid = head->pid;
@@ -146,6 +147,49 @@ void do_ps()
         i++;
     }
 
+    head = ((pcb_t *)(sleeping_queue.head));
+    while(head != NULL ){
+        ProcessShow[i].num = i;
+        ProcessShow[i].pid = head->pid;
+        ProcessShow[i].status = head->status;
+        head = ((pcb_t *)(head->next));
+        i++;
+    }
+
+    head = ((pcb_t *)(block_queue.head));
+    while(head != NULL ){
+        ProcessShow[i].num = i;
+        ProcessShow[i].pid = head->pid;
+        ProcessShow[i].status = head->status;
+        head = ((pcb_t *)(head->next));
+        i++;
+    }
+*/
+
+    for(j = 0; j < NUM_MAX_TASK; j++){
+        if(pcb[j].status == TASK_READY){
+            ProcessShow[i].num = i;
+            ProcessShow[i].pid = pcb[j].pid;
+            ProcessShow[i].status = pcb[j].status;
+            i++;
+        }
+    }
+    for(j = 0; j < NUM_MAX_TASK; j++){
+        if(pcb[j].status == TASK_SLEEPING){
+            ProcessShow[i].num = i;
+            ProcessShow[i].pid = pcb[j].pid;
+            ProcessShow[i].status = pcb[j].status;
+            i++;
+        }
+    }
+    for(j = 0; j < NUM_MAX_TASK; j++){
+        if(pcb[j].status == TASK_BLOCKED){
+            ProcessShow[i].num = i;
+            ProcessShow[i].pid = pcb[j].pid;
+            ProcessShow[i].status = pcb[j].status;
+            i++;
+        }
+    }
     ProcessShow[i].num = -1;
 }
 

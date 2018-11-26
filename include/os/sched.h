@@ -49,7 +49,7 @@
 #define STACK_MAX 0xa2000000
 #define CP0_STATUS_INIT 0x10008000
 #define LOCK_MAX_NUM 10
-#define MAX_LOCK_NUM_TOTAL 2
+#define MAX_LOCK_NUM_TOTAL 34
 
 #define CLOSE_INTERRUPT \
 do{ \

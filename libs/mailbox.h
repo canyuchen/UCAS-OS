@@ -7,6 +7,7 @@
 #define MAX_MBOX_LENGTH 32
 #define MAX_MESSAGE_LENGTH 32
 #define MBOX_NAME_LENGTH 32
+#define MAX_NUM_BOX 32
 
 typedef struct message{
 	/* TODO */
