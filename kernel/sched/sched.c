@@ -138,33 +138,6 @@ void do_ps()
     ProcessShow[0].num = 0;
     ProcessShow[0].pid = current_running->pid;
     ProcessShow[0].status = current_running->status;
-/*
-    while(head != NULL ){
-        ProcessShow[i].num = i;
-        ProcessShow[i].pid = head->pid;
-        ProcessShow[i].status = head->status;
-        head = ((pcb_t *)(head->next));
-        i++;
-    }
-
-    head = ((pcb_t *)(sleeping_queue.head));
-    while(head != NULL ){
-        ProcessShow[i].num = i;
-        ProcessShow[i].pid = head->pid;
-        ProcessShow[i].status = head->status;
-        head = ((pcb_t *)(head->next));
-        i++;
-    }
-
-    head = ((pcb_t *)(block_queue.head));
-    while(head != NULL ){
-        ProcessShow[i].num = i;
-        ProcessShow[i].pid = head->pid;
-        ProcessShow[i].status = head->status;
-        head = ((pcb_t *)(head->next));
-        i++;
-    }
-*/
 
     for(j = 0; j < NUM_MAX_TASK; j++){
         if(pcb[j].status == TASK_READY){
@@ -209,9 +182,6 @@ void do_spawn(task_info_t *task_info)
 
 	bzero(&(pcb[i].kernel_context), sizeof(pcb[i].kernel_context));
 	bzero(&(pcb[i].user_context  ), sizeof(pcb[i].user_context  ));
-	// bzero(&(pcb[i].lock), LOCK_MAX_NUM);
-	// bzero(pcb[i].lock, LOCK_MAX_NUM);
-	//???
 	int j = 0;
 	for(; j < LOCK_MAX_NUM; j++){
 		pcb[i].lock[j] = NULL;
@@ -249,8 +219,6 @@ void do_spawn(task_info_t *task_info)
 	//cp0_epc add 4 automatically when encountering interrupt
 
 	pcb[i].mode = USER_MODE;
-	// my_priority[i] = INITIAL_PRIORITY;
-	// now_priority[i] = INITIAL_PRIORITY;
 	pcb[i].priority = INITIAL_PRIORITY;
 	pcb[i].wait_time = 0;
 	pcb[i].sleeping_deadline = 0;
