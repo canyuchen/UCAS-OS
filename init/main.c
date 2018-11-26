@@ -95,7 +95,7 @@ static void init_pcb()
 		Lock[i] = &(mboxs[i-2].lock);
 	}
 
-	for(i = 0; i < MAX_LOCK_NUM_TOTAL; i++){
+	for(i = 0; i < 2; i++){
 		Lock[i]->status = UNLOCKED;
 		queue_init(&(Lock[i]->mutex_lock_queue));
 	}

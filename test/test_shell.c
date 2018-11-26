@@ -106,7 +106,7 @@ typedef enum {
     COMMAND_PARSING_INVALID
 } PARSING_t;
 
-process_show_t ProcessShow[20];
+process_show_t ProcessShow[40];
 
 char Buffer[INPUT_BUFFER_MAX_LENGTH];
 

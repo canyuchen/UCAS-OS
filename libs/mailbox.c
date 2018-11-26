@@ -25,6 +25,10 @@ mailbox_t *mbox_open(char *name)
     }
     for(i = 0; i < MAX_NUM_BOX; i++){
         if(mboxs[i].count == 0){
+            // Lock[i+2] = &(mboxs[i].lock);
+            // Lock[i+2]->status = UNLOCKED;
+            // queue_init(&(Lock[i+2]->mutex_lock_queue));       
+
             mutex_lock_init(&(mboxs[i].lock));
             memcpy(mboxs[i].name, name, strlen(name)+1);
             mboxs[i].count++;
