@@ -42,6 +42,7 @@
                 "${workspaceFolder}/drivers",
                 "${workspaceFolder}/arch/mips/include",
                 "${workspaceFolder}/test/test_project3",
+                "${workspaceFolder}/test/test_project4",
                 "${workspaceFolder}/libs"
             ],
             "defines": [],
