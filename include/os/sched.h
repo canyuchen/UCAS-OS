@@ -38,7 +38,7 @@
 #include "regs.h"
 #include "lock.h"
 
-#define NUM_MAX_TASK 16
+#define NUM_MAX_TASK 40
 
 #define MAX_PID 1024
 #define MAX_PRIORITY 5
@@ -49,7 +49,7 @@
 #define STACK_MAX 0xa2000000
 #define CP0_STATUS_INIT 0x10008000
 #define LOCK_MAX_NUM 10
-#define MAX_LOCK_NUM_TOTAL 2
+#define MAX_LOCK_NUM_TOTAL 34
 
 #define CLOSE_INTERRUPT \
 do{ \
@@ -165,7 +165,7 @@ typedef struct process_show {
     task_status_t status;
 } process_show_t;
 
-extern process_show_t ProcessShow[20];
+extern process_show_t ProcessShow[40];
 
 /* ready queue to run */
 extern queue_t ready_queue;

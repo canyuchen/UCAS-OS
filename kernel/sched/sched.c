@@ -20,7 +20,7 @@ static int check_sleeping()
     uint32_t current_time = get_timer();
     if(queue_is_empty(&sleeping_queue)) return;
     pcb_t* temp = (pcb_t *)(sleeping_queue.head);
-    
+
     while(temp != NULL){
         if(temp->sleeping_deadline < current_time){
             queue_remove(&sleeping_queue, temp);            
@@ -132,20 +132,37 @@ void do_unblock_all(queue_t *queue)
 
 void do_ps()
 {
-    int i = 1;
+    int i = 1, j = 0;
     pcb_t *head = ((pcb_t *)(ready_queue.head));
 
     ProcessShow[0].num = 0;
     ProcessShow[0].pid = current_running->pid;
     ProcessShow[0].status = current_running->status;
-    while(head != NULL ){
-        ProcessShow[i].num = i;
-        ProcessShow[i].pid = head->pid;
-        ProcessShow[i].status = head->status;
-        head = ((pcb_t *)(head->next));
-        i++;
-    }
 
+    for(j = 0; j < NUM_MAX_TASK; j++){
+        if(pcb[j].status == TASK_READY){
+            ProcessShow[i].num = i;
+            ProcessShow[i].pid = pcb[j].pid;
+            ProcessShow[i].status = pcb[j].status;
+            i++;
+        }
+    }
+    for(j = 0; j < NUM_MAX_TASK; j++){
+        if(pcb[j].status == TASK_SLEEPING){
+            ProcessShow[i].num = i;
+            ProcessShow[i].pid = pcb[j].pid;
+            ProcessShow[i].status = pcb[j].status;
+            i++;
+        }
+    }
+    for(j = 0; j < NUM_MAX_TASK; j++){
+        if(pcb[j].status == TASK_BLOCKED){
+            ProcessShow[i].num = i;
+            ProcessShow[i].pid = pcb[j].pid;
+            ProcessShow[i].status = pcb[j].status;
+            i++;
+        }
+    }
     ProcessShow[i].num = -1;
 }
 
@@ -165,9 +182,6 @@ void do_spawn(task_info_t *task_info)
 
 	bzero(&(pcb[i].kernel_context), sizeof(pcb[i].kernel_context));
 	bzero(&(pcb[i].user_context  ), sizeof(pcb[i].user_context  ));
-	// bzero(&(pcb[i].lock), LOCK_MAX_NUM);
-	// bzero(pcb[i].lock, LOCK_MAX_NUM);
-	//???
 	int j = 0;
 	for(; j < LOCK_MAX_NUM; j++){
 		pcb[i].lock[j] = NULL;
@@ -205,8 +219,6 @@ void do_spawn(task_info_t *task_info)
 	//cp0_epc add 4 automatically when encountering interrupt
 
 	pcb[i].mode = USER_MODE;
-	// my_priority[i] = INITIAL_PRIORITY;
-	// now_priority[i] = INITIAL_PRIORITY;
 	pcb[i].priority = INITIAL_PRIORITY;
 	pcb[i].wait_time = 0;
 	pcb[i].sleeping_deadline = 0;
