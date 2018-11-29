@@ -260,6 +260,8 @@ NESTED(handle_int, 0, sp)
     /* TODO: timer_irq */
     /* read int IP and handle clock interrupt or just call do_nothing */
     SAVE_CONTEXT(USER)
+    // RESTORE_CONTEXT(KERNEL)
+    // ???
 
     mfc0  k0, CP0_CAUSE
     nop
@@ -326,6 +328,7 @@ NESTED(handle_syscall, 0, sp)
     // system call handler
     SAVE_CONTEXT(USER)
     // RESTORE_CONTEXT(KERNEL)
+    // ???
 
     add   a3,a2,$0
     add   a2,a1,$0
@@ -402,3 +405,78 @@ LEAF(return_from_exception)
     nop
     // STI
 END(return_from_exception)
+
+//---------------------------P5:virtual memory----------------------------------
+
+LEAF(get_cp0_status)
+    mfc0  v0, CP0_STATUS
+    nop
+    jr ra
+    nop
+END(get_cp0_status)
+
+LEAF(set_cp0_status)
+    mtc0  a0, CP0_STATU
+    nop
+    jr ra
+    nop
+END(set_cp0_status)
+
+LEAF(get_asid)
+    mfc0  v0, CP0_ENTRYHI
+    nop
+    and	v0, 0x7
+    nop
+    jr ra
+    nop
+END(get_asid)
+
+LEAF(get_cp0_index)
+    mfc0  v0, CP0_INDEX
+    nop
+    jr ra
+    nop
+END(get_cp0_index)
+
+LEAF(get_cp0_entryhi)
+    mfc0  v0, CP0_ENTRYHI
+    nop
+    jr ra
+    nop
+END(get_cp0_entryhi)
+
+LEAF(get_cp0_badvaddr)
+    mfc0  v0, CP0_BADVADDR
+    nop
+    jr ra
+    nop
+END(get_cp0_badvaddr)
+
+LEAF(get_cp0_entrylo0)
+    mfc0  v0, CP0_ENTRYLO0
+    nop
+    jr ra
+    nop
+END(get_cp0_entrylo0)
+
+LEAF(set_cp0_entrylo0)
+    mtc0  a0, CP0_ENTRYLO0
+    nop
+    jr ra
+    nop
+END(set_cp0_entrylo0)
+
+LEAF(get_cp0_entrylo1)
+    mfc0  v0, CP0_ENTRYLO1
+    nop
+    jr ra
+    nop
+END(get_cp0_entrylo1)
+
+LEAF(set_cp0_entrylo1)
+    mtc0  a0, CP0_ENTRYLO1
+    nop
+    jr ra
+    nop
+END(set_cp0_entrylo1)
+

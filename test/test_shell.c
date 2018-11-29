@@ -108,10 +108,10 @@ typedef enum {
 
 process_show_t ProcessShow[40];
 
-char Buffer[INPUT_BUFFER_MAX_LENGTH];
+static char Buffer[INPUT_BUFFER_MAX_LENGTH];
 
-InputBuffer_t inputBuffer;
-char *Command[MAX_COMMAND] = {"ps", "clear", "spawn", "exec", "kill"};
+static InputBuffer_t inputBuffer;
+static char *Command[MAX_COMMAND] = {"ps", "clear", "spawn", "exec", "kill"};
 
 static void init_InputBuffer(InputBuffer_t *p)
 {
