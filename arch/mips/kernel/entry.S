@@ -3,6 +3,7 @@
 .equ    KERNEL, 0
 .equ    USER,   156
 .equ    TASK_MODE_OFFSET, 324
+.equ    TASK_PID_OFFSET,  320
 
 //start interrupt
 .macro STI
@@ -408,20 +409,6 @@ END(return_from_exception)
 
 //---------------------------P5:virtual memory----------------------------------
 
-LEAF(get_cp0_status)
-    mfc0  v0, CP0_STATUS
-    nop
-    jr ra
-    nop
-END(get_cp0_status)
-
-LEAF(set_cp0_status)
-    mtc0  a0, CP0_STATU
-    nop
-    jr ra
-    nop
-END(set_cp0_status)
-
 LEAF(get_asid)
     mfc0  v0, CP0_ENTRYHI
     nop
@@ -431,6 +418,20 @@ LEAF(get_asid)
     nop
 END(get_asid)
 
+LEAF(set_ENTRYHI_ASID)
+	li 	  k0, 0xffffff00
+	mfc0  k1, CP0_ENTRYHI
+	nop
+	and   k1, k1, k0
+	lw 	  k0, current_running
+	lw	  k0, TASK_PID_OFFSET(k0)
+	or	  k1, k1, k0
+	mtc0  k1, CP0_ENTRYHI
+	nop
+	jr    ra
+	nop
+END(set_ENTRYHI_ASID)
+
 LEAF(get_cp0_index)
     mfc0  v0, CP0_INDEX
     nop
@@ -438,12 +439,26 @@ LEAF(get_cp0_index)
     nop
 END(get_cp0_index)
 
+LEAF(set_cp0_index)
+    mtc0  a0, CP0_INDEX
+    nop
+    jr ra
+    nop
+END(set_cp0_index)
+
 LEAF(get_cp0_entryhi)
     mfc0  v0, CP0_ENTRYHI
     nop
     jr ra
     nop
 END(get_cp0_entryhi)
+
+LEAF(set_cp0_entryhi)
+    mtc0  a0, CP0_ENTRYHI
+    nop
+    jr ra
+    nop
+END(set_cp0_entryhi)
 
 LEAF(get_cp0_badvaddr)
     mfc0  v0, CP0_BADVADDR
@@ -479,4 +494,107 @@ LEAF(set_cp0_entrylo1)
     jr ra
     nop
 END(set_cp0_entrylo1)
+
+LEAF(get_cp0_pagemask)
+    mfc0  v0, CP0_PAGEMASK
+    nop
+    jr ra
+    nop
+END(get_cp0_pagemask)
+
+LEAF(set_cp0_pagemask)
+    mtc0  a0, CP0_PAGEMASK
+    nop
+    jr ra
+    nop
+END(set_cp0_pagemask)
+
+LEAF(tlb_flush)
+    mfc0  k1,CP0_ENTRYHI
+    nop
+    mtc0  a0,CP0_ENTRYHI
+    nop
+    tlbp
+    nop
+    nop
+    nop
+    nop
+    mfc0  k0,CP0_INDEX
+    nop
+    bltz  k0,NOFOUND
+    nop
+    mtc0  zero,CP0_ENTRYHI
+    nop
+    mtc0  zero,CP0_ENTRYLO0
+    nop
+    mtc0  zero,CP0_ENTRYLO1
+    nop
+    tlbwi
+    nop
+    nop
+    nop
+    nop
+NOFOUND:
+    mtc0  k1,CP0_ENTRYHI
+    nop
+    j     ra
+    nop
+END(tlb_flush)
+
+LEAF(tlb_flush_no_check)
+    mtc0  zero,CP0_ENTRYHI
+    nop
+    mtc0  zero,CP0_ENTRYLO0
+    nop
+    mtc0  zero,CP0_ENTRYLO1
+    nop
+    tlbwi   //CP0_INDEX has been set as invalid address    
+    nop
+    nop
+    nop
+    nop
+    j     ra
+    nop
+END(tlb_flush_no_check)
+
+//TO DO
+NESTED(handle_tlb,0,sp)
+	// find the bad virtual address
+	//jal   handle_tlb_exception_helper
+	nop	
+
+    /*  TLB refill   */
+/*
+	lw	  t0, current_running
+	lw 	  t0, TASK_PAGE_TABLE_BASE_OFFSET(t0)  // t0 = page table
+	la	  t1, current_running
+	lw	  t1, 0(t1)
+	lw 	  t7, TASK_PID_OFFSET(t1)	           // t7 = pid	
+	mfc0  t1, CP0_BADVADDR  	               // t1 = badvaddr	
+    nop
+	srl	  t1, 13
+	sll	  t1, 13	                           // t1 = VPN2
+	or	  t3, t1, t7 	                       // EntryHi
+	mtc0  t3, CP0_ENTRYHI
+    nop
+	srl	  t1, 10	                           // t1 to be the offset in page table
+	add	  t0, t0, t1
+	lw	  t6, (t0)	                           // t6 = even page entry
+	lw	  t5, 4(t0)   	                       // t5 = odd page entry
+	mtc0  t6, CP0_ENTRYLO0   
+    nop
+	mtc0  t5, CP0_ENTRYLO1
+    nop
+	mtc0  zero, CP0_PAGEMASK
+	nop
+    tlbwr
+    nop
+	j     return_from_exception
+	nop
+*/
+END(handle_tlb)
+
+
+
+
 

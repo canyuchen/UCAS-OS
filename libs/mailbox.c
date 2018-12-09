@@ -50,7 +50,7 @@ void mbox_send(mailbox_t *mailbox, void *msg, int msg_length)
     semaphore_down(&(mailbox->send));
     mutex_lock_acquire(&(mailbox->lock));
     mailbox->ptr = (mailbox->ptr + 1) % MAX_MBOX_LENGTH;
-    memcpy(&(mailbox->msg[mailbox->ptr]), msg, msg_length);
+    memcpy((uint8_t *)(&(mailbox->msg[mailbox->ptr])), msg, msg_length);
     mutex_lock_release(&(mailbox->lock));
     semaphore_up(&(mailbox->recv));
 }
@@ -59,7 +59,7 @@ void mbox_recv(mailbox_t *mailbox, void *msg, int msg_length)
 {
     semaphore_down(&(mailbox->recv));
     mutex_lock_acquire(&(mailbox->lock));
-    memcpy(msg, &(mailbox->msg[mailbox->ptr]), msg_length);
+    memcpy(msg, (uint8_t *)(&(mailbox->msg[mailbox->ptr])), msg_length);
     mailbox->ptr = (mailbox->ptr + MAX_MBOX_LENGTH - 1) % MAX_MBOX_LENGTH;   
     mutex_lock_release(&(mailbox->lock));
     semaphore_up(&(mailbox->send)); 

@@ -83,12 +83,27 @@ struct task_info task13 = {"SunQuan",(uint32_t)&SunQuan, USER_PROCESS};
 struct task_info task14 = {"LiuBei", (uint32_t)&LiuBei, USER_PROCESS};
 struct task_info task15 = {"CaoCao", (uint32_t)&CaoCao, USER_PROCESS};
 
-static struct task_info *test_tasks[16] = {&task1, &task2, &task3,
+struct task_info task16 = {"task4-1.1", (uint32_t)&drawing_task4_1, USER_PROCESS};
+struct task_info task17 = {"task4-1.2", (uint32_t)&rw_task4_1, USER_PROCESS};
+
+// struct task_info task18 = {"task4-2.1", (uint32_t)&LiuBei, USER_PROCESS};
+// struct task_info task19 = {"task4-2.2", (uint32_t)&CaoCao, USER_PROCESS};
+
+// struct task_info task20 = {"task4-3.1", (uint32_t)&LiuBei, USER_PROCESS};
+// struct task_info task21 = {"task4-3.2", (uint32_t)&CaoCao, USER_PROCESS};
+
+static uint32_t num_test_tasks = 17;
+
+static struct task_info *test_tasks[17] = {&task1, &task2, &task3,
                                            &task4, &task5, &task6,
                                            &task7, &task8, &task9,
                                            &task10, &task11, &task12,
-                                           &task13, &task14, &task15};
-static int num_test_tasks = 15;
+                                           &task13, &task14, &task15,
+                                           &task16, &task17
+                                        //    , 
+                                        //    &task18, &task19, 
+                                        //    &task20, &task21
+                                           };
 
 #define INPUT_BUFFER_MAX_LENGTH 1000
 #define MAX_COMMAND 5
@@ -147,7 +162,7 @@ static inline const char *status_type_to_string(task_status_t status)
 
 void test_shell()
 {
-    sys_move_cursor(1, 15);
+    sys_move_cursor(1, 50);
     printf("-----------------COMMAND-------------------\n");
     printf("> root@UCAS_OS: ");
 
@@ -199,7 +214,7 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'c'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == ' '
                 && (k = atoi(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5)) >= 0
-                && k <= 14 ){
+                && k <= num_test_tasks - 1 ){
                     printf("exec test_tasks[%d].\n", k);
                     sys_spawn(test_tasks[k]);
                     printf("> root@UCAS_OS: ");

@@ -1,5 +1,4 @@
 {
-    "C_Cpp.errorSquiggles": "Disabled",
     "files.associations": {
         "regs.h": "c",
         "lock.h": "c",

@@ -126,3 +126,43 @@ uint32_t atoi(char *s)
     for (n = 0; *s >= '0' && *s <= '9'; n = n * 10 + *s++ - '0');
     return n;
 }
+
+uint32_t atoh(char *s)
+{
+    int n;
+    for (n = 0; (*s >= '0' && *s <= '9') || (*s >= 'a' && *s <= 'f'); ){
+		if(*s >= '0' && *s <= '9'){
+			n = n * 16 + *s++ - '0';
+		}
+		else if(*s >= 'a' && *s <= 'f'){
+			n = n * 16 + *s++ - 'a';
+		}
+	}
+    return n;
+}
+
+
+
+inline int is_hex_char(char c)
+{
+	return ('0' <= c && c <= '9') || ('a' <= c && c <= 'f' );
+}
+
+int htoi(char *s)
+{
+  int n;
+
+  n = 0;
+  while(is_hex_char(*s))
+  {
+	if(('0' <= *s && *s <= '9') )
+	{
+		n = n*16 + *s++ - '0';
+	}else//('a' <= c && c <= 'f' )
+	{
+		n = n*16 + *s++ - 'a' + 10;		
+	}
+  }
+  return n;
+}
+

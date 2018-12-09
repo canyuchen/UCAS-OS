@@ -4,9 +4,9 @@
 #include "type.h"
 
 //test drawing
-void drawing_task1(void);
+void drawing_task4_1(void);
 
 //test memory
-void rw_task1(void);
+void rw_task4_1(void);
 
 #endif

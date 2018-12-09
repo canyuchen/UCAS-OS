@@ -162,3 +162,8 @@ void sys_ps()
 {
     invoke_syscall(SYSCALL_PS, IGNORE, IGNORE, IGNORE);
 }
+
+int sys_scanf(int *mem)
+{
+    invoke_syscall(SYSCALL_SCANF, (int)mem, IGNORE, IGNORE);
+}

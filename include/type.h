@@ -26,6 +26,11 @@
 #ifndef INCLUDE_TYPE_H_
 #define INCLUDE_TYPE_H_
 
+typedef enum {
+	FALSE = 0, 
+	TRUE = 1
+} bool_t;
+
 #ifndef NULL
 	#define NULL 	0
 #endif

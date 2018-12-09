@@ -56,4 +56,10 @@ void itoa(uint32_t n, char *s);
 /* Convert an ASCII string (like "234") to an integer */
 uint32_t atoi(char *s);
 
+inline int is_hex_char(char c);
+
+int htoi(char *s);
+
+uint32_t atoh(char *s);
+
 #endif

@@ -36,7 +36,7 @@ extern int screen_cursor_x;
 extern int screen_cursor_y;
 
 #define SCREEN_WIDTH  80
-#define SCREEN_HEIGHT 30
+#define SCREEN_HEIGHT 60
 
 void vt100_move_cursor(int, int);
 

@@ -116,15 +116,15 @@ typedef struct pcb
     uint32_t kernel_stack_top;
     uint32_t user_stack_top;
     //320
-    uint32_t entry_point;
-    
+    /* process id */
+    pid_t pid;
+    //324
     task_mode_t mode;
+
+    uint32_t entry_point;
     /* previous, next pointer */
     void *prev;
     void *next;
-
-    /* process id */
-    pid_t pid;
 
     /* kernel/user thread/process */
     task_type_t type;
@@ -145,6 +145,8 @@ typedef struct pcb
     queue_t waiting_queue;
 
     uint32_t sleeping_deadline;
+
+    uint32_t page_table_base_addr;
 
 } pcb_t;
 
@@ -211,5 +213,7 @@ extern mutex_lock_t *Lock[MAX_LOCK_NUM_TOTAL];
 extern mutex_lock_t lock1;
 extern mutex_lock_t lock2;
 extern mutex_lock_t *Lock[MAX_LOCK_NUM_TOTAL];
+
+extern uint32_t get_pcb_index(int pid);
 
 #endif

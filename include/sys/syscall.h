@@ -70,6 +70,8 @@
 #define SYSCALL_KILL 46
 #define SYSCALL_PS 47
 
+#define SYSCALL_SCANF 48
+
 /* syscall function pointer */
 extern int (*syscall[NUM_SYSCALLS])();
 
@@ -111,4 +113,5 @@ extern void sys_waitpid(int n);
 extern void sys_kill(int n);
 extern void sys_ps();
 
+extern int sys_scanf(int *mem);
 #endif

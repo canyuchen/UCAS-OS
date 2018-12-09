@@ -314,4 +314,11 @@ void do_kill(int n)
     }
 }
 
-
+uint32_t get_pcb_index(int pid)
+{
+    int i = 0;
+    while(i < NUM_MAX_TASK && pcb[i].pid != pid){
+        i++;
+    }
+    return i;
+}

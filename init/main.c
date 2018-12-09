@@ -36,6 +36,8 @@
 #include "lock.h"
 #include "barrier.h"
 #include "mailbox.h"
+#include "mm.h"
+#include "scanf.h"
 
 int is_init = 0;
 
@@ -185,6 +187,9 @@ static void init_exception()
 	memcpy((uint8_t *)0x80000180, (uint8_t *)exception_handler_begin,\
 		   exception_handler_end-exception_handler_begin);
 
+	memcpy((uint8_t *)0x80000000, (uint8_t *)exception_handler_begin,\
+		   exception_handler_end-exception_handler_begin);
+
 	reset_timer();
 }
 
@@ -222,6 +227,7 @@ static void init_syscall(void)
 	syscall[SYSCALL_SPAWN] = (int (*)()) &do_spawn;
 	syscall[SYSCALL_KILL] = (int (*)()) &do_kill;
 	syscall[SYSCALL_PS] = (int (*)()) &do_ps;
+	syscall[SYSCALL_SCANF] = (int (*)()) &do_scanf;
 }
 
 // jump from bootloader.
@@ -243,6 +249,8 @@ void __attribute__((section(".entry_function"))) _start(void)
 
 	// init screen (QAQ)
 	init_screen();
+
+	init_memory();
 
 	while (1)
 	{
