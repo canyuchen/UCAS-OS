@@ -2,7 +2,7 @@
 #include "stdio.h"
 #include "syscall.h"
 #include "screen.h"
-#include "test4_1.h"
+#include "test4_2.h"
 
 static char blank[]  = {"                   "};
 static char plane1[] = {"    ___         _  "};
@@ -10,7 +10,7 @@ static char plane2[] = {"| __\\_\\______/_| "};
 static char plane3[] = {"<[___\\_\\_______| "};
 static char plane4[] = {"|  o'o             "};
 
-void drawing_task4_1(void)
+void drawing_task4_2(void)
 {
     int i = 22, j = 10;
 
