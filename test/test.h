@@ -33,6 +33,7 @@
 #define INCLUDE_TEST_H
 
 #include "test_project4_task1/test4_1.h"
+#include "test_project4_task2/test4_2.h"
 #include "sched.h"
 #include "test_project3/test3.h"
 

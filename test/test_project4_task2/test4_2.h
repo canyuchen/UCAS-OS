@@ -1,5 +1,5 @@
-#ifndef INCLUDE_TASK4_H_
-#define INCLUDE_TASK4_H_
+#ifndef INCLUDE_TASK4_2_H_
+#define INCLUDE_TASK4_2_H_
 
 #include "type.h"
 

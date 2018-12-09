@@ -86,8 +86,8 @@ struct task_info task15 = {"CaoCao", (uint32_t)&CaoCao, USER_PROCESS};
 struct task_info task16 = {"task4-1.1", (uint32_t)&drawing_task4_1, USER_PROCESS};
 struct task_info task17 = {"task4-1.2", (uint32_t)&rw_task4_1, USER_PROCESS};
 
-// struct task_info task18 = {"task4-2.1", (uint32_t)&LiuBei, USER_PROCESS};
-// struct task_info task19 = {"task4-2.2", (uint32_t)&CaoCao, USER_PROCESS};
+struct task_info task18 = {"task4-2.1", (uint32_t)&drawing_task4_2, USER_PROCESS};
+struct task_info task19 = {"task4-2.2", (uint32_t)&rw_task4_2, USER_PROCESS};
 
 // struct task_info task20 = {"task4-3.1", (uint32_t)&LiuBei, USER_PROCESS};
 // struct task_info task21 = {"task4-3.2", (uint32_t)&CaoCao, USER_PROCESS};
@@ -99,9 +99,7 @@ static struct task_info *test_tasks[17] = {&task1, &task2, &task3,
                                            &task7, &task8, &task9,
                                            &task10, &task11, &task12,
                                            &task13, &task14, &task15,
-                                           &task16, &task17
-                                        //    , 
-                                        //    &task18, &task19, 
+                                           &task16, &task17, &task18, &task19
                                         //    &task20, &task21
                                            };
 

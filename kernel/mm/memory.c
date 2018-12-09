@@ -153,6 +153,7 @@ void fill_page_table()
     }
 }
 
+/*
 //TASK 1 initialization
 void fill_tlb()
 {
@@ -197,7 +198,7 @@ void fill_tlb()
     }
     
 }
-
+*/
 
 //for debug
 void read_tlb_1()
@@ -212,6 +213,7 @@ void read_tlb_1()
         printf("%d ", tlb_table[i].PFN1);
     }
 }
+
 
 //for debug
 /*
@@ -254,9 +256,9 @@ void init_memory()
 
     bzero((uint32_t *)(PAGE_FRAME_START + PAGE_TABLE_SIZE), VM_SIZE);
 
-    fill_page_table();
+    // fill_page_table();
 
-    fill_tlb();
+    // fill_tlb();
 
 }
 
