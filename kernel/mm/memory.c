@@ -212,6 +212,7 @@ void read_tlb_1()
 }
 
 //for debug
+/*
 void read_page_map()
 {
     int i = 0;
@@ -224,6 +225,7 @@ void read_page_map()
         printf("%d ", tlb_table[i].PFN1);
     }  
 }
+*/
 
 void init_memory()
 {
