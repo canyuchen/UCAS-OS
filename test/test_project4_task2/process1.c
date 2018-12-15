@@ -3,6 +3,7 @@
 #include "syscall.h"
 #include "screen.h"
 #include "test4_2.h"
+#include "mm.h"
 
 static char blank[]  = {"                   "};
 static char plane1[] = {"    ___         _  "};
@@ -14,6 +15,11 @@ void drawing_task4_2(void)
 {
     int i = 22, j = 10;
 
+    sys_move_cursor(1, 11);
+    printf("tlb_refill_count : %d", tlb_refill_count);
+    sys_move_cursor(1, 12);
+    printf("tlb_invalid_count : %d", tlb_invalid_count);
+    
     while (1)
     {
         for (i = 60; i > 0; i--)
@@ -43,5 +49,11 @@ void drawing_task4_2(void)
 
         sys_move_cursor(1, j + 3);
         printf("%s", blank);
+
+        sys_move_cursor(1, 11);
+        printf("tlb_refill_count : %d", tlb_refill_count);
+        sys_move_cursor(1, 12);
+        printf("tlb_invalid_count : %d", tlb_invalid_count);
+
     }
 }

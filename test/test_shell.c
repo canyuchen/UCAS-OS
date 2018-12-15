@@ -92,9 +92,9 @@ struct task_info task19 = {"task4-2.2", (uint32_t)&rw_task4_2, USER_PROCESS};
 // struct task_info task20 = {"task4-3.1", (uint32_t)&LiuBei, USER_PROCESS};
 // struct task_info task21 = {"task4-3.2", (uint32_t)&CaoCao, USER_PROCESS};
 
-static uint32_t num_test_tasks = 17;
+static uint32_t num_test_tasks = 19;
 
-static struct task_info *test_tasks[17] = {&task1, &task2, &task3,
+static struct task_info *test_tasks[19] = {&task1, &task2, &task3,
                                            &task4, &task5, &task6,
                                            &task7, &task8, &task9,
                                            &task10, &task11, &task12,
@@ -223,7 +223,7 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'l'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == ' '
                 && (k = atoi(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5)) >= 0
-                && k <= 14 ){
+                && k <= num_test_tasks - 1 ){
                     printf("kill process PID = %d\n", k);
                     sys_kill(k);
                     printf("> root@UCAS_OS: ");

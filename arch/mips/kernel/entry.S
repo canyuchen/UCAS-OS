@@ -49,6 +49,28 @@ LEAF(asm_start)
     nop
 END(asm_start)
 
+LEAF(close_clock_interrupt)
+    mfc0    k0, CP0_STATUS
+    nop
+    li      k1, 0xffff7fff
+    and     k0, k1
+    mtc0    k0, CP0_STATUS
+    nop
+    jr      ra
+    nop
+END(close_clock_interrupt)
+
+LEAF(enable_clock_interrupt)
+    mfc0    k0, CP0_STATUS
+    nop
+    li      k1, 0xffff7fff
+    or      k0, k1
+    mtc0    k0, CP0_STATUS
+    nop
+    jr      ra
+    nop
+END(enable_clock_interrupt)
+
 .macro SAVE_CONTEXT offset
     // TODO save context
     // k0,k1 deal with operating system & exception handling retention 
@@ -123,6 +145,13 @@ END(asm_start)
     sw      k1, 148(k0)
 .endm
 
+.macro SAVE_CONTEXT_SP offset
+    lw k0, current_running
+    addi k0, k0, \offset
+    /* stack pointer */
+    sw sp, 116(k0)
+.endm
+
 .macro RESTORE_CONTEXT offset
     // TODO restore context
     /* zero register, its content is always 0 */
@@ -191,6 +220,13 @@ END(asm_start)
     lw      k1, 148(k0)
     mtc0    k1, CP0_EPC
     nop
+.endm
+
+.macro RESTORE_CONTEXT_SP offset
+    lw k0, current_running
+    addi k0, k0, \offset
+    /* stack pointer */
+    lw sp, 116(k0)
 .endm
 
 NESTED(do_scheduler, 0, ra)
@@ -509,6 +545,13 @@ LEAF(set_cp0_pagemask)
     nop
 END(set_cp0_pagemask)
 
+LEAF(get_sp_reg)
+    add  v0, sp, zero
+    nop
+    jr ra
+    nop
+END(get_sp_reg)
+
 LEAF(tlb_flush)
     mfc0  k1,CP0_ENTRYHI
     nop
@@ -557,10 +600,35 @@ LEAF(tlb_flush_no_check)
     nop
 END(tlb_flush_no_check)
 
+LEAF(tlb_flush_all)
+    li	    a3, 0
+    mtc0	zero, CP0_PAGEMASK
+    li	    a2, 32
+    lui	    a1, 0x8000
+    1:
+    mtc0	a1, CP0_ENTRYHI
+    mtc0	zero, CP0_ENTRYLO0
+    mtc0	zero, CP0_ENTRYLO1
+    mtc0	a3, CP0_INDEX
+    addiu	a3, 1
+    tlbwi
+    bne	    a3, a2, 1b
+    nop
+END(tlb_flush_all)
+
 //TO DO
 NESTED(handle_tlb,0,sp)
+    SAVE_CONTEXT(USER)
+
+    RESTORE_CONTEXT(KERNEL)
+    //RESTORE_CONTEXT_SP(KERNEL)
+
+/*
+    jal   print_sp_reg
+    nop
+*/
 	// find the bad virtual address
-	//jal   handle_tlb_exception_helper
+	jal   handle_tlb_exception_helper
 	nop	
 
     /*  TLB refill   */
@@ -592,6 +660,16 @@ NESTED(handle_tlb,0,sp)
 	j     return_from_exception
 	nop
 */
+
+    SAVE_CONTEXT(KERNEL)
+    //SAVE_CONTEXT_SP(KERNEL)
+    RESTORE_CONTEXT(USER)
+    nop
+    mfc0 k1, CP0_EPC
+    nop
+    j     return_from_exception
+    nop
+
 END(handle_tlb)
 
 

@@ -4,6 +4,7 @@
 #include "sched.h"
 #include "queue.h"
 #include "screen.h"
+#include "mm.h"
 
 pcb_t pcb[NUM_MAX_TASK];
 
@@ -170,6 +171,10 @@ void do_spawn(task_info_t *task_info)
 {
     //TO_IMPROVE
     int i = 0;
+
+    PID++;
+    // flag_spawn = 1;
+
     while(pcb[i].status != TASK_EXITED){
         i++;
         if(i >= NUM_MAX_TASK){
@@ -187,11 +192,14 @@ void do_spawn(task_info_t *task_info)
 		pcb[i].lock[j] = NULL;
 	}
     pcb[i].kernel_context.regs[29] = STACK_TOP;
-	pcb[i].user_context.regs[29] = STACK_TOP + STACK_SIZE;
+	// pcb[i].user_context.regs[29] = STACK_TOP + STACK_SIZE;
+    pcb[i].user_context.regs[29] = USER_STACK_TOP + VM_STACK_SIZE;
 	pcb[i].kernel_context.regs[30] = STACK_TOP;
 	pcb[i].user_context.regs[30] = STACK_TOP + STACK_SIZE;
 	pcb[i].kernel_stack_top = STACK_TOP;
 	pcb[i].user_stack_top = STACK_TOP + STACK_SIZE;		
+
+    USER_STACK_TOP += VM_STACK_SIZE * 2;
 	STACK_TOP += STACK_SIZE*2;
 	if(STACK_TOP > STACK_MAX)
 	{
@@ -224,8 +232,10 @@ void do_spawn(task_info_t *task_info)
 	pcb[i].sleeping_deadline = 0;
     pcb[i].lock_num = 0;
 
-    PID++;
+    // PID++;
 	queue_push(&ready_queue,&pcb[i]); 
+
+    // flag_spawn = 0;
 }
 
 void do_exit()

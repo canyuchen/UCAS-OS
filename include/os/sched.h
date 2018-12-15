@@ -51,6 +51,10 @@
 #define LOCK_MAX_NUM 10
 #define MAX_LOCK_NUM_TOTAL 34
 
+#define VM_STACK_MIN 0x60000000 //1G512M - 2G USER STACK
+// #define VM_STACK_MIN 0x59999999 //1G512M - 2G USER STACK
+#define VM_STACK_SIZE 0x1000 //64K stack space
+
 #define CLOSE_INTERRUPT \
 do{ \
 	uint32_t cp0_status = get_cp0_status(); \
@@ -188,6 +192,9 @@ extern pcb_t pcb[NUM_MAX_TASK];
 extern uint32_t initial_cp0_status;
 extern uint32_t PID;
 extern uint32_t STACK_TOP;
+extern uint32_t USER_STACK_TOP;
+
+// extern bool_t flag_spawn = 0;
 
 extern void first_entry();
 

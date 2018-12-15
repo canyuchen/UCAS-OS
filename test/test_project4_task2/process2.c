@@ -15,26 +15,36 @@ static int rand()
 	return current_time % 1000;
 }
 
+static void scanf(int *mem1)
+{
+    int re;
+    while((re = sys_scanf(mem1)) != '\r'){
+    //while((re = do_scanf(mem1)) != '\r'){
+        printf("%c", re);
+    }
+}
+
 void rw_task4_2(void)
 {
-	int mem1, mem2, mem3, mem4, mem5;
+    sys_move_cursor(1, 11);
+    printf("tlb_refill_count : %d", tlb_refill_count);
+    sys_move_cursor(1, 12);
+    printf("tlb_invalid_count : %d", tlb_invalid_count);
+
+	int mem1, mem2, mem3, mem4;
 	int memory[4];
 	int i = 0;
-    int re;
     int ch;
 
     init_InputBuffer_s(inputBuffer_s_ptr);
 
+    // close_clock_interrupt();
+
     sys_move_cursor(1, 0);
     printf("Write Address 1 : ");
-    while((re = sys_scanf(&mem1)) != '\r'){
-        printf("%c", re);
-    }
+    scanf(&mem1);
 
-    // printf("   %d", *(inputBuffer_s_ptr->buffer));
-    // printf("   %d", *(inputBuffer_s_ptr->buffer + 1));
-    // printf("   %d", atoi(inputBuffer_s_ptr->buffer ));
-    // sys_scanf(&mem1);
+    // enable_clock_interrupt();
 
     sys_move_cursor(1, 1);
     mem2 = rand();
@@ -45,15 +55,18 @@ void rw_task4_2(void)
     *(int *)mem1 = mem2;
     printf("%d is written to virtual addr 1 : %d", mem2, mem1);
 
-    // printf("            %d", inputBuffer_s_ptr->pointer);
+    sys_move_cursor(1, 11);
+    printf("tlb_refill_count : %d", tlb_refill_count);
+    sys_move_cursor(1, 12);
+    printf("tlb_invalid_count : %d", tlb_invalid_count);
+
+    // close_clock_interrupt();
 
     sys_move_cursor(1, 3);
     printf("Write Address 2 : ");
-    while((re = sys_scanf(&mem3)) != '\r'){
-        printf("%c", re);
-    }
+    scanf(&mem3);
 
-    // printf("            %d", inputBuffer_s_ptr->pointer);
+    // enable_clock_interrupt();
 
     sys_move_cursor(1, 4);
     mem4 = rand();
@@ -64,15 +77,18 @@ void rw_task4_2(void)
     *(int *)mem3 = mem4;
     printf("%d is written to virtual addr 2 : %d", mem4, mem3);
 
-    // printf("            %d", inputBuffer_s_ptr->pointer);
+    sys_move_cursor(1, 11);
+    printf("tlb_refill_count : %d", tlb_refill_count);
+    sys_move_cursor(1, 12);
+    printf("tlb_invalid_count : %d", tlb_invalid_count);
+
+    // close_clock_interrupt();
 
     sys_move_cursor(1, 6);
     printf("Read Address 1 : ");
-    while((re = sys_scanf(&mem1)) != '\r'){
-        printf("%c", re);
-    }
+    scanf(&mem1);
 
-    // printf("            %d", index);
+    // enable_clock_interrupt();
 
     sys_move_cursor(1, 7);
     memory[2] = *(int *)mem1;
@@ -81,22 +97,23 @@ void rw_task4_2(void)
     else
         printf("Read error: %d", memory[2]);
 
+    // close_clock_interrupt();
+
     sys_move_cursor(1, 8);
     printf("Read Address 2 : ");
-    while((re = sys_scanf(&mem1)) != '\r'){
-        printf("%c", re);
-    }
+    scanf(&mem3);
+
+    // enable_clock_interrupt();
 
     sys_move_cursor(1, 9);
-    memory[3] = *(int *)mem1;
+    memory[3] = *(int *)mem3;
     if(memory[3] == memory[1])
         printf("Read succeed: %d", memory[3]);
     else
         printf("Read error: %d", memory[3]);
 
-    sys_move_cursor(1, 10);
-    read_tlb_1();
-    // read_page_map();
+    // sys_move_cursor(1, 10);
+    // read_tlb_1();
 
 	while(1);
 	//Only input address.

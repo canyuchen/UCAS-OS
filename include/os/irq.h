@@ -72,6 +72,7 @@ extern void exception_handler_end(void);
 extern void handle_int(void);
 extern void handle_syscall(void);
 extern void handle_other(void);
+extern void handle_tlb(void);
 
 extern void system_call_helper(int, int, int, int);
 #endif

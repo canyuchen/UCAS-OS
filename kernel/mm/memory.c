@@ -17,15 +17,22 @@ static swap_map_entry_t swap_table[SD_SWAP_UNIT_NUM];
 //global page table pointer
 uint32_t page_table_base_ptr = 0;
 
-//global page frame pointer
+//global page frame pointer (only in memory!!!)
 uint32_t page_frame_base_ptr = PAGE_FRAME_START;
 
-//global vitual memory pointer
+static uint32_t free_page_frame_num = FRAME_PAGES;
+
+//global vitual memory pointer, 0 - 2G VM
 uint32_t vm_base_ptr = 0;
 
 tlb_entry_t tlb_table[TLB_ENTRIES_NUM];
 
 static int tlb_entry_index_ptr = 0;
+
+static int page_alloc_ptr = 0;
+
+int tlb_refill_count = 0;
+int tlb_invalid_count = 0;
 
 /* get the physical address from virtual address (in kernel) */
 uint32_t va_2_pa(uint32_t va) 
@@ -73,10 +80,11 @@ uint32_t page_alloc(bool_t pinned)
     bool_t flag_find_free_page = 0;
     static int clock_ptr = 0;
     int i;
-    for(i = 0; i < PAGEABLE_PAGES; i++){
+    for(i = page_alloc_ptr; i < FRAME_PAGES; i++){
         if(page_map[i].avail == 1){
             flag_find_free_page = 1;
             free_index = i;
+            page_alloc_ptr = (page_alloc_ptr + 1) % FRAME_PAGES;
             // return free_index;
         }
     }
@@ -115,14 +123,19 @@ uint32_t page_alloc(bool_t pinned)
         page_map[free_index].avail = 0;
         page_map[free_index].pinned = pinned;
         page_map[free_index].R = 1;
+        page_map[free_index].pid = PID;
     }
     else{
         page_map[free_index].vaddr = current_running->user_context.cp0_badvaddr;
-        page_map[free_index].VPN = page_map[free_index].vaddr >> 12;
+        page_map[free_index].VPN = ((page_map[free_index].vaddr & 0xfffff000) >> 12);
         page_map[free_index].pid = current_running->pid;
         page_map[free_index].avail = 0;
         page_map[free_index].pinned = pinned;
         page_map[free_index].R = 1;
+    }
+
+    if(free_page_frame_num > 0){
+        free_page_frame_num--;
     }
 
     return free_index;
@@ -139,21 +152,22 @@ void set_up_page_table()
     }
 }
 
-
+/*
 //TASK 1 initialization
 void fill_page_table()
 {
     int i = 0;
     uint32_t *page_table = (uint32_t *)page_table_base_ptr;
     for(; i < VM_SIZE / PAGE_SIZE; i++){
-        page_table[i] = (page_map[i].paddr & 0xfffff000) 
+        page_table[i] = (page_map[i + PAGE_TABLE_SIZE / PAGE_SIZE].paddr & 0xfffff000) 
                       | PTE_G | PTE_V | PTE_D | PTE_C;
-        page_map[i].VPN = i;
-        page_map[i].vaddr = i * PAGE_SIZE;
+        page_map[i + PAGE_TABLE_SIZE / PAGE_SIZE].VPN = i;
+        page_map[i + PAGE_TABLE_SIZE / PAGE_SIZE].vaddr = i * PAGE_SIZE;
     }
 }
 
-/*
+
+
 //TASK 1 initialization
 void fill_tlb()
 {
@@ -235,11 +249,11 @@ void init_memory()
 {
     //init page frames 
     int i;
-    for(i = 0; i < PAGEABLE_PAGES; i++){
+    for(i = 0; i < FRAME_PAGES; i++){
         page_map[i].paddr = page_frame_paddr(i);
         page_map[i].vaddr = 0;        
         page_map[i].VPN = 0;
-        page_map[i].PFN = page_map[i].paddr >> 12;
+        page_map[i].PFN = ((page_map[i].paddr & 0xfffff000) >> 12);
         page_map[i].pid = 0;
         page_map[i].index = i;
         page_map[i].avail = 1;
@@ -250,30 +264,131 @@ void init_memory()
         page_map[i].R = 0;
     }
 
+    for(; i < PAGEABLE_PAGES; i++){
+        page_map[i].paddr = 0;
+        page_map[i].vaddr = 0;        
+        page_map[i].VPN = 0;
+        page_map[i].PFN = 0;
+        page_map[i].pid = 0;
+        page_map[i].index = i;
+        page_map[i].avail = 1;
+        page_map[i].dirty = 1;
+        page_map[i].pinned = 0;
+        page_map[i].swaped = 0;
+        page_map[i].swap_index = 1;
+        page_map[i].R = 0;
+    }
     //arrange n pinned page frame for global page table
     set_up_page_table();
     page_table_base_ptr = PAGE_FRAME_START;
 
-    bzero((uint32_t *)(PAGE_FRAME_START + PAGE_TABLE_SIZE), VM_SIZE);
+    // bzero((uint32_t *)(PAGE_FRAME_START + PAGE_TABLE_SIZE), VM_SIZE);
 
+
+    //TASK 1
     // fill_page_table();
 
     // fill_tlb();
 
+
+    // fill_page_table();
+
 }
 
 /*
-void handle_tlb_exception_helper()
+uint32_t get_user_stack_top()
 {
-    static int tlb_refill_count = 0;
-    static int tlb_invalid_count = 0;
+	bool_t pinned = 0;
+	uint32_t frame_index = page_alloc(pinned);
+	uint32_t user_stack_top = page_frame_vaddr(frame_index);
 
-    uint32_t EntryHi = get_cp0_entryhi();
-    uint32_t badvpn2 = EntryHi >> 13;
-    uint32_t badvaddr = get_cp0_badvaddr();
-    uint32_t EntryLo_is_odd_offset = (badvaddr & 0x1000) >> 12;
-
-    uint32_t 
-    
+    return user_stack_top;
 }
 */
+
+void print()
+{
+	vt100_move_cursor(1, 1);
+	printk("init_exception");
+}
+
+void handle_tlb_exception_helper()
+{
+    uint32_t cp0_pagemask = 0;
+    uint32_t EntryHi = get_cp0_entryhi();
+    uint32_t badvpn2 = ((EntryHi & 0xffffe000) >> 13);
+    uint32_t badvaddr = get_cp0_badvaddr();
+    uint32_t EntryLo_is_odd = ((badvaddr & 0x1000) >> 12);
+    uint32_t badvpn = ((badvaddr & 0xfffff000) >> 12);
+    uint32_t *page_table = (uint32_t *)page_table_base_ptr;
+    // uint32_t *badpte_ptr = &(page_table[badvpn]);
+
+	// vt100_move_cursor(1, 1);
+    // printk("%d ", EntryHi);
+
+    asm volatile("tlbp");
+    uint32_t index = get_cp0_index();
+    if(((index & 0x80000000) >> 31) == 1){
+        tlb_refill_count++;
+        //PTE is valid and PFN is in memory
+        if(page_table[badvpn] != 0 && ((page_table[badvpn] & PTE_S) == 0)){
+            uint32_t PFN = ((page_table[badvpn] & 0xfffff000) >> 12);
+            if(EntryLo_is_odd == 1){
+                uint32_t EntryLo1 = (PFN << 6) | PTE_C | PTE_D | PTE_V | PTE_G;
+                set_cp0_entrylo1(EntryLo1);
+            }
+            else{
+                uint32_t EntryLo0 = (PFN << 6) | PTE_C | PTE_D | PTE_V | PTE_G;
+                set_cp0_entrylo0(EntryLo0);                
+            }
+            set_cp0_pagemask(cp0_pagemask);
+            tlb_entry_index_ptr = (tlb_entry_index_ptr + 1) % TLB_ENTRIES_NUM;
+            set_cp0_index(tlb_entry_index_ptr);
+
+            asm volatile("tlbwi");
+            return;
+        }
+        //PTE is valid but PFN is in swap
+        else if(page_table[badvpn] != 0 && ((page_table[badvpn] & PTE_S) == PTE_S)){
+        }
+        //PTE is invalid 
+        else if(page_table[badvpn] == 0){
+            if(free_page_frame_num != 0){
+                bool_t pinned = 0;
+                int index = page_alloc(pinned);
+                uint32_t PFN = ((page_map[index].paddr & 0xfffff000) >> 12);
+                page_table[badvpn] = (PFN << 12) | PTE_C | PTE_D | PTE_V | PTE_G;
+
+                if(EntryLo_is_odd == 1){
+                    uint32_t EntryLo1 = (PFN << 6) | PTE_C | PTE_D | PTE_V | PTE_G;
+                    set_cp0_entrylo1(EntryLo1);
+                }
+                else{
+                    uint32_t EntryLo0 = (PFN << 6) | PTE_C | PTE_D | PTE_V | PTE_G;
+                    set_cp0_entrylo0(EntryLo0);                
+                }
+                set_cp0_pagemask(cp0_pagemask);
+                tlb_entry_index_ptr = (tlb_entry_index_ptr + 1) % TLB_ENTRIES_NUM;
+                set_cp0_index(tlb_entry_index_ptr);      
+
+                asm volatile("tlbwi");
+                return;
+            }
+            else{
+
+            }
+        }
+    }
+    else{
+        tlb_invalid_count++;
+    }
+}
+
+void print_sp_reg()
+{
+    uint32_t sp = get_sp_reg();
+	vt100_move_cursor(2, 2);
+    printk("%d ", sp);
+}
+
+

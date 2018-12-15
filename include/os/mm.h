@@ -2,20 +2,15 @@
 #define INCLUDE_MM_H_
 
 #include "type.h"
+#include "sched.h"
 
 enum {
     /* physical page facts */
-    PAGE_SIZE = 0x1000,
-    //Level 1
-    // PAGE_DIR_ENTRIES = (PAGE_SIZE / sizeof(uint32_t)),
-    //Level 2
-    //FOR NOW only considering ONE LEVEL page table
+    PAGE_SIZE = 0x1000, //4KB
 
-    PAGE_TABLE_SIZE = 0x400000, //4MB
+    PAGE_TABLE_SIZE = 0x200000, //16M - 18M => 512 PAGES => 2MB => 0 - 2G VM 
+    PAGE_TABLE_PAGES = PAGE_TABLE_SIZE / PAGE_SIZE,
     PAGE_TABLE_ENTRIES_NUM = (PAGE_TABLE_SIZE / sizeof(uint32_t)), 
-
-    //describe the total number of the pages of the virtual memory
-    VM_PAGEABLE_PAGES_NUM = PAGE_TABLE_ENTRIES_NUM,
 
     // Global bit
     PTE_G = (0x40 >> 6),
@@ -28,26 +23,39 @@ enum {
     // swaped bit
     PTE_S = (0x1000 >> 6),
 
+    VM_SIZE = 0x80000000, //0 - 2GB
+
+    FRAME_SIZE = 0x800000, //16M - 24M => 2048 PAGES => 8MB 
+    FRAME_PAGES = FRAME_SIZE / PAGE_SIZE,
+
     //swap division : 4K:32M - 32M+4K
+    // SD_SWAP_DIVISION = 0x1000,
+    // SD_SWAP_UNIT = 0X1000,
+    // SD_SWAP_UNIT_NUM = 0x1,
+
+    // SD_SWAP_DIVISION = VM_SIZE - FRAME_SIZE,
     SD_SWAP_DIVISION = 0x1000,
     SD_SWAP_UNIT = 0X1000,
-    SD_SWAP_UNIT_NUM = 0x1,
+    SD_SWAP_UNIT_NUM = SD_SWAP_DIVISION / SD_SWAP_UNIT,
+
+    //describe the total number of the pages of the virtual memory
+    VM_PAGES = VM_SIZE / PAGE_SIZE,
+    //VM_PAGES == PAGE_TABLE_ENTRIES_NUM
 
     /* Constants to simulate a very small physical memory. */
-    PAGEABLE_PAGES = PAGE_TABLE_SIZE / PAGE_SIZE + 0x800 
-                     + SD_SWAP_UNIT_NUM,
-    //TASK 1 setting:
-    //virtual addr: 0 - 8M 
-    //physical addr: 20M - 28M + 4K
-    VM_SIZE = 0x800000,
+    // PAGEABLE_PAGES = PAGE_TABLE_PAGES + FRAME_PAGES + SD_SWAP_UNIT_NUM,
+    PAGEABLE_PAGES = FRAME_PAGES + SD_SWAP_UNIT_NUM,
 
     //page frame
-    PAGE_FRAME_START = 0xa1000000,
+    PAGE_FRAME_START = 0xa1000000, //16M
 
     //tlb
-    TLB_ENTRIES_NUM = 32,
+    TLB_ENTRIES_NUM = 32, //0-31
 
 };
+
+extern int tlb_refill_count;
+extern int tlb_invalid_count;
 
 typedef struct page_map_entry {
     uint32_t paddr; 
@@ -61,7 +69,7 @@ typedef struct page_map_entry {
     bool_t   pinned;
     bool_t   swaped;
     int      swap_index;
-    uint32_t R;
+    bool_t   R;
 } page_map_entry_t;
 
 typedef struct tlb_entry {
@@ -85,6 +93,12 @@ void init_memory();
 // void do_TLB_Refill();
 // void do_page_fault();
 
+// uint32_t page_frame_paddr(uint32_t index);
+// uint32_t page_frame_vaddr(uint32_t index);
+// uint32_t pa_2_va(uint32_t pa);
+// uint32_t va_2_pa(uint32_t va);
+// uint32_t page_alloc(bool_t pinned);
+// uint32_t get_user_stack_top();
 
 typedef struct swap_map_entry {
     uint32_t PFN;
@@ -118,6 +132,14 @@ extern uint32_t get_cp0_entrylo1();
 extern void set_cp0_entrylo1(uint32_t cp0_entrylo1);
 extern uint32_t get_cp0_pagemask();
 extern void set_cp0_pagemask(uint32_t cp0_pagemask);
+
+//for debug
+extern uint32_t get_sp_reg();
+extern void print_sp_reg();
+
+
+extern void close_clock_interrupt();
+extern void enable_clock_interrupt();
 
 void handle_tlb_exception_helper();
 

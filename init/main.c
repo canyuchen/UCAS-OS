@@ -54,7 +54,10 @@ pcb_t *current_running = &pcb_init;
 
 uint32_t STACK_TOP = STACK_MIN;
 
-uint32_t PID = 2;
+uint32_t USER_STACK_TOP = VM_STACK_MIN;
+
+// uint32_t PID = 2;
+uint32_t PID = 0;
 
 uint32_t time_elapsed = 0;
 
@@ -86,6 +89,10 @@ mutex_lock_t mutex_lock_2;
 static void init_pcb()
 {
 	int i = 0;
+
+	PID++;
+	// flag_spawn = 1;
+
 	for(;i < NUM_MAX_TASK; i++){
 		pcb[i].status = TASK_EXITED;
 	}
@@ -117,10 +124,13 @@ static void init_pcb()
 	}
 	pcb[1].kernel_context.regs[29] = STACK_TOP;
 	pcb[1].user_context.regs[29] = STACK_TOP + STACK_SIZE;
+	// pcb[i].user_context.regs[29] = USER_STACK_TOP + VM_STACK_SIZE;
 	pcb[1].kernel_context.regs[30] = STACK_TOP;
 	pcb[1].user_context.regs[30] = STACK_TOP + STACK_SIZE;
 	pcb[1].kernel_stack_top = STACK_TOP;
 	pcb[1].user_stack_top = STACK_TOP + STACK_SIZE;		
+
+	USER_STACK_TOP += VM_STACK_SIZE;
 	STACK_TOP += STACK_SIZE*2;
 	if(STACK_TOP > STACK_MAX)
 	{
@@ -158,6 +168,8 @@ static void init_pcb()
 
 	current_running->entry_point = 0;
 	current_running->pid = 0;
+
+	// flag_spawn = 0;
 }
 
 static void init_exception_handler()
@@ -168,6 +180,9 @@ static void init_exception_handler()
 	}
 	exception_handlers[INT] = (uint32_t)handle_int;
 	exception_handlers[SYS] = (uint32_t)handle_syscall;
+	exception_handlers[MOD] = (uint32_t)handle_tlb;
+	exception_handlers[TLBL]= (uint32_t)handle_tlb;
+	exception_handlers[TLBS]= (uint32_t)handle_tlb;
 }
 
 static void init_exception()
@@ -247,10 +262,12 @@ void __attribute__((section(".entry_function"))) _start(void)
 	// init Process Control Block (-_-!)
 	init_pcb();
 
+	init_memory();
+
 	// init screen (QAQ)
 	init_screen();
 
-	init_memory();
+	// init_memory();
 
 	while (1)
 	{
