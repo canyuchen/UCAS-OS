@@ -253,10 +253,14 @@ static void fill_tlb()
         VPN2 = 0xffff7;
         cp0_entryhi = (VPN2 << 13);
         cp0_pagemask = 0;
-        PFN0 = ((page_table[VPN2 << 1] & 0xfffff000) >> 12);
-        PFN1 = ((page_table[(VPN2 << 1) + 1] & 0xfffff000) >> 12);
-        cp0_entrylo0 = (PFN0 << 6) | PTE_G | PTE_V | PTE_D | PTE_C;
-        cp0_entrylo1 = (PFN1 << 6) | PTE_G | PTE_V | PTE_D | PTE_C;
+        PFN0 = 0;
+        PFN1 = 0;
+        // cp0_entrylo0 = (PFN0 << 6) | PTE_G | PTE_V | PTE_D | PTE_C;
+        // cp0_entrylo1 = (PFN1 << 6) | PTE_G | PTE_V | PTE_D | PTE_C;
+
+        // init TLB as invalid!!!!!!!
+        cp0_entrylo0 = 0;
+        cp0_entrylo1 = 0;
         cp0_index = i;
 
         tlb_table[i].VPN2 = VPN2;
