@@ -229,7 +229,7 @@ void fill_tlb()
 }
 */
 
-void fill_tlb()
+static void fill_tlb()
 {
     int i = 0;
     uint32_t cp0_entryhi;
