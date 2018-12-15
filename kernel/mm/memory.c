@@ -229,6 +229,51 @@ void fill_tlb()
 }
 */
 
+void fill_tlb()
+{
+    int i = 0;
+    uint32_t cp0_entryhi;
+    uint32_t cp0_pagemask;
+    uint32_t cp0_entrylo0;
+    uint32_t cp0_entrylo1;
+    uint32_t cp0_index;
+    uint32_t *page_table = (uint32_t *)page_table_base_ptr;
+    uint32_t VPN2;
+    uint32_t PFN0;
+    uint32_t PFN1;
+
+    for(; i < TLB_ENTRIES_NUM; i++){
+        tlb_table[i].empty = 1;
+        tlb_table[i].index = i;
+
+        // VPN2 = (2 * i * PAGE_SIZE) & 0xffffe000 >> 13;
+        // VPN2 = ((2 * i * PAGE_SIZE) & 0xffffe000) >> 13;
+        // BUG!!!
+        // VPN2 = (((2 * i * PAGE_SIZE) & 0xffffe000) >> 13);
+        VPN2 = 0xffff7;
+        cp0_entryhi = (VPN2 << 13);
+        cp0_pagemask = 0;
+        PFN0 = ((page_table[VPN2 << 1] & 0xfffff000) >> 12);
+        PFN1 = ((page_table[(VPN2 << 1) + 1] & 0xfffff000) >> 12);
+        cp0_entrylo0 = (PFN0 << 6) | PTE_G | PTE_V | PTE_D | PTE_C;
+        cp0_entrylo1 = (PFN1 << 6) | PTE_G | PTE_V | PTE_D | PTE_C;
+        cp0_index = i;
+
+        tlb_table[i].VPN2 = VPN2;
+        tlb_table[i].PFN0 = PFN0;
+        tlb_table[i].PFN1 = PFN1;
+
+        set_cp0_entryhi(cp0_entryhi);
+        set_cp0_pagemask(cp0_pagemask);
+        set_cp0_entrylo0(cp0_entrylo0);
+        set_cp0_entrylo1(cp0_entrylo1);
+        set_cp0_index(cp0_index);
+
+        asm volatile("tlbwi");
+    }
+    
+}
+
 //for debug
 void read_tlb_1()
 {
@@ -303,7 +348,7 @@ void init_memory()
     //TASK 1
     // fill_page_table();
 
-    // fill_tlb();
+    fill_tlb();
 
 
     // fill_page_table();
@@ -329,6 +374,11 @@ void print()
 
 void handle_tlb_exception_helper()
 {
+
+    vt100_move_cursor(1, 47);
+    printk("                                              ");
+    printk("%d %d", ((uint32_t *)page_table_base_ptr)[0], ((uint32_t *)page_table_base_ptr)[1]);
+
 	vt100_move_cursor(1, 48);
     printk("%d %d %d", page_alloc_ptr, page_map[page_alloc_ptr].paddr, page_map[page_alloc_ptr].PFN);
     vt100_move_cursor(1, 49);
@@ -358,9 +408,20 @@ void handle_tlb_exception_helper()
     asm volatile("tlbp");
     uint32_t index = get_cp0_index();
     if(((index & 0x80000000) >> 31) == 1){
+
+        vt100_move_cursor(1, 46);
+        printk("                                              ");
+        printk("%d", 111);
+
+
         tlb_refill_count++;
         //PTE is valid and PFN is in memory
         if(page_table[badvpn] != 0 && ((page_table[badvpn] & PTE_S) == 0)){
+
+            vt100_move_cursor(1, 46);
+            printk("                                              ");
+            printk("%d", 222);
+
             uint32_t PFN = ((page_table[badvpn] & 0xfffff000) >> 12);
             if(EntryLo_is_odd == 1){
                 uint32_t EntryLo1 = (PFN << 6) | PTE_C | PTE_D | PTE_V | PTE_G;
@@ -392,20 +453,36 @@ void handle_tlb_exception_helper()
         }
         //PTE is valid but PFN is in swap
         else if(page_table[badvpn] != 0 && ((page_table[badvpn] & PTE_S) == PTE_S)){
+            vt100_move_cursor(1, 46);
+            printk("                                              ");
+            printk("%d", 333);
+
         }
         //PTE is invalid 
         else if(page_table[badvpn] == 0){
+    
+            vt100_move_cursor(1, 46);
+            printk("                                              ");
+            printk("%d", 333);
+
             if(free_page_frame_num != 0){
                 bool_t pinned = 0;
                 int index = page_alloc(pinned);
                 uint32_t PFN = ((page_map[index].paddr & 0xfffff000) >> 12);
                 page_table[badvpn] = (PFN << 12) | PTE_C | PTE_D | PTE_V | PTE_G;
 
+                vt100_move_cursor(1, 50);
+                printk("%d %d %d %d %d", page_alloc_ptr, page_map[page_alloc_ptr].paddr, page_map[page_alloc_ptr].PFN, index, PFN);
+
                 if(EntryLo_is_odd == 1){
+                    // uint32_t EntryLo1 = (PFN << 12) | PTE_C | PTE_D | PTE_V | PTE_G;
+                    // uint32_t EntryLo1 = ((page_map[index].paddr & 0xffffffc0) >> 6) | PTE_C | PTE_D | PTE_V | PTE_G;
                     uint32_t EntryLo1 = (PFN << 6) | PTE_C | PTE_D | PTE_V | PTE_G;
                     set_cp0_entrylo1(EntryLo1);
                 }
                 else{
+                    // uint32_t EntryLo0 = (PFN << 12) | PTE_C | PTE_D | PTE_V | PTE_G;
+                    // uint32_t EntryLo0 = ((page_map[index].paddr & 0xffffffc0) >> 6) | PTE_C | PTE_D | PTE_V | PTE_G;
                     uint32_t EntryLo0 = (PFN << 6) | PTE_C | PTE_D | PTE_V | PTE_G;
                     set_cp0_entrylo0(EntryLo0);                
                 }
@@ -421,20 +498,33 @@ void handle_tlb_exception_helper()
 
                 asm volatile("tlbwi");
 
+                // tlb_table[tlb_entry_index_ptr].empty = 0;
+                // tlb_table[tlb_entry_index_ptr].index = tlb_entry_index_ptr;
+                // tlb_table[tlb_entry_index_ptr].PFN0 = ((get_cp0_entrylo0() & 0xfffff000) >> 12);
+                // tlb_table[tlb_entry_index_ptr].PFN1 = ((get_cp0_entrylo1() & 0xfffff000) >> 12);
+                // tlb_table[tlb_entry_index_ptr].VPN2 = ((get_cp0_entryhi() & 0xffffe000) >> 13);
+
                 tlb_table[tlb_entry_index_ptr].empty = 0;
                 tlb_table[tlb_entry_index_ptr].index = tlb_entry_index_ptr;
-                tlb_table[tlb_entry_index_ptr].PFN0 = ((get_cp0_entrylo0() & 0xfffff000) >> 12);
-                tlb_table[tlb_entry_index_ptr].PFN1 = ((get_cp0_entrylo1() & 0xfffff000) >> 12);
+                tlb_table[tlb_entry_index_ptr].PFN0 = ((get_cp0_entrylo0() & 0xffffffc0) >> 6);
+                tlb_table[tlb_entry_index_ptr].PFN1 = ((get_cp0_entrylo1() & 0xffffffc0) >> 6);
                 tlb_table[tlb_entry_index_ptr].VPN2 = ((get_cp0_entryhi() & 0xffffe000) >> 13);
                 
                 return;
             }
             else{
-
+                vt100_move_cursor(1, 46);
+                printk("                                              ");
+                printk("%d", 444);
             }
         }
     }
     else{
+
+        vt100_move_cursor(1, 46);
+        printk("                                              ");
+        printk("%d", 555);
+
         tlb_invalid_count++;
     }
 }
