@@ -63,6 +63,8 @@ uint32_t time_elapsed = 0;
 
 extern mailbox_t mboxs[MAX_NUM_BOX];
 
+// int page_alloc_ptr = 0;
+
 // defined in entry.S
 extern void exception_handler_start();
 extern void exception_handler_end();
@@ -262,10 +264,10 @@ void __attribute__((section(".entry_function"))) _start(void)
 	// init Process Control Block (-_-!)
 	init_pcb();
 
-	init_memory();
-
 	// init screen (QAQ)
 	init_screen();
+
+	init_memory();
 
 	// init_memory();
 

@@ -108,6 +108,7 @@ typedef struct swap_map_entry {
     uint32_t index;
 } swap_map_entry_t;
 
+// extern int page_alloc_ptr;
 
 // extern swap_map_entry_t swap_table[SD_SWAP_UNIT_NUM];
 

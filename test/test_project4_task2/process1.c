@@ -15,6 +15,9 @@ void drawing_task4_2(void)
 {
     int i = 22, j = 10;
 
+    sys_move_cursor(1, 13);
+    read_tlb_1();
+
     sys_move_cursor(1, 11);
     printf("tlb_refill_count : %d", tlb_refill_count);
     sys_move_cursor(1, 12);
@@ -49,6 +52,9 @@ void drawing_task4_2(void)
 
         sys_move_cursor(1, j + 3);
         printf("%s", blank);
+
+        sys_move_cursor(1, 13);
+        read_tlb_1();
 
         sys_move_cursor(1, 11);
         printf("tlb_refill_count : %d", tlb_refill_count);
