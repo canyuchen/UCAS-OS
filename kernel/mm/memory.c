@@ -463,7 +463,7 @@ void handle_tlb_exception_helper()
     
             vt100_move_cursor(1, 46);
             printk("                                              ");
-            printk("%d", 333);
+            printk("%d", 444);
 
             if(free_page_frame_num != 0){
                 bool_t pinned = 0;
@@ -513,9 +513,7 @@ void handle_tlb_exception_helper()
                 return;
             }
             else{
-                vt100_move_cursor(1, 46);
-                printk("                                              ");
-                printk("%d", 444);
+  
             }
         }
     }
