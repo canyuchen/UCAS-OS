@@ -212,6 +212,8 @@ extern int  do_getpid();
 extern void do_waitpid(int n);
 extern void do_kill(int n); 
 
+// extern void set_entryhi_asid();
+
 extern priority_t my_priority[MAX_PID];
 extern priority_t now_priority[MAX_PID];
 

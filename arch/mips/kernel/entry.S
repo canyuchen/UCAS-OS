@@ -454,19 +454,18 @@ LEAF(get_asid)
     nop
 END(get_asid)
 
-LEAF(set_ENTRYHI_ASID)
+LEAF(set_entryhi_asid)
 	li 	  k0, 0xffffff00
 	mfc0  k1, CP0_ENTRYHI
 	nop
 	and   k1, k1, k0
-	lw 	  k0, current_running
-	lw	  k0, TASK_PID_OFFSET(k0)
-	or	  k1, k1, k0
+    
+	or	  k1, k1, a0
 	mtc0  k1, CP0_ENTRYHI
 	nop
 	jr    ra
 	nop
-END(set_ENTRYHI_ASID)
+END(set_entryhi_asid)
 
 LEAF(get_cp0_index)
     mfc0  v0, CP0_INDEX

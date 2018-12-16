@@ -183,6 +183,9 @@ void do_spawn(task_info_t *task_info)
         }
     }
 
+    // set_entryhi_asid();
+    set_entryhi_asid(PID);
+
     queue_init(&(pcb[i].waiting_queue));
 
 	bzero(&(pcb[i].kernel_context), sizeof(pcb[i].kernel_context));

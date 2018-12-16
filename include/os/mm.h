@@ -78,6 +78,7 @@ typedef struct tlb_entry {
     uint32_t VPN2;
     uint32_t PFN0;
     uint32_t PFN1;
+    uint32_t pid;
 } tlb_entry_t;
 
 typedef uint32_t page_directory_entry_t;
