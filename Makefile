@@ -19,10 +19,13 @@ SRC_LIBS	= ./libs/string.c ./libs/printk.c ./libs/mailbox.c ./libs/scanf.c
 
 #SRC_TEST	= ./test/test.c
 SRC_TEST	= ./test/test.c ./test/test_shell.c
-#SRC_TEST2	= ./test/test_project2/test_scheduler1.c ./test/test_project2/test_scheduler2.c ./test/test_project2/test_lock2.c ./test/test_project2/test_sleep.c ./test/test_project2/test_timer.c 
-#SRC_TEST2	= ./test/test_project2/test_scheduler1.c ./test/test_project2/test_scheduler2.c ./test/test_project2/test_lock1.c ./test/test_project2/test_sleep.c ./test/test_project2/test_timer.c 
+#SRC_TEST2	= ./test/test_project2/test_scheduler1.c ./test/test_project2/test_scheduler2.c \
+			  ./test/test_project2/test_lock2.c ./test/test_project2/test_sleep.c ./test/test_project2/test_timer.c 
+#SRC_TEST2	= ./test/test_project2/test_scheduler1.c ./test/test_project2/test_scheduler2.c \
+			  ./test/test_project2/test_lock1.c ./test/test_project2/test_sleep.c ./test/test_project2/test_timer.c 
 #P3 : add SRC_TEST3
-SRC_TEST3   = ./test/test_project3/test_barrier.c ./test/test_project3/test_condition.c ./test/test_project3/test_kill.c ./test/test_project3/test_sanguo.c ./test/test_project3/test_semaphore.c
+SRC_TEST3   = ./test/test_project3/test_barrier.c ./test/test_project3/test_condition.c \
+			  ./test/test_project3/test_kill.c ./test/test_project3/test_sanguo.c ./test/test_project3/test_semaphore.c
 
 SRC_TEST4_1	= ./test/test_project4_task1/process1.c ./test/test_project4_task1/process2.c
 SRC_TEST4_2	= ./test/test_project4_task2/process1.c ./test/test_project4_task2/process2.c
@@ -30,7 +33,8 @@ SRC_TEST4_2	= ./test/test_project4_task2/process1.c ./test/test_project4_task2/p
 SRC_IMAGE	= ./tools/createimage.c
 
 bootblock: $(SRC_BOOT)
-	${CC} -G 0 -O2 -fno-pic -mno-abicalls -fno-builtin -nostdinc -mips3 -Ttext=0xffffffffa0800000 -N -o bootblock $(SRC_BOOT) -nostdlib -e main -Wl,-m -Wl,elf32ltsmip -T ld.script
+	${CC} -G 0 -O2 -fno-pic -mno-abicalls -fno-builtin -nostdinc -mips3 -Ttext=0xffffffffa0800000 \
+	      -N -o bootblock $(SRC_BOOT) -nostdlib -e main -Wl,-m -Wl,elf32ltsmip -T ld.script
 
 ##P3 ERROR VERSION
 # main : $(SRC_ARCH) $(SRC_DRIVER) $(SRC_INIT) $(SRC_INT) $(SRC_LOCK) $(SRC_SCHED) $(SRC_SYSCALL) $(SRC_LIBS) $(SRC_TEST) $(SRC_TEST2)
