@@ -285,10 +285,14 @@ static void fill_tlb()
 void read_tlb_1()
 {
     int i = 0;
-    printf("\nEm \t Id \t V2 \t P0 \t P1");
+    sys_move_cursor(1, 14);
+    printf("Em \t Id \t V2 \t P0 \t P1");
     // for(; i < TLB_ENTRIES_NUM; i++){
     for(; i < 16; i++){
-        printf("\n%d \t", tlb_table[i].empty);
+        sys_move_cursor(1, 15+i);
+        printf("                                      ");
+        sys_move_cursor(1, 15+i);
+        printf("%d \t", tlb_table[i].empty);
         printf("%d \t", tlb_table[i].index);
         printf("%d \t", tlb_table[i].VPN2);
         printf("%d \t", tlb_table[i].PFN0);
@@ -412,7 +416,7 @@ void handle_tlb_exception_helper()
 {
 
     vt100_move_cursor(1, 47);
-    printk("                                              ");
+    printk("DEBUG >> ");
     printk("%d %d", ((uint32_t *)page_table_base_ptr)[0], ((uint32_t *)page_table_base_ptr)[1]);
 
 	vt100_move_cursor(1, 48);
@@ -440,7 +444,7 @@ void handle_tlb_exception_helper()
     if(((index & 0x80000000) >> 31) == 1){
 
         vt100_move_cursor(1, 46);
-        printk("                                              ");
+        printk("DEBUG >> ");
         printk("%d", 111);
 
         tlb_refill_count++;
@@ -456,7 +460,7 @@ void handle_tlb_exception_helper()
         if(page_table[badvpn] != 0 && ((page_table[badvpn] & PTE_V) == PTE_V)){
 
             vt100_move_cursor(1, 46);
-            printk("                                              ");
+            printk("DEBUG >> ");
             printk("%d", 222);
 
             uint32_t PFN = ((page_table[badvpn] & 0xfffff000) >> 12);
@@ -495,7 +499,7 @@ void handle_tlb_exception_helper()
         //PTE is not empty but PFN is in swap
         else if(page_table[badvpn] != 0 && ((page_table[badvpn] & PTE_V) == 0)){
             vt100_move_cursor(1, 46);
-            printk("                                              ");
+            printk("DEBUG >> ");
             printk("%d", 333);
 
         }
@@ -503,7 +507,7 @@ void handle_tlb_exception_helper()
         else if(page_table[badvpn] == 0){
     
             vt100_move_cursor(1, 46);
-            printk("                                              ");
+            printk("DEBUG >> ");
             printk("%d", 444);
 
             if(free_page_frame_num != 0){
@@ -554,7 +558,7 @@ void handle_tlb_exception_helper()
     //TLB invalid handler
     else{
         vt100_move_cursor(1, 46);
-        printk("                                              ");
+        printk("DEBUG >> ");
         printk("%d", 555);
 
         tlb_invalid_count++;
@@ -562,7 +566,7 @@ void handle_tlb_exception_helper()
         //PTE is empty
         if(page_table[badvpn] == 0){
             vt100_move_cursor(1, 46);
-            printk("                                              ");
+            printk("DEBUG >> ");
             printk("%d", 666);
 
             if(free_page_frame_num != 0){
@@ -616,7 +620,7 @@ void handle_tlb_exception_helper()
         //PTE is not empty, but PFN is in swap
         else if(page_table[badvpn] != 0 && ((page_table[badvpn] & PTE_V) == 0)){
             vt100_move_cursor(1, 46);
-            printk("                                              ");
+            printk("DEBUG >> ");
             printk("%d", 777);
 
 
