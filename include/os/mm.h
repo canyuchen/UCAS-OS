@@ -20,8 +20,8 @@ enum {
     PTE_D = (0x100 >> 6),
     // Uncache bit
     PTE_C = (0x400 >> 6),
-    // swaped bit
-    PTE_S = (0x1000 >> 6),
+    // // swaped bit
+    // PTE_S = (0x1000 >> 6),
 
     VM_SIZE = 0x80000000, //0 - 2GB
 

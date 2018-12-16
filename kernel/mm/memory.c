@@ -395,6 +395,19 @@ static bool_t check_tlb_wrong_access()
     return 0;
 }
 
+static uint32_t get_tlb_invalid_index()
+{
+    uint32_t VPN2 = ((get_cp0_entryhi() & 0xffffe000) >> 13);
+
+    int i = 0;
+    while(i < TLB_ENTRIES_NUM){
+        if(tlb_table[i].VPN2 == VPN2 && tlb_table[i].pid == current_running->pid){
+            return i;
+        }
+        i++;
+    }
+}
+
 void handle_tlb_exception_helper()
 {
 
@@ -423,6 +436,7 @@ void handle_tlb_exception_helper()
 
     asm volatile("tlbp");
     uint32_t index = get_cp0_index();
+    //TLB refill handler
     if(((index & 0x80000000) >> 31) == 1){
 
         vt100_move_cursor(1, 46);
@@ -430,15 +444,16 @@ void handle_tlb_exception_helper()
         printk("%d", 111);
 
         tlb_refill_count++;
-
+        
+        //check whether have the right to have access to the virtual address
         if(check_tlb_wrong_access() == 1){
             vt100_move_cursor(1, 45);
             printk("ERROR! Current running pid is %d, but virtual address is in pid %d address space", pid, wrong_pid);
             return;
         }
         
-        //PTE is valid and PFN is in memory
-        if(page_table[badvpn] != 0 && ((page_table[badvpn] & PTE_S) == 0)){
+        //PTE is not empty and PFN is in memory
+        if(page_table[badvpn] != 0 && ((page_table[badvpn] & PTE_V) == PTE_V)){
 
             vt100_move_cursor(1, 46);
             printk("                                              ");
@@ -477,14 +492,14 @@ void handle_tlb_exception_helper()
 
             return;
         }
-        //PTE is valid but PFN is in swap
-        else if(page_table[badvpn] != 0 && ((page_table[badvpn] & PTE_S) == PTE_S)){
+        //PTE is not empty but PFN is in swap
+        else if(page_table[badvpn] != 0 && ((page_table[badvpn] & PTE_V) == 0)){
             vt100_move_cursor(1, 46);
             printk("                                              ");
             printk("%d", 333);
 
         }
-        //PTE is invalid 
+        //PTE is empty 
         else if(page_table[badvpn] == 0){
     
             vt100_move_cursor(1, 46);
@@ -536,13 +551,78 @@ void handle_tlb_exception_helper()
             }
         }
     }
+    //TLB invalid handler
     else{
-        
         vt100_move_cursor(1, 46);
         printk("                                              ");
         printk("%d", 555);
 
         tlb_invalid_count++;
+        
+        //PTE is empty
+        if(page_table[badvpn] == 0){
+            vt100_move_cursor(1, 46);
+            printk("                                              ");
+            printk("%d", 666);
+
+            if(free_page_frame_num != 0){
+                bool_t pinned = 0;
+                int index = page_alloc(pinned);
+                uint32_t PFN = ((page_map[index].paddr & 0xfffff000) >> 12);
+                page_table[badvpn] = (PFN << 12) | PTE_C | PTE_D | PTE_V;
+
+                vt100_move_cursor(1, 50);
+                printk("%d %d %d %d %d", page_alloc_ptr, page_map[page_alloc_ptr].paddr, page_map[page_alloc_ptr].PFN, index, PFN);
+
+                uint32_t tlb_invalid_index = get_tlb_invalid_index();
+                set_cp0_index(tlb_invalid_index); 
+
+                uint32_t EntryLo1, EntryLo0;
+                if(EntryLo_is_odd == 1){
+                    EntryLo1 = (PFN << 6) | PTE_C | PTE_D | PTE_V;
+                    EntryLo0 = (tlb_table[tlb_invalid_index].PFN0 << 6) | PTE_C | PTE_D | PTE_V;
+                }
+                else{
+                    EntryLo0 = (PFN << 6) | PTE_C | PTE_D | PTE_V;
+                    EntryLo1 = (tlb_table[tlb_invalid_index].PFN1 << 6) | PTE_C | PTE_D | PTE_V;
+                }
+                set_cp0_entrylo0(EntryLo0); 
+                set_cp0_entrylo1(EntryLo1);
+
+                set_cp0_pagemask(cp0_pagemask);     
+
+                EntryHi = ((EntryHi & 0xffffe000) | pid);
+                set_cp0_entryhi(EntryHi);
+
+                asm volatile("tlbwi");
+
+                tlb_table[tlb_invalid_index].pid = current_running->pid;
+                tlb_table[tlb_invalid_index].empty = 0;
+                tlb_table[tlb_invalid_index].index = tlb_invalid_index;
+                if(EntryLo_is_odd == 1){
+                    tlb_table[tlb_invalid_index].PFN1 = ((get_cp0_entrylo1() & 0xffffffc0) >> 6);
+                }
+                else{
+                    tlb_table[tlb_invalid_index].PFN0 = ((get_cp0_entrylo0() & 0xffffffc0) >> 6);
+                }
+                tlb_table[tlb_invalid_index].VPN2 = ((get_cp0_entryhi() & 0xffffe000) >> 13);
+                
+                return;
+            }
+            else{
+  
+            }            
+        }
+        //PTE is not empty, but PFN is in swap
+        else if(page_table[badvpn] != 0 && ((page_table[badvpn] & PTE_V) == 0)){
+            vt100_move_cursor(1, 46);
+            printk("                                              ");
+            printk("%d", 777);
+
+
+        }
+
+
     }
 }
 
