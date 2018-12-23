@@ -27,26 +27,26 @@ enum {
 
     /***********************P4-3 TEST***********************/
     /*test condition 0                                     */
-    // FRAME_SIZE = 0x800000, //16M - 24M => 2048 PAGES => 8MB 
-    // FRAME_PAGES = FRAME_SIZE / PAGE_SIZE,
-    /*******************************************************/
-    // SD_SWAP_DIVISION_START = 0x2000000, //32M
-    // SD_SWAP_DIVISION = 0x1000,
-    // SD_SWAP_UNIT = 0X1000,
-    // SD_SWAP_UNIT_NUM = SD_SWAP_DIVISION / SD_SWAP_UNIT,
-    /*******************************************************/
-
-    /********************SD SWAP TEST***********************/
-    /*test condition 1: invalid TLB, PTE empty, no free PFN*/
-    FRAME_SIZE = PAGE_TABLE_SIZE + PAGE_SIZE, 
-    FRAME_PAGES = (FRAME_SIZE / PAGE_SIZE), // == 512 + 1
+    FRAME_SIZE = 0x800000, //16M - 24M => 2048 PAGES => 8MB 
+    FRAME_PAGES = FRAME_SIZE / PAGE_SIZE,
     /*******************************************************/
     SD_SWAP_DIVISION_START = 0x2000000, //32M
-    SD_SWAP_DIVISION = 0x2000,
+    SD_SWAP_DIVISION = 0x1000,
     SD_SWAP_UNIT = 0X1000,
-    SD_SWAP_UNIT_NUM = (SD_SWAP_DIVISION / SD_SWAP_UNIT), // == 2
+    SD_SWAP_UNIT_NUM = SD_SWAP_DIVISION / SD_SWAP_UNIT,
     /*******************************************************/
-    /*******************************************************/
+
+    // /********************SD SWAP TEST***********************/
+    // /*test condition 1: invalid TLB, PTE empty, no free PFN*/
+    // FRAME_SIZE = PAGE_TABLE_SIZE + PAGE_SIZE, 
+    // FRAME_PAGES = (FRAME_SIZE / PAGE_SIZE), // == 512 + 1
+    // /*******************************************************/
+    // SD_SWAP_DIVISION_START = 0x2000000, //32M
+    // SD_SWAP_DIVISION = 0x2000,
+    // SD_SWAP_UNIT = 0X1000,
+    // SD_SWAP_UNIT_NUM = (SD_SWAP_DIVISION / SD_SWAP_UNIT), // == 2
+    // /*******************************************************/
+    // /*******************************************************/
     // /*test condition 1: invalid TLB, PTE empty, no free PFN*/
     // FRAME_SIZE = PAGE_TABLE_SIZE + PAGE_SIZE, 
     // FRAME_PAGES = FRAME_SIZE / PAGE_SIZE, // == 512 + 1
