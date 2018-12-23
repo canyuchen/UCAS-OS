@@ -36,6 +36,7 @@
 #include "test_project4_task2/test4_2.h"
 #include "sched.h"
 #include "test_project3/test3.h"
+#include "test_net/test5.h"
 
 extern void test_shell();
 

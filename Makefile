@@ -5,7 +5,7 @@ all: clean createimage image asm1 asm2 asm3 asm4 asm5 # floppy
 SRC_BOOT 	= ./arch/mips/boot/bootblock.S
 
 SRC_ARCH	= ./arch/mips/kernel/entry.S ./arch/mips/kernel/syscall.S ./arch/mips/pmon/common.c 
-SRC_DRIVER	= ./drivers/screen.c
+SRC_DRIVER	= ./drivers/screen.c ./drivers/mac.c
 SRC_INIT 	= ./init/main.c
 SRC_INT		= ./kernel/irq/irq.c
 #SRC_LOCK	= ./kernel/locking/lock.c
@@ -29,6 +29,8 @@ SRC_TEST3   = ./test/test_project3/test_barrier.c ./test/test_project3/test_cond
 
 SRC_TEST4_1	= ./test/test_project4_task1/process1.c ./test/test_project4_task1/process2.c
 SRC_TEST4_2	= ./test/test_project4_task2/process1.c ./test/test_project4_task2/process2.c
+
+SRC_TEST_NET = ./test/test_net/test_regs1.c  ./test/test_net/test_regs2.c ./test/test_net/test_regs3.c
 
 SRC_IMAGE	= ./tools/createimage.c
 
@@ -55,15 +57,26 @@ bootblock: $(SRC_BOOT)
 # 	$(SRC_ARCH) $(SRC_DRIVER) $(SRC_INIT) $(SRC_INT) $(SRC_LOCK) $(SRC_SCHED) $(SRC_SYSCALL) $(SRC_PROC) $(SRC_LIBS) $(SRC_TEST) $(SRC_TEST2) $(SRC_TEST3) -nostdlib -Wl,-m -Wl,elf32ltsmip -T ld.script		
 
 ##P4
+# main : 	$(SRC_ARCH) $(SRC_DRIVER) $(SRC_INIT) $(SRC_INT) $(SRC_LOCK) $(SRC_SYNC) $(SRC_MM) $(SRC_SCHED) \
+#         $(SRC_SYSCALL) $(SRC_LIBS) $(SRC_TEST) $(SRC_TEST3) $(SRC_TEST4_1) $(SRC_TEST4_2)
+# 		${CC} -G 0 -O0 -Iinclude -Ilibs -Iarch/mips/include -Idrivers -Iinclude/os -Iinclude/sys \
+# 		-Itest -Itest/test_project3 -Itest/test_project4_task1 -Itest/test_project4_task2\
+# 		-fno-pic -mno-abicalls -fno-builtin -nostdinc -mips3 -Ttext=0xffffffffa0800200 -N -o main \
+# 		$(SRC_ARCH) $(SRC_DRIVER) $(SRC_INIT) $(SRC_INT) $(SRC_LOCK) $(SRC_SYNC) $(SRC_MM) $(SRC_SCHED) \
+# 		$(SRC_SYSCALL) $(SRC_PROC) $(SRC_LIBS) $(SRC_TEST) $(SRC_TEST3) $(SRC_TEST4_1) $(SRC_TEST4_2) \
+# 		-L. -lepmon \
+# 		-nostdlib -Wl,-m -Wl,elf32ltsmip -T ld.script		
+
+#P5-1
 main : 	$(SRC_ARCH) $(SRC_DRIVER) $(SRC_INIT) $(SRC_INT) $(SRC_LOCK) $(SRC_SYNC) $(SRC_MM) $(SRC_SCHED) \
-        $(SRC_SYSCALL) $(SRC_LIBS) $(SRC_TEST) $(SRC_TEST3) $(SRC_TEST4_1) $(SRC_TEST4_2)
+        $(SRC_SYSCALL) $(SRC_LIBS) $(SRC_TEST) $(SRC_TEST3) $(SRC_TEST4_1) $(SRC_TEST4_2) $(SRC_TEST_NET)
 		${CC} -G 0 -O0 -Iinclude -Ilibs -Iarch/mips/include -Idrivers -Iinclude/os -Iinclude/sys \
-		-Itest -Itest/test_project3 -Itest/test_project4_task1 -Itest/test_project4_task2\
+		-Itest -Itest/test_project3 -Itest/test_project4_task1 -Itest/test_project4_task2 -Itest/test_net \
 		-fno-pic -mno-abicalls -fno-builtin -nostdinc -mips3 -Ttext=0xffffffffa0800200 -N -o main \
 		$(SRC_ARCH) $(SRC_DRIVER) $(SRC_INIT) $(SRC_INT) $(SRC_LOCK) $(SRC_SYNC) $(SRC_MM) $(SRC_SCHED) \
-		$(SRC_SYSCALL) $(SRC_PROC) $(SRC_LIBS) $(SRC_TEST) $(SRC_TEST3) $(SRC_TEST4_1) $(SRC_TEST4_2) \
+		$(SRC_SYSCALL) $(SRC_PROC) $(SRC_LIBS) $(SRC_TEST) $(SRC_TEST3) $(SRC_TEST4_1) $(SRC_TEST4_2) $(SRC_TEST_NET)\
 		-L. -lepmon \
-		-nostdlib -Wl,-m -Wl,elf32ltsmip -T ld.script		
+		-nostdlib -Wl,-m -Wl,elf32ltsmip -T ld.script	
 
 
 createimage: $(SRC_IMAGE)

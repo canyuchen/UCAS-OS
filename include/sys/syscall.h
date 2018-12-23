@@ -72,6 +72,12 @@
 
 #define SYSCALL_SCANF 48
 
+#define SYSCALL_NET_RECV 49
+#define SYSCALL_WAIT_RECV_PACKAGE 50
+#define SYSCALL_INIT_MAC 51
+#define SYSCALL_NET_SEND 52
+
+
 /* syscall function pointer */
 extern int (*syscall[NUM_SYSCALLS])();
 
@@ -114,4 +120,12 @@ extern void sys_kill(int n);
 extern void sys_ps();
 
 extern int sys_scanf(int *mem);
+
+extern void sys_init_mac();
+// int sys_net_send(uint32_t tgt DMA send desc, uint32_t td_phy)
+extern void sys_net_send(uint32_t td, uint32_t td_phy);
+// int sys_net_recv(uint32_t, uint32_t, uint32_t)
+extern int sys_net_recv(uint32_t rd, uint32_t rd_phy, uint32_t daddr);
+extern void sys_wait_recv_package();
+
 #endif

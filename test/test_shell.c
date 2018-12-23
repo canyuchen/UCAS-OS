@@ -91,15 +91,19 @@ struct task_info task19 = {"task4-2.2", (uint32_t)&rw_task4_2, USER_PROCESS};
 
 struct task_info task_swap = {"swap process", (uint32_t)&swap_process, USER_PROCESS};
 
-static uint32_t num_test_tasks = 19;
+struct task_info task5_1 = {"send",(uint32_t)&phy_regs_task1, USER_PROCESS};
+struct task_info task5_2 = {"recv",(uint32_t)&phy_regs_task2, USER_PROCESS};
+struct task_info task5_3 = {"initmac",(uint32_t)&phy_regs_task3, USER_PROCESS};
 
-static struct task_info *test_tasks[19] = {&task1, &task2, &task3,
+static uint32_t num_test_tasks = 22;
+
+static struct task_info *test_tasks[22] = {&task1, &task2, &task3,
                                            &task4, &task5, &task6,
                                            &task7, &task8, &task9,
                                            &task10, &task11, &task12,
                                            &task13, &task14, &task15,
-                                           &task16, &task17, &task18, &task19
-                                        //    &task20, &task21
+                                           &task16, &task17, &task18, &task19,
+                                           &task5_1, &task5_2, &task5_3
                                            };
 
 #define INPUT_BUFFER_MAX_LENGTH 1000

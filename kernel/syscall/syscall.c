@@ -167,3 +167,33 @@ int sys_scanf(int *mem)
 {
     invoke_syscall(SYSCALL_SCANF, (int)mem, IGNORE, IGNORE);
 }
+
+//P5
+
+void sys_init_mac()
+{
+    invoke_syscall(SYSCALL_INIT_MAC, IGNORE, IGNORE, IGNORE);
+}
+
+// int sys_net_send(uint32_t tgt DMA send desc, uint32_t td_phy)
+void sys_net_send(uint32_t td, uint32_t td_phy)
+{
+    invoke_syscall(SYSCALL_NET_SEND, (int)td, (int)td_phy, IGNORE);
+}
+
+// int sys_net_recv(uint32_t, uint32_t, uint32_t)
+int sys_net_recv(uint32_t rd, uint32_t rd_phy, uint32_t daddr)
+{
+    invoke_syscall(SYSCALL_NET_RECV, (int)rd, (int)rd_phy, (int)daddr);
+}
+
+void sys_wait_recv_package()
+{
+    invoke_syscall(SYSCALL_WAIT_RECV_PACKAGE, IGNORE, IGNORE, IGNORE);
+}
+
+// void sys_net_fast_recv(uint32_t rd, uint32_t rd_phy, uint32_t daddr)
+// {
+//     invoke_syscall(SYSCALL_NET_FAST_RECV, (int)rd, (int)rd_phy, (int)daddr);
+// }
+

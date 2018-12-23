@@ -45,7 +45,8 @@
                 "${workspaceFolder}/test/test_project4",
                 "${workspaceFolder}/libs",
                 "${workspaceFolder}/test/test_project4_task1",
-                "${workspaceFolder}/test/test_project4_task2"
+                "${workspaceFolder}/test/test_project4_task2",
+                "${workspaceFolder}/test"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",
