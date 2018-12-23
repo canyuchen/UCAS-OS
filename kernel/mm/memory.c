@@ -210,24 +210,7 @@ static uint32_t page_alloc(bool_t pinned, bool_t swapin_valid, bool_t tlb_invali
 
         }
 
-
-
-
-        // if(swapin_valid == 1){
-        //     page_table[page_map[swap_out_index].vaddr >> 12] &= (~PTE_V);
-        //     page_table[page_map[swap_in_index].vaddr >> 12] |= (PTE_V);
-        // }
-        // else{
-            
-        // }
-
-
-
-        
-
         //flush swap_out/swap_in TLB accordingly
-        
-
 
         do_page_swap(swap_out_index, swap_in_index);
 

@@ -47,17 +47,7 @@ enum {
     // SD_SWAP_UNIT_NUM = (SD_SWAP_DIVISION / SD_SWAP_UNIT), // == 2
     // /*******************************************************/
     // /*******************************************************/
-    // /*test condition 1: invalid TLB, PTE empty, no free PFN*/
-    // FRAME_SIZE = PAGE_TABLE_SIZE + PAGE_SIZE, 
-    // FRAME_PAGES = FRAME_SIZE / PAGE_SIZE, // == 512 + 1
-    // /*******************************************************/
-    // SD_SWAP_DIVISION_START = 0x2000000, //32M
-    // SD_SWAP_DIVISION = 0x2000,
-    // SD_SWAP_UNIT = 0X1000,
-    // SD_SWAP_UNIT_NUM = SD_SWAP_DIVISION / SD_SWAP_UNIT, // == 2
-    // /*******************************************************/
-    // /*******************************************************/
-    // /*test condition 1: invalid TLB, PTE empty, no free PFN*/
+    // /*test condition 2: invalid TLB, PTE not empty, no free PFN*/
     // FRAME_SIZE = PAGE_TABLE_SIZE + PAGE_SIZE, 
     // FRAME_PAGES = FRAME_SIZE / PAGE_SIZE, // == 512 + 1
     // /*******************************************************/
