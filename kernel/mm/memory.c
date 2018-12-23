@@ -1,6 +1,8 @@
 #include "mm.h"
 #include "string.h"
 #include "sched.h"
+#include "test.h"
+#include "sem.h"
 
 //TODO:Finish memory management functions here refer to mm.h and add any functions you need.
 
@@ -32,51 +34,80 @@ static int tlb_entry_index_ptr = 0;
 // extern int page_alloc_ptr;
 static int page_alloc_ptr = 0;
 
+static int swap_page_alloc_ptr = 0;
+
 static uint32_t wrong_pid;
 
 int tlb_refill_count = 0;
 int tlb_invalid_count = 0;
 
+static semaphore_t sem_swap;
+
+static uint32_t swap_buffer_addr = 0x1800000;
+
 /* get the physical address from virtual address (in kernel) */
-uint32_t va_2_pa(uint32_t va) 
+static uint32_t va_2_pa(uint32_t va) 
 {
     return (uint32_t) va - 0xa0000000;
 }
 
 /* get the virtual address (in kernel) from physical address */
-uint32_t pa_2_va(uint32_t pa) 
+static uint32_t pa_2_va(uint32_t pa) 
 {
     return (uint32_t) pa + 0xa0000000;
 }
 
 /* TODO: Returns virtual address (in kernel) of page frame number index */
-uint32_t page_frame_vaddr(uint32_t index)
+static uint32_t page_frame_vaddr(uint32_t index)
 {
     return PAGE_FRAME_START + index * PAGE_SIZE;
 }   
 
-uint32_t page_frame_paddr(uint32_t index)
+static uint32_t page_frame_paddr(uint32_t index)
 {
     return va_2_pa(page_frame_vaddr(index));
 }
 
-uint32_t get_swap_in_index()
+static uint32_t get_swap_free_index()
 {
-    static int i = 0;
-    while(i < SD_SWAP_UNIT_NUM && swap_table[i].avail == 0){
+    int i = swap_page_alloc_ptr;
+    while(i < SD_SWAP_UNIT_NUM && page_map[i + FRAME_PAGES].avail == 0){
         i = (i + 1) % SD_SWAP_UNIT_NUM;
     }
-    swap_table[i].avail = 0;
-    return i;
+    // page_map[i + FRAME_PAGES].avail = 0;
+    swap_page_alloc_ptr = i;
+    return i;   
 }
 
-void do_page_swap(uint32_t swap_out_index, uint32_t swap_in_index)
+static uint32_t get_swap_in_index(bool_t swapin_valid)
+{
+    if(swapin_valid == 0){
+        // int i = 0;
+        // while(i < SD_SWAP_UNIT_NUM && page_map[i + FRAME_PAGES].avail == 0){
+        //     i = (i + 1) % SD_SWAP_UNIT_NUM;
+        // }
+        // page_map[i + FRAME_PAGES].avail = 0;
+        // swap_page_alloc_ptr = i;
+        // return (i + FRAME_PAGES);  
+        return get_swap_free_index();      
+    }
+    else{
+
+    }
+}
+
+static void do_page_swap(uint32_t swap_out_index, uint32_t swap_in_index)
+{
+
+}
+
+void swap_process()
 {
 
 }
 
 //Page Fault handler
-uint32_t page_alloc(bool_t pinned)
+static uint32_t page_alloc(bool_t pinned, bool_t swapin_valid, bool_t tlb_invalid)
 {
     int free_index;
     int swap_out_index, swap_in_index;
@@ -88,9 +119,6 @@ uint32_t page_alloc(bool_t pinned)
         if(page_map[i].avail == 1){
             flag_find_free_page = 1;
             free_index = i;
-        
-            // vt100_move_cursor(1, 49);
-            // printk("%d %d %d %d %d %d %d %d", page_table_base_ptr, free_index, page_map[0].avail, page_map[1].avail, page_map[2].avail, page_map[3].avail, page_map[4].avail, page_map[5].avail);
 
             page_alloc_ptr = (page_alloc_ptr + 1) % FRAME_PAGES;
             
@@ -100,26 +128,106 @@ uint32_t page_alloc(bool_t pinned)
             // return free_index;
         }
     }
-/*
+
     if(flag_find_free_page == 0){
         while(page_map[clock_ptr].pinned == 1 || page_map[clock_ptr].R == 1){
             if(page_map[clock_ptr].R == 1){
                 page_map[clock_ptr].R = 0;
             }
-            clock_ptr = (clock_ptr + 1) % PAGEABLE_PAGES;
+            clock_ptr = (clock_ptr + 1) % FRAME_PAGES;
         }
+        
         swap_out_index = clock_ptr;
-        swap_in_index = get_swap_in_index();
+        swap_in_index = get_swap_in_index(swapin_valid) + FRAME_PAGES;
 
-        //revised PTE accordingly
-        int pid = page_map[clock_ptr].pid;
-        int VPN2 = page_map[clock_ptr].vaddr & 0xffffe000;
-        uint32_t *page_table = (uint32_t *)page_table_base_ptr;
-        page_table[page_map[clock_ptr].vaddr >> 12] = 
+        //swap in page is empty, tlb invalid
+        if(swapin_valid == 0 && tlb_invalid == 1){
+            //revised swap_out/swap_in PFN accordingly
+            page_map[swap_out_index].swaped     = 1;
+            // page_map[swap_out_index].swap_index = get_swap_free_index();
+            page_map[swap_out_index].swap_index = swap_in_index;
 
-        //flush TLB accordingly
-        // int EntryHi = VPN2 | pid;
-        // tlb_flush(EntryHi);
+            page_map[swap_in_index].pinned      = pinned;
+            page_map[swap_in_index].vaddr       = get_cp0_badvaddr();
+            page_map[swap_in_index].VPN         = ((get_cp0_badvaddr() & 0xfffff000) >> 12);
+            page_map[swap_in_index].index       = clock_ptr;
+            page_map[swap_in_index].paddr       = page_frame_paddr(clock_ptr);
+            page_map[swap_in_index].PFN         = ((page_map[swap_in_index].paddr & 0xfffff000) >> 12);
+            page_map[swap_in_index].pid         = current_running->pid;
+            page_map[swap_in_index].avail       = 0;
+            page_map[swap_in_index].R           = 1;
+            page_map[swap_in_index].swaped      = 0;            
+
+            uint32_t pid_out = page_map[swap_out_index].pid;
+            uint32_t VPN2_out = page_map[swap_out_index].vaddr & 0xffffe000;
+            uint32_t pid_in = page_map[swap_in_index].pid;
+            uint32_t VPN2_in = page_map[swap_in_index].vaddr & 0xffffe000;
+            uint32_t *page_table = (uint32_t *)page_table_base_ptr;
+
+            //revised swap_out/swap_in PTE accordingly
+            
+            
+        
+        }
+        //swap in page is not empty, tlb invalid
+        else if(swapin_valid == 1 && tlb_invalid == 1){
+            
+        }
+        //swap in page is empty, tlb refill
+        else if(swapin_valid == 0 && tlb_invalid == 0){
+            //revised swap_out/swap_in PFN accordingly
+            page_map[swap_out_index].swaped     = 1;
+            // page_map[swap_out_index].swap_index = get_swap_free_index();
+            page_map[swap_out_index].swap_index = swap_in_index;
+
+            page_map[swap_in_index].pinned      = pinned;
+            page_map[swap_in_index].vaddr       = get_cp0_badvaddr();
+            page_map[swap_in_index].VPN         = ((get_cp0_badvaddr() & 0xfffff000) >> 12);
+            page_map[swap_in_index].index       = clock_ptr;
+            page_map[swap_in_index].paddr       = page_frame_paddr(clock_ptr);
+            page_map[swap_in_index].PFN         = ((page_map[swap_in_index].paddr & 0xfffff000) >> 12);
+            page_map[swap_in_index].pid         = current_running->pid;
+            page_map[swap_in_index].avail       = 0;
+            page_map[swap_in_index].R           = 1;
+            page_map[swap_in_index].swaped      = 0;         
+
+            uint32_t pid_out = page_map[swap_out_index].pid;
+            uint32_t VPN2_out = page_map[swap_out_index].vaddr & 0xffffe000;
+            uint32_t pid_in = page_map[swap_in_index].pid;
+            uint32_t VPN2_in = page_map[swap_in_index].vaddr & 0xffffe000;
+            uint32_t *page_table = (uint32_t *)page_table_base_ptr;
+
+            //revised swap_out/swap_in PTE accordingly
+
+            
+
+        }
+        //swap in page is not empty, tlb refill
+        else if(swapin_valid == 1 && tlb_invalid == 0){
+
+        }
+        else{
+
+        }
+
+
+
+
+        // if(swapin_valid == 1){
+        //     page_table[page_map[swap_out_index].vaddr >> 12] &= (~PTE_V);
+        //     page_table[page_map[swap_in_index].vaddr >> 12] |= (PTE_V);
+        // }
+        // else{
+            
+        // }
+
+
+
+        
+
+        //flush swap_out/swap_in TLB accordingly
+        
+
 
         do_page_swap(swap_out_index, swap_in_index);
 
@@ -128,43 +236,40 @@ uint32_t page_alloc(bool_t pinned)
 
         free_index = swap_in_index;
     }
-*/
-    bzero((uint32_t *)pa_2_va(page_map[free_index].paddr), PAGE_SIZE);
-
-    if(page_table_base_ptr == 0){
-        page_map[free_index].avail = 0;
-        page_map[free_index].pinned = pinned;
-        page_map[free_index].R = 1;
-        page_map[free_index].pid = PID;
-
-        // vt100_move_cursor(1, 49);
-        // printk("%d %d %d %d %d %d %d", free_index, page_map[0].avail, page_map[1].avail, page_map[2].avail, page_map[3].avail, page_map[4].avail, page_map[5].avail);
-
-
-    }
     else{
-        page_map[free_index].vaddr = current_running->user_context.cp0_badvaddr;
-        page_map[free_index].VPN = ((page_map[free_index].vaddr & 0xfffff000) >> 12);
-        page_map[free_index].pid = current_running->pid;
-        page_map[free_index].avail = 0;
-        page_map[free_index].pinned = pinned;
-        page_map[free_index].R = 1;
-    }
+        bzero((uint32_t *)pa_2_va(page_map[free_index].paddr), PAGE_SIZE);
 
-    if(free_page_frame_num > 0){
-        free_page_frame_num--;
-    }
+        if(page_table_base_ptr == 0){
+            page_map[free_index].avail = 0;
+            page_map[free_index].pinned = pinned;
+            page_map[free_index].R = 1;
+            page_map[free_index].pid = PID;
+        }
+        else{
+            // page_map[free_index].vaddr = current_running->user_context.cp0_badvaddr;
+            page_map[free_index].vaddr = get_cp0_badvaddr();
+            page_map[free_index].VPN = ((get_cp0_badvaddr() & 0xfffff000) >> 12);
+            page_map[free_index].pid = current_running->pid;
+            page_map[free_index].avail = 0;
+            page_map[free_index].pinned = pinned;
+            page_map[free_index].R = 1;
+        }
 
-    return free_index;
+        if(free_page_frame_num > 0){
+            free_page_frame_num--;
+        }
+
+        return free_index;
+    }
 }
 
-void set_up_page_table()
+static void set_up_page_table()
 {
     //page map index for a page table  
     bool_t pinned = TRUE;
     int i = 0;
     while(i < PAGE_TABLE_PAGES){
-        page_alloc(pinned);
+        page_alloc(pinned,0,0);
         i++;
     }
 }
@@ -322,33 +427,33 @@ void init_memory()
     //init page frames 
     int i;
     for(i = 0; i < FRAME_PAGES; i++){
-        page_map[i].paddr = page_frame_paddr(i);
-        page_map[i].vaddr = 0;        
-        page_map[i].VPN = 0;
-        page_map[i].PFN = ((page_map[i].paddr & 0xfffff000) >> 12);
-        page_map[i].pid = 0;
-        page_map[i].index = i;
-        page_map[i].avail = 1;
-        page_map[i].dirty = 1;
-        page_map[i].pinned = 0;
-        page_map[i].swaped = 0;
+        page_map[i].paddr      = page_frame_paddr(i);
+        page_map[i].vaddr      = 0;        
+        page_map[i].VPN        = 0;
+        page_map[i].PFN        = ((page_map[i].paddr & 0xfffff000) >> 12);
+        page_map[i].pid        = 0;
+        page_map[i].index      = i;
+        page_map[i].avail      = 1;
+        page_map[i].dirty      = 1;
+        page_map[i].pinned     = 0;
+        page_map[i].swaped     = 0;
         page_map[i].swap_index = -1;
-        page_map[i].R = 0;
+        page_map[i].R          = 0;
     }
 
     for(; i < PAGEABLE_PAGES; i++){
-        page_map[i].paddr = 0;
-        page_map[i].vaddr = 0;        
-        page_map[i].VPN = 0;
-        page_map[i].PFN = 0;
-        page_map[i].pid = 0;
-        page_map[i].index = i;
-        page_map[i].avail = 1;
-        page_map[i].dirty = 1;
-        page_map[i].pinned = 0;
-        page_map[i].swaped = 0;
-        page_map[i].swap_index = 1;
-        page_map[i].R = 0;
+        page_map[i].paddr      = 0;
+        page_map[i].vaddr      = 0;        
+        page_map[i].VPN        = 0;
+        page_map[i].PFN        = 0;
+        page_map[i].pid        = 0;
+        page_map[i].index      = i;
+        page_map[i].avail      = 1;
+        page_map[i].dirty      = 1;
+        page_map[i].pinned     = 0;
+        page_map[i].swaped     = 1;
+        page_map[i].swap_index = i - FRAME_PAGES;
+        page_map[i].R          = 0;
     }
     //arrange n pinned page frame for global page table
     set_up_page_table();
@@ -463,6 +568,11 @@ void handle_tlb_exception_helper()
             printk("DEBUG >> ");
             printk("%d", 222);
 
+            tlb_entry_index_ptr = (tlb_entry_index_ptr + 1) % TLB_ENTRIES_NUM;
+            set_cp0_index(tlb_entry_index_ptr);  
+
+            tlb_flush_no_check();
+
             uint32_t PFN = ((page_table[badvpn] & 0xfffff000) >> 12);
 
             if(EntryLo_is_odd == 1){
@@ -475,8 +585,8 @@ void handle_tlb_exception_helper()
             }
             set_cp0_pagemask(cp0_pagemask);
 
-            tlb_entry_index_ptr = (tlb_entry_index_ptr + 1) % TLB_ENTRIES_NUM;
-            set_cp0_index(tlb_entry_index_ptr);      
+            // tlb_entry_index_ptr = (tlb_entry_index_ptr + 1) % TLB_ENTRIES_NUM;
+            // set_cp0_index(tlb_entry_index_ptr);      
 
             EntryHi = ((EntryHi & 0xffffe000) | pid);
             set_cp0_entryhi(EntryHi);
@@ -501,6 +611,7 @@ void handle_tlb_exception_helper()
             vt100_move_cursor(1, 46);
             printk("DEBUG >> ");
             printk("%d", 333);
+            
 
         }
         //PTE is empty 
@@ -512,12 +623,17 @@ void handle_tlb_exception_helper()
 
             if(free_page_frame_num != 0){
                 bool_t pinned = 0;
-                int index = page_alloc(pinned);
+                int index = page_alloc(pinned,0,0);
                 uint32_t PFN = ((page_map[index].paddr & 0xfffff000) >> 12);
                 page_table[badvpn] = (PFN << 12) | PTE_C | PTE_D | PTE_V;
 
                 vt100_move_cursor(1, 50);
                 printk("%d %d %d %d %d", page_alloc_ptr, page_map[page_alloc_ptr].paddr, page_map[page_alloc_ptr].PFN, index, PFN);
+
+                tlb_entry_index_ptr = (tlb_entry_index_ptr + 1) % TLB_ENTRIES_NUM;
+                set_cp0_index(tlb_entry_index_ptr);  
+
+                tlb_flush_no_check();
 
                 if(EntryLo_is_odd == 1){
                     uint32_t EntryLo1 = (PFN << 6) | PTE_C | PTE_D | PTE_V;
@@ -529,8 +645,8 @@ void handle_tlb_exception_helper()
                 }
                 set_cp0_pagemask(cp0_pagemask);
 
-                tlb_entry_index_ptr = (tlb_entry_index_ptr + 1) % TLB_ENTRIES_NUM;
-                set_cp0_index(tlb_entry_index_ptr);      
+                // tlb_entry_index_ptr = (tlb_entry_index_ptr + 1) % TLB_ENTRIES_NUM;
+                // set_cp0_index(tlb_entry_index_ptr);      
 
                 EntryHi = ((EntryHi & 0xffffe000) | pid);
                 set_cp0_entryhi(EntryHi);
@@ -554,6 +670,9 @@ void handle_tlb_exception_helper()
   
             }
         }
+        else{
+
+        }
     }
     //TLB invalid handler
     else{
@@ -571,7 +690,7 @@ void handle_tlb_exception_helper()
 
             if(free_page_frame_num != 0){
                 bool_t pinned = 0;
-                int index = page_alloc(pinned);
+                int index = page_alloc(pinned,0,1);
                 uint32_t PFN = ((page_map[index].paddr & 0xfffff000) >> 12);
                 page_table[badvpn] = (PFN << 12) | PTE_C | PTE_D | PTE_V;
 
@@ -613,8 +732,50 @@ void handle_tlb_exception_helper()
                 
                 return;
             }
+            //condition 1: invalid TLB, PTE empty, no free PFN
             else{
-  
+                bool_t pinned = 0;
+                int index = page_alloc(pinned,0,1);
+                uint32_t PFN = ((page_map[index].paddr & 0xfffff000) >> 12);
+                page_table[badvpn] = (PFN << 12) | PTE_C | PTE_D | PTE_V;
+
+                vt100_move_cursor(1, 50);
+                printk("%d %d %d %d %d", page_alloc_ptr, page_map[page_alloc_ptr].paddr, page_map[page_alloc_ptr].PFN, index, PFN);
+
+                uint32_t tlb_invalid_index = get_tlb_invalid_index();
+                set_cp0_index(tlb_invalid_index); 
+
+                uint32_t EntryLo1, EntryLo0;
+                if(EntryLo_is_odd == 1){
+                    EntryLo1 = (PFN << 6) | PTE_C | PTE_D | PTE_V;
+                    EntryLo0 = (tlb_table[tlb_invalid_index].PFN0 << 6) | PTE_C | PTE_D | PTE_V;
+                }
+                else{
+                    EntryLo0 = (PFN << 6) | PTE_C | PTE_D | PTE_V;
+                    EntryLo1 = (tlb_table[tlb_invalid_index].PFN1 << 6) | PTE_C | PTE_D | PTE_V;
+                }
+                set_cp0_entrylo0(EntryLo0); 
+                set_cp0_entrylo1(EntryLo1);
+
+                set_cp0_pagemask(cp0_pagemask);     
+
+                EntryHi = ((EntryHi & 0xffffe000) | pid);
+                set_cp0_entryhi(EntryHi);
+
+                asm volatile("tlbwi");
+
+                tlb_table[tlb_invalid_index].pid = current_running->pid;
+                tlb_table[tlb_invalid_index].empty = 0;
+                tlb_table[tlb_invalid_index].index = tlb_invalid_index;
+                if(EntryLo_is_odd == 1){
+                    tlb_table[tlb_invalid_index].PFN1 = ((get_cp0_entrylo1() & 0xffffffc0) >> 6);
+                }
+                else{
+                    tlb_table[tlb_invalid_index].PFN0 = ((get_cp0_entrylo0() & 0xffffffc0) >> 6);
+                }
+                tlb_table[tlb_invalid_index].VPN2 = ((get_cp0_entryhi() & 0xffffe000) >> 13);
+                
+                return;                
             }            
         }
         //PTE is not empty, but PFN is in swap
@@ -625,7 +786,9 @@ void handle_tlb_exception_helper()
 
 
         }
+        else{
 
+        }
 
     }
 }

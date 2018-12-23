@@ -590,6 +590,8 @@ LEAF(tlb_flush_no_check)
     nop
     mtc0  zero,CP0_ENTRYLO1
     nop
+    mtc0  zero,CP0_PAGEMASK
+    nop
     tlbwi   //CP0_INDEX has been set as invalid address    
     nop
     nop

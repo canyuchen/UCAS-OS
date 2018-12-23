@@ -39,6 +39,10 @@
 
 extern void test_shell();
 
+extern void swap_process();
+
+extern struct task_info task_swap;
+
 // extern struct task_info *test_tasks[17];
 
 #endif

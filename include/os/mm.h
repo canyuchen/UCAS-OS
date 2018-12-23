@@ -9,7 +9,7 @@ enum {
     PAGE_SIZE = 0x1000, //4KB
 
     PAGE_TABLE_SIZE = 0x200000, //16M - 18M => 512 PAGES => 2MB => 0 - 2G VM 
-    PAGE_TABLE_PAGES = PAGE_TABLE_SIZE / PAGE_SIZE,
+    PAGE_TABLE_PAGES = (PAGE_TABLE_SIZE / PAGE_SIZE),
     PAGE_TABLE_ENTRIES_NUM = (PAGE_TABLE_SIZE / sizeof(uint32_t)), 
 
     // Global bit
@@ -25,21 +25,50 @@ enum {
 
     VM_SIZE = 0x80000000, //0 - 2GB
 
-    FRAME_SIZE = 0x800000, //16M - 24M => 2048 PAGES => 8MB 
-    FRAME_PAGES = FRAME_SIZE / PAGE_SIZE,
-
-    //swap division : 4K:32M - 32M+4K
+    /***********************P4-3 TEST***********************/
+    /*test condition 0                                     */
+    // FRAME_SIZE = 0x800000, //16M - 24M => 2048 PAGES => 8MB 
+    // FRAME_PAGES = FRAME_SIZE / PAGE_SIZE,
+    /*******************************************************/
+    // SD_SWAP_DIVISION_START = 0x2000000, //32M
     // SD_SWAP_DIVISION = 0x1000,
     // SD_SWAP_UNIT = 0X1000,
-    // SD_SWAP_UNIT_NUM = 0x1,
+    // SD_SWAP_UNIT_NUM = SD_SWAP_DIVISION / SD_SWAP_UNIT,
+    /*******************************************************/
 
-    // SD_SWAP_DIVISION = VM_SIZE - FRAME_SIZE,
-    SD_SWAP_DIVISION = 0x1000,
+    /********************SD SWAP TEST***********************/
+    /*test condition 1: invalid TLB, PTE empty, no free PFN*/
+    FRAME_SIZE = PAGE_TABLE_SIZE + PAGE_SIZE, 
+    FRAME_PAGES = (FRAME_SIZE / PAGE_SIZE), // == 512 + 1
+    /*******************************************************/
+    SD_SWAP_DIVISION_START = 0x2000000, //32M
+    SD_SWAP_DIVISION = 0x2000,
     SD_SWAP_UNIT = 0X1000,
-    SD_SWAP_UNIT_NUM = SD_SWAP_DIVISION / SD_SWAP_UNIT,
+    SD_SWAP_UNIT_NUM = (SD_SWAP_DIVISION / SD_SWAP_UNIT), // == 2
+    /*******************************************************/
+    /*******************************************************/
+    // /*test condition 1: invalid TLB, PTE empty, no free PFN*/
+    // FRAME_SIZE = PAGE_TABLE_SIZE + PAGE_SIZE, 
+    // FRAME_PAGES = FRAME_SIZE / PAGE_SIZE, // == 512 + 1
+    // /*******************************************************/
+    // SD_SWAP_DIVISION_START = 0x2000000, //32M
+    // SD_SWAP_DIVISION = 0x2000,
+    // SD_SWAP_UNIT = 0X1000,
+    // SD_SWAP_UNIT_NUM = SD_SWAP_DIVISION / SD_SWAP_UNIT, // == 2
+    // /*******************************************************/
+    // /*******************************************************/
+    // /*test condition 1: invalid TLB, PTE empty, no free PFN*/
+    // FRAME_SIZE = PAGE_TABLE_SIZE + PAGE_SIZE, 
+    // FRAME_PAGES = FRAME_SIZE / PAGE_SIZE, // == 512 + 1
+    // /*******************************************************/
+    // SD_SWAP_DIVISION_START = 0x2000000, //32M
+    // SD_SWAP_DIVISION = 0x2000,
+    // SD_SWAP_UNIT = 0X1000,
+    // SD_SWAP_UNIT_NUM = SD_SWAP_DIVISION / SD_SWAP_UNIT, // == 2
+    // /*******************************************************/
 
     //describe the total number of the pages of the virtual memory
-    VM_PAGES = VM_SIZE / PAGE_SIZE,
+    VM_PAGES = (VM_SIZE / PAGE_SIZE),
     //VM_PAGES == PAGE_TABLE_ENTRIES_NUM
 
     /* Constants to simulate a very small physical memory. */

@@ -89,8 +89,7 @@ struct task_info task17 = {"task4-1.2", (uint32_t)&rw_task4_1, USER_PROCESS};
 struct task_info task18 = {"task4-2.1", (uint32_t)&drawing_task4_2, USER_PROCESS};
 struct task_info task19 = {"task4-2.2", (uint32_t)&rw_task4_2, USER_PROCESS};
 
-// struct task_info task20 = {"task4-3.1", (uint32_t)&LiuBei, USER_PROCESS};
-// struct task_info task21 = {"task4-3.2", (uint32_t)&CaoCao, USER_PROCESS};
+struct task_info task_swap = {"swap process", (uint32_t)&swap_process, USER_PROCESS};
 
 static uint32_t num_test_tasks = 19;
 
