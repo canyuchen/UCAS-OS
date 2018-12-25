@@ -297,7 +297,7 @@ NESTED(handle_int, 0, sp)
     /* TODO: timer_irq */
     /* read int IP and handle clock interrupt or just call do_nothing */
     SAVE_CONTEXT(USER)
-    // RESTORE_CONTEXT(KERNEL)
+    RESTORE_CONTEXT(KERNEL)
     // ???
 
     mfc0  k0, CP0_CAUSE
@@ -314,6 +314,7 @@ NESTED(handle_int, 0, sp)
     jal   clear_int
     nop
 int_finish:
+    SAVE_CONTEXT(KERNEL)
     RESTORE_CONTEXT(USER)
     j     return_from_exception
     nop
@@ -380,6 +381,7 @@ NESTED(handle_syscall, 0, sp)
     nop
 
     //LEAVE_CRITICAL
+    // SAVE_CONTEXT(KERNEL)
     RESTORE_CONTEXT(USER)
     nop
     mfc0 k1, CP0_EPC
@@ -406,6 +408,8 @@ END(reset_timer)
 LEAF(first_entry)
     .set    noreorder
     //LEAVE_CRITICAL
+
+    RESTORE_CONTEXT(KERNEL)
 
     // jal   clear_int
     jal   reset_timer
