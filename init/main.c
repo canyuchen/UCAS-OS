@@ -39,6 +39,7 @@
 #include "mm.h"
 #include "scanf.h"
 #include "mac.h"
+#include "fs.h"
 
 int is_init = 0;
 
@@ -252,6 +253,12 @@ static void init_syscall(void)
     syscall[SYSCALL_NET_RECV] = (int (*)()) &do_net_recv;
     syscall[SYSCALL_WAIT_RECV_PACKAGE] = (int (*)()) &do_wait_recv_package;
 	syscall[SYSCALL_NET_FAST_RECV] = (int (*)()) &do_net_fast_recv;
+
+	syscall[SYSCALL_FS_OPEN] = (int (*)()) &do_fopen;
+	syscall[SYSCALL_FS_WRITE] = (int (*)()) &do_fwrite;
+	syscall[SYSCALL_FS_READ] = (int (*)()) &do_fread;
+	syscall[SYSCALL_FS_CLOSE] = (int (*)()) &do_fclose;
+	syscall[SYSCALL_FS_EXIT] = (int (*)()) &do_fexit;
 }
 
 // jump from bootloader.

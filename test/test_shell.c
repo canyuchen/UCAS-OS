@@ -97,15 +97,18 @@ struct task_info task5_3 = {"initmac",(uint32_t)&phy_regs_task3, USER_PROCESS};
 
 struct task_info task5_bonus = {"bonus",(uint32_t)&phy_regs_task_bonus, USER_PROCESS};
 
-static uint32_t num_test_tasks = 22;
+struct task_info task_fs = {"test_fs", (uint32_t)&test_fs, USER_PROCESS};
 
-static struct task_info *test_tasks[22] = {&task1, &task2, &task3,
+static uint32_t num_test_tasks = 24;
+
+static struct task_info *test_tasks[24] = {&task1, &task2, &task3,
                                            &task4, &task5, &task6,
                                            &task7, &task8, &task9,
                                            &task10, &task11, &task12,
                                            &task13, &task14, &task15,
                                            &task16, &task17, &task18, &task19,
-                                           &task5_1, &task5_2, &task5_3, task5_bonus
+                                           &task5_1, &task5_2, &task5_3, &task5_bonus,
+                                           &test_fs
                                            };
 
 #define INPUT_BUFFER_MAX_LENGTH 1000

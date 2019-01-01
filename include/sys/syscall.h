@@ -78,6 +78,12 @@
 #define SYSCALL_NET_SEND 52
 #define SYSCALL_NET_FAST_RECV 53
 
+#define SYSCALL_FS_OPEN 54
+#define SYSCALL_FS_WRITE 55
+#define SYSCALL_FS_READ 56
+#define SYSCALL_FS_CLOSE 57
+#define SYSCALL_FS_EXIT 58
+
 /* syscall function pointer */
 extern int (*syscall[NUM_SYSCALLS])();
 
@@ -127,5 +133,11 @@ extern void sys_net_send(uint32_t td, uint32_t td_phy);
 // int sys_net_recv(uint32_t, uint32_t, uint32_t)
 extern int sys_net_recv(uint32_t rd, uint32_t rd_phy, uint32_t daddr);
 extern void sys_wait_recv_package();
+
+extern int sys_fopen(char *name, uint32_t mode);
+extern void sys_fwrite(int fd, char *content, int length);
+extern void sys_fread(int fd, char *buffer, int length);
+extern void sys_fclose(int fd);
+extern void sys_fexit();
 
 #endif

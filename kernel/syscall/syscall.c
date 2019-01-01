@@ -197,4 +197,30 @@ void sys_net_fast_recv(uint32_t rd, uint32_t rd_phy, uint32_t daddr)
     invoke_syscall(SYSCALL_NET_FAST_RECV, (int)rd, (int)rd_phy, (int)daddr);
 }
 
+//P6
+
+int sys_fopen(char *name, uint32_t mode)
+{
+    invoke_syscall(SYSCALL_FS_OPEN, (int)name, (int)mode, IGNORE);
+}
+
+void sys_fwrite(int fd, char *content, int length)
+{
+    invoke_syscall(SYSCALL_FS_WRITE, fd, (int)content, length);
+}
+
+void sys_fread(int fd, char *buffer, int length)
+{
+    invoke_syscall(SYSCALL_FS_READ, fd, (int)buffer, length);
+}
+
+void sys_fclose(int fd)
+{
+    invoke_syscall(SYSCALL_FS_CLOSE, fd, IGNORE, IGNORE);
+}
+
+void sys_fexit()
+{
+    invoke_syscall(SYSCALL_FS_EXIT, IGNORE, IGNORE, IGNORE);
+}
 
