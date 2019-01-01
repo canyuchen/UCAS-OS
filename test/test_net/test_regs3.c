@@ -104,7 +104,7 @@ void phy_regs_task1()
 
     mii_dul_force(&test_mac);
 
-    register_irq_handler(LS1C_MAC_IRQ, irq_mac);
+    register_irq_handler(LS1C_MAC_IRQ, (uint32_t)irq_mac);
 
     irq_enable(LS1C_MAC_IRQ);
     sys_move_cursor(1, print_location);
@@ -207,7 +207,7 @@ void phy_regs_task3()
 
 static void recv_desc_bonus_init(mac_t *mac)
 {
-    do_recv_desc_init(recv_desc_table_ptr, (uint32_t)recv_buffer, (PSIZE*sizeof(uint32_t)), PNUM*4);
+    do_recv_desc_init(recv_desc_table_ptr, recv_buffer, (PSIZE*sizeof(uint32_t)), PNUM*4);
 }
 
 void phy_regs_task_bonus()
