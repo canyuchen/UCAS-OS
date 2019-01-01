@@ -201,4 +201,13 @@
 #define TIMER_INTERVAL      100000
 //#define TIMER_INTERVAL    150000
 
+#define INT0_SR 0xbfd01040
+#define INT0_EN 0xbfd01044
+#define INT1_SR 0xbfd01058
+#define INT1_EN 0xbfd0105c
+
+#define INT1_CLR 0xbfd01064
+#define INT1_POL 0xbfd01068 
+#define INT1_EDGE 0xbfd0106c
+
 #endif

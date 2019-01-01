@@ -3,17 +3,8 @@
 
 #include "type.h"
 #include "queue.h"
-//#define TEST_REGS1
-//#define TEST_REGS2
-#define TEST_REGS3
-#define GMAC_BASE_ADDR (0xbfe10000)
-#define DMA_BASE_ADDR  (0xbfe11000)
-#define PSIZE (256)
-#define PNUM (64)
+#include "mm.h"
 
-extern queue_t recv_block_queue;
-extern uint32_t recv_flag[PNUM];
-extern uint32_t ch_flag;
 enum GmacRegisters
 {
     GmacConfig = 0x0000,      /* Mac config Register                       */
@@ -751,19 +742,37 @@ enum InitialRegisters
     DmaIntDisable = 0,
 };
 
+/**********************************************************/
 
+//#define TEST_REGS1
+//#define TEST_REGS2
+#define TEST_REGS3
+#define GMAC_BASE_ADDR (0xbfe10000)
+#define DMA_BASE_ADDR  (0xbfe11000)
+#define PSIZE (256)
+#define PNUM (64)
+
+#define LS1C_MAC_IRQ (0)
+
+#define DESC_SIZE (16) //128
+#define SEND_DESC (0xa1f10000)
+#define RECV_DESC (0xa1f20000)
+
+#define PHYADDR(x) ((x) & 0x1fffffff)
+//?
 
 typedef struct desc
 {
-    uint32_t tdes0;
-    uint32_t tdes1;
-    uint32_t tdes2;
-    uint32_t tdes3;
+    uint32_t des0;
+    uint32_t des1;
+    uint32_t des2;
+    uint32_t des3;
 } desc_t;
+
 typedef struct mac
 {
     uint32_t psize;     // backpack size
-    uint32_t pnum;
+    uint32_t pnum;      // package num
     uint32_t mac_addr;  // MAC base address
     uint32_t dma_addr;  // DMA base address
 
@@ -781,19 +790,40 @@ typedef struct mac
 
 } mac_t;
 
-uint32_t read_register(uint32_t base, uint32_t offset);
-void reg_write_32(uint32_t addr, uint32_t data);
-void printf_dma_regs();
-void printf_mac_regs(void);;
-void print_dma_regs(void);
-void print_mac_regs(void);
-void print_phy_regs(void);
-void print_rx_dscrb(mac_t *mac);
-void print_tx_dscrb(mac_t *mac);
-uint32_t do_net_recv(uint32_t rd,uint32_t rd_phy,uint32_t daddr);
-void do_net_send(uint32_t td, uint32_t td_phy);
-void do_init_mac(void);
-void do_wait_recv_package(void);
-void irq_mac(void);
-void check_recv(mac_t *test_mac);
+extern desc_t *send_desc_table_ptr;
+extern desc_t *recv_desc_table_ptr;
+
+extern uint32_t buffer[PSIZE];
+extern uint32_t *recv_buffer;
+
+extern queue_t recv_block_queue;
+extern uint32_t recv_flag[PNUM];
+extern uint32_t ch_flag;
+
+extern uint32_t read_register(uint32_t base, uint32_t offset);
+extern void reg_write_32(uint32_t addr, uint32_t data);
+extern void printf_dma_regs();
+extern void printf_mac_regs(void);;
+extern void print_dma_regs(void);
+extern void print_mac_regs(void);
+extern void print_phy_regs(void);
+extern void print_rx_dscrb(mac_t *mac);
+extern void print_tx_dscrb(mac_t *mac);
+
+extern uint32_t do_net_recv(uint32_t rd,uint32_t rd_phy,uint32_t daddr);
+extern void do_net_send(uint32_t td, uint32_t td_phy);
+extern void do_init_mac(void);
+extern void do_wait_recv_package(void);
+extern void irq_mac(void);
+extern void check_recv(mac_t *test_mac);
+
+extern uint32_t do_recv_desc_init(void *desc_addr, void *buffer, uint32_t bufsize, uint32_t pnum);
+extern uint32_t do_send_desc_init(void *desc_addr, void *buffer, uint32_t bufsize, uint32_t pnum);
+
+extern int register_irq_handler(uint32_t x, uint32_t irq_mac);
+
+extern void enable_mac_int();
+
+extern void clear_interrupt();
+extern void check_irq_mac();
 #endif

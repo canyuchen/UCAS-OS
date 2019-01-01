@@ -12,8 +12,21 @@ queue_t recv_block_queue;
 desc_t *send_desc;
 desc_t *receive_desc;
 uint32_t cnt = 1; //record the time of iqr_mac
-//uint32_t buffer[PSIZE] = {0x00040045, 0x00000100, 0x5d911120, 0x0101a8c0, 0xfb0000e0, 0xe914e914, 0x00000801,0x45000400, 0x00010000, 0x2011915d, 0xc0a80101, 0xe00000fb, 0x14e914e9, 0x01080000};
-uint32_t buffer[PSIZE] = {0xffffffff, 0x5500ffff, 0xf77db57d, 0x00450008, 0x0000d400, 0x11ff0040, 0xa8c073d8, 0x00e00101, 0xe914fb00, 0x0004e914, 0x0000, 0x005e0001, 0x2300fb00, 0x84b7f28b, 0x00450008, 0x0000d400, 0x11ff0040, 0xa8c073d8, 0x00e00101, 0xe914fb00, 0x0801e914, 0x0000};
+//uint32_t buffer[PSIZE] = {0x00040045, 0x00000100, 0x5d911120, 
+//                          0x0101a8c0, 0xfb0000e0, 0xe914e914, 
+//                          0x00000801, 0x45000400, 0x00010000, 
+//                          0x2011915d, 0xc0a80101, 0xe00000fb, 
+//                          0x14e914e9, 0x01080000};
+uint32_t buffer[PSIZE] = {0xffffffff, 0x5500ffff, 0xf77db57d, 
+                          0x00450008, 0x0000d400, 0x11ff0040, 
+                          0xa8c073d8, 0x00e00101, 0xe914fb00, 
+                          0x0004e914, 0x00000000, 0x005e0001, 
+                          0x2300fb00, 0x84b7f28b, 0x00450008, 
+                          0x0000d400, 0x11ff0040, 0xa8c073d8, 
+                          0x00e00101, 0xe914fb00, 0x0801e914, 
+                          0x00000000};
+
+uint32_t *recv_buffer;
 
 /**
  * Clears all the pending interrupts.
@@ -30,15 +43,13 @@ void clear_interrupt()
 
 static void send_desc_init(mac_t *mac)
 {
-    
+    do_send_desc_init(send_desc_table_ptr, (uint32_t)buffer, PSIZE*sizeof(uint32_t), PNUM);
 }
 
 static void recv_desc_init(mac_t *mac)
 {
-    
+    do_recv_desc_init(recv_desc_table_ptr, (uint32_t)recv_buffer, PSIZE*sizeof(uint32_t), PNUM);
 }
-
-
 
 static void mii_dul_force(mac_t *mac)
 {
@@ -47,14 +58,10 @@ static void mii_dul_force(mac_t *mac)
     uint32_t conf = 0xc800;            //0x0080cc00;
 
     // loopback, 100M
-    reg_write_32(mac->mac_addr, reg_read_32(mac->mac_addr) | (conf) | (1 << 8));
+    reg_write_32(mac->mac_addr, (reg_read_32(mac->mac_addr) | (conf) | (1 << 8)));
     //enable recieve all
-    reg_write_32(mac->mac_addr + 0x4, reg_read_32(mac->mac_addr + 0x4) | 0x80000001);
+    reg_write_32(mac->mac_addr + 0x4, (reg_read_32(mac->mac_addr + 0x4) | 0x80000001));
 }
-
-
-
-
 
 void dma_control_init(mac_t *mac, uint32_t init_value)
 {

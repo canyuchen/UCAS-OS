@@ -38,6 +38,7 @@
 #include "mailbox.h"
 #include "mm.h"
 #include "scanf.h"
+#include "mac.h"
 
 int is_init = 0;
 
@@ -191,11 +192,10 @@ static void init_exception()
 {
 	// 1. Get CP0_STATUS
 	// 2. Disable all interrupt 
-	// 3. Copy the level 2 exception handling code to 0x80000180
-	// 4. reset CP0_COMPARE & CP0_COUNT register
-
 	CLOSE_INTERRUPT;
 
+    // 3. init exception handling code
+	//    and copy the level 2 exception handling code to 0x80000180
 	init_exception_handler();
 
 	memcpy((uint8_t *)(EBASE+EBASE_OFFSET),(uint8_t *)exception_handler_begin,\
@@ -207,6 +207,7 @@ static void init_exception()
 	memcpy((uint8_t *)0x80000000, (uint8_t *)exception_handler_begin,\
 		   exception_handler_end-exception_handler_begin);
 
+	// 4. reset CP0_COMPARE & CP0_COUNT register
 	reset_timer();
 }
 
@@ -245,6 +246,11 @@ static void init_syscall(void)
 	syscall[SYSCALL_KILL] = (int (*)()) &do_kill;
 	syscall[SYSCALL_PS] = (int (*)()) &do_ps;
 	syscall[SYSCALL_SCANF] = (int (*)()) &do_scanf;
+
+    syscall[SYSCALL_INIT_MAC]= (int (*)()) &do_init_mac;
+    syscall[SYSCALL_NET_SEND]= (int (*)()) &do_net_send;
+    syscall[SYSCALL_NET_RECV]= (int (*)()) &do_net_recv;
+    syscall[SYSCALL_WAIT_RECV_PACKAGE]= (int (*)()) &do_wait_recv_package;
 }
 
 // jump from bootloader.

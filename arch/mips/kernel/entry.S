@@ -311,6 +311,9 @@ NESTED(handle_int, 0, sp)
     beq   k0, k1, irq_timer
     nop
 
+    jal   check_irq_mac
+    nop
+
     jal   clear_int
     nop
 int_finish:
@@ -329,6 +332,9 @@ irq_timer:
     lw    k1, time_elapsed
     addi  k1, k1, 15
     sw    k1, time_elapsed
+
+    jal   check_recv_block_queue
+    nop
 
     TEST_TASK_MODE
     beq   k1, zero, int_finish

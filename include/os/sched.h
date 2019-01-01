@@ -157,9 +157,7 @@ typedef struct pcb
 /* task information, used to init PCB */
 typedef struct task_info
 {
-#ifdef _PROJECT_3_
     char *task_name;
-#endif
     uint32_t entry_point;
     task_type_t type;
 } task_info_t;
