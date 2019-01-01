@@ -204,7 +204,7 @@ void test_shell()
                     }
                     printf("> root@UCAS_OS: ");
                 }
-                if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'c' 
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'c' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'l'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'e'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'a'
@@ -214,7 +214,7 @@ void test_shell()
                     printf("-----------------COMMAND-------------------\n");
                     printf("> root@UCAS_OS: ");
                 }
-                if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'e' 
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'e' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'x'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'e'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'c'
@@ -225,7 +225,7 @@ void test_shell()
                     sys_spawn(test_tasks[k]);
                     printf("> root@UCAS_OS: ");
                 }                 
-                if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'k' 
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'k' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'i'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'l'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'l'
@@ -236,6 +236,100 @@ void test_shell()
                     sys_kill(k);
                     printf("> root@UCAS_OS: ");
                 }      
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'm' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'k'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'f'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 's'){
+                    
+                    printf("> root@UCAS_OS: ");
+                }
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 's' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 't'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'a'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 't'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 'f'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5) == 's'){
+                    
+                    printf("> root@UCAS_OS: ");
+                }
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'c' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'd'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == ' '){
+                    
+                    printf("> root@UCAS_OS: ");
+                }
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'm' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'k'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'd'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'i'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 'r'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5) == ' '){
+                    
+                    printf("> root@UCAS_OS: ");
+                }
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'r' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'm'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'd'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'i'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 'r'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5) == ' '){
+                    
+                    printf("> root@UCAS_OS: ");
+                }
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'l' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 's'){
+                    
+                    printf("> root@UCAS_OS: ");
+                }
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 't' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'o'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'u'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'c'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 'h'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5) == ' '){
+                    
+                    printf("> root@UCAS_OS: ");
+                }
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'c' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'a'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 't'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == ' '){
+                    
+                    printf("> root@UCAS_OS: ");
+                }
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'f' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'i'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'n'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'd'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == ' '){
+                    
+                    printf("> root@UCAS_OS: ");
+                }
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'r' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'e'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'n'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'a'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 'm'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5) == 'e'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 6) == ' '){
+                    
+                    printf("> root@UCAS_OS: ");
+                }
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'l' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'n'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == ' '){
+                    
+                    printf("> root@UCAS_OS: ");
+                }
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'l' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'n'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == ' '
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == '-'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 's'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5) == ' '){
+                    
+                    printf("> root@UCAS_OS: ");
+                }
 
                 inputBuffer_ptr->pointer = i;
             }            
