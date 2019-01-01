@@ -4,6 +4,7 @@
 #include "type.h"
 #include "queue.h"
 #include "mm.h"
+#include "string.h"
 
 enum GmacRegisters
 {
@@ -755,11 +756,17 @@ enum InitialRegisters
 #define LS1C_MAC_IRQ (0)
 
 #define DESC_SIZE (16) //128
-#define SEND_DESC (0xa1f10000)
-#define RECV_DESC (0xa1f20000)
+// #define SEND_DESC (0xa1f10000)
+// #define RECV_DESC (0xa1f20000)
 
 #define PHYADDR(x) ((x) & 0x1fffffff)
 //?
+
+// #define BIG_RECEIVE_BUFFER (0xa1d00000)
+
+#define SEND_DESC_SIZE (DESC_SIZE * PNUM)
+#define RECV_DESC_SIZE (DESC_SIZE * PNUM)
+#define RECV_BUFFER_SIZE (PSIZE * PNUM)
 
 typedef struct desc
 {
@@ -794,7 +801,8 @@ extern desc_t *send_desc_table_ptr;
 extern desc_t *recv_desc_table_ptr;
 
 extern uint32_t buffer[PSIZE];
-extern uint32_t *recv_buffer;
+// extern uint32_t *recv_buffer;
+extern uint32_t recv_buffer[RECV_BUFFER_SIZE];
 
 extern queue_t recv_block_queue;
 extern uint32_t recv_flag[PNUM];
@@ -826,4 +834,8 @@ extern void enable_mac_int();
 
 extern void clear_interrupt();
 extern void check_irq_mac();
+
+//------------------------BONUS-------------------------
+
+extern uint32_t do_net_fast_recv(uint32_t rd, uint32_t rd_phy, uint32_t daddr);
 #endif

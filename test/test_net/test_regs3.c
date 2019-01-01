@@ -25,7 +25,7 @@ uint32_t buffer[PSIZE] = {0xffffffff, 0x5500ffff, 0xf77db57d,
                           0x00e00101, 0xe914fb00, 0x0801e914, 
                           0x00000000};
 
-uint32_t *recv_buffer;
+uint32_t recv_buffer[RECV_BUFFER_SIZE] = {0x00000000};
 
 queue_t recv_block_queue;
 uint32_t recv_flag[PNUM];
@@ -84,7 +84,7 @@ void phy_regs_task1()
 
     mac_t test_mac;
     uint32_t i;
-    uint32_t print_location = 6;
+    uint32_t print_location = 3;
 
     test_mac.mac_addr = 0xbfe10000;
     test_mac.dma_addr = 0xbfe11000;
@@ -116,10 +116,14 @@ void phy_regs_task1()
     {
         sys_net_send(test_mac.td, test_mac.td_phy);
         cnt += PNUM;
-        sys_move_cursor(1, print_location+1);
-        printf("> [SEND TASK] totally send package %d !        \n", cnt);
+        sys_move_cursor(1, print_location+(cnt/PNUM));
+        printf("> [SEND TASK] now totally send package %d !        \n", cnt);
         i--;
     }
+
+    sys_move_cursor(1, print_location+5);
+    printf("> [SEND TASK] send task finished        \n", cnt);
+
     sys_exit();
 }
 
@@ -129,7 +133,7 @@ void phy_regs_task2()
     mac_t test_mac;
     uint32_t i;
     uint32_t ret;
-    uint32_t print_location = 3;
+    uint32_t print_location = 9;
 
     test_mac.mac_addr = 0xbfe10000;
     test_mac.dma_addr = 0xbfe11000;
@@ -152,7 +156,7 @@ void phy_regs_task2()
 
     queue_init(&recv_block_queue);
     sys_move_cursor(1, print_location);
-    printf("[RECV TASK] start recv:                    ");
+    printf("> [RECV TASK] start recv:                    ");
     ret = sys_net_recv(test_mac.rd, test_mac.rd_phy, test_mac.daddr);
   
     ch_flag = 0;
@@ -174,7 +178,7 @@ void phy_regs_task2()
 
     check_recv(&test_mac);
     sys_move_cursor(1, print_location+2);
-    printf("> [RECV TASK] receive finished, now exit.\n");
+    printf("> [RECV TASK] 64 packages received, now exit.\n");
 
     sys_exit();
 }
@@ -182,6 +186,13 @@ void phy_regs_task2()
 void phy_regs_task3()
 {
     uint32_t print_location = 1;
+
+    send_desc = (desc_t*)send_desc_table_ptr;
+    receive_desc = (desc_t*)recv_desc_table_ptr;
+    // recv_buffer = BIG_RECEIVE_BUFFER;
+
+    bzero(recv_buffer, RECV_BUFFER_SIZE*sizeof(uint32_t));
+
     sys_move_cursor(1, print_location);
     printf("> [INIT] Waiting for MAC initialization .\n");
 
@@ -189,6 +200,66 @@ void phy_regs_task3()
 
     sys_move_cursor(1, print_location+1);
     printf("> [INIT] MAC initialization succeeded.           \n");
+    sys_exit();
+}
+
+//------------------------BONUS-------------------------
+
+static void recv_desc_bonus_init(mac_t *mac)
+{
+    do_recv_desc_init(recv_desc_table_ptr, (uint32_t)recv_buffer, (PSIZE*sizeof(uint32_t)), PNUM*4);
+}
+
+void phy_regs_task_bonus()
+{
+    mac_t test_mac;
+    uint32_t i;
+    uint32_t ret;
+    uint32_t print_location = 8;
+
+    test_mac.mac_addr = 0xbfe10000;
+    test_mac.dma_addr = 0xbfe11000;
+
+    test_mac.psize = PSIZE * 4; // 64bytes
+    test_mac.pnum = PNUM;       // pnum
+
+    test_mac.rd_phy = PHYADDR((uint32_t)recv_desc_table_ptr);
+    test_mac.rd = (uint32_t)recv_desc_table_ptr;
+    test_mac.daddr = (uint32_t)recv_buffer;
+    test_mac.daddr_phy = PHYADDR((uint32_t)recv_buffer);
+    test_mac.saddr = (uint32_t)buffer;
+
+    recv_desc_bonus_init(&test_mac);
+
+    dma_control_init(&test_mac, DmaStoreAndForward | DmaTxSecondFrame | DmaRxThreshCtrl128);
+    clear_interrupt(&test_mac);
+
+    mii_dul_force(&test_mac);
+
+    queue_init(&recv_block_queue);
+    sys_move_cursor(1, print_location);
+    printf("> [RECV TASK] start recv:                    ");
+
+    int mcnt=0;
+    // uint32_t start_time=time_elapsed;
+    // send pkg for 8s
+    while(mcnt<32)
+    {
+        // sys_move_cursor(1,print_location);
+        // int time_passed=(time_elapsed-start_time);//to be fixed
+        // printf("> pkg:%d\n", cnt);
+        // printf("> pst:%d\n", time_passed);
+        // printf("> spd:%d KBps", cnt*(300000000/150000)/(time_passed));
+        // printf("> spd:%d KBps", cnt*(300000000/150000)/(time_passed));
+    //     recv_desc_init(&test_mac);
+        ret = sys_net_fast_recv(test_mac.rd, test_mac.rd_phy, test_mac.daddr);
+        sys_wait_recv_package();
+        mcnt++;
+    }
+
+    sys_move_cursor(1, print_location+1);
+    printf("> [RECV TASK] 2**7 pkg received.\n");
+  
     sys_exit();
 }
 

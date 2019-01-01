@@ -192,8 +192,9 @@ void sys_wait_recv_package()
     invoke_syscall(SYSCALL_WAIT_RECV_PACKAGE, IGNORE, IGNORE, IGNORE);
 }
 
-// void sys_net_fast_recv(uint32_t rd, uint32_t rd_phy, uint32_t daddr)
-// {
-//     invoke_syscall(SYSCALL_NET_FAST_RECV, (int)rd, (int)rd_phy, (int)daddr);
-// }
+void sys_net_fast_recv(uint32_t rd, uint32_t rd_phy, uint32_t daddr)
+{
+    invoke_syscall(SYSCALL_NET_FAST_RECV, (int)rd, (int)rd_phy, (int)daddr);
+}
+
 

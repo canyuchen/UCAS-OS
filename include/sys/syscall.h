@@ -76,7 +76,7 @@
 #define SYSCALL_WAIT_RECV_PACKAGE 50
 #define SYSCALL_INIT_MAC 51
 #define SYSCALL_NET_SEND 52
-
+#define SYSCALL_NET_FAST_RECV 53
 
 /* syscall function pointer */
 extern int (*syscall[NUM_SYSCALLS])();

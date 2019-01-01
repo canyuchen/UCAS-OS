@@ -247,10 +247,11 @@ static void init_syscall(void)
 	syscall[SYSCALL_PS] = (int (*)()) &do_ps;
 	syscall[SYSCALL_SCANF] = (int (*)()) &do_scanf;
 
-    syscall[SYSCALL_INIT_MAC]= (int (*)()) &do_init_mac;
-    syscall[SYSCALL_NET_SEND]= (int (*)()) &do_net_send;
-    syscall[SYSCALL_NET_RECV]= (int (*)()) &do_net_recv;
-    syscall[SYSCALL_WAIT_RECV_PACKAGE]= (int (*)()) &do_wait_recv_package;
+    syscall[SYSCALL_INIT_MAC] = (int (*)()) &do_init_mac;
+    syscall[SYSCALL_NET_SEND] = (int (*)()) &do_net_send;
+    syscall[SYSCALL_NET_RECV] = (int (*)()) &do_net_recv;
+    syscall[SYSCALL_WAIT_RECV_PACKAGE] = (int (*)()) &do_wait_recv_package;
+	syscall[SYSCALL_NET_FAST_RECV] = (int (*)()) &do_net_fast_recv;
 }
 
 // jump from bootloader.

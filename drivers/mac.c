@@ -5,6 +5,9 @@
 desc_t *send_desc_table_ptr;
 desc_t *recv_desc_table_ptr;
 
+desc_t send_desc_table[PNUM];
+desc_t recv_desc_table[PNUM];
+
 uint32_t reg_read_32(uint32_t addr)
 {
     return *((uint32_t *)addr);
@@ -446,8 +449,13 @@ void do_init_mac(void)
     *((uint32_t *)INT1_POL ) = 0xFFFFFFFF;
     *((uint32_t *)INT1_EDGE) = 0;
 
-    send_desc_table_ptr = (desc_t*)SEND_DESC;
-    recv_desc_table_ptr = (desc_t*)RECV_DESC;
+    // send_desc_table_ptr = (desc_t*)SEND_DESC;
+    // recv_desc_table_ptr = (desc_t*)RECV_DESC;
+    send_desc_table_ptr = (desc_t*)send_desc_table;
+    recv_desc_table_ptr = (desc_t*)recv_desc_table;
+
+    bzero(send_desc_table_ptr, SEND_DESC_SIZE);
+    bzero(recv_desc_table_ptr, RECV_DESC_SIZE);
 }
 
 void do_wait_recv_package(void)
@@ -566,6 +574,53 @@ void check_irq_mac()
         // panic("irq_mac");
         return;
     }
+}
+
+//------------------------BONUS-------------------------
+
+uint32_t do_net_fast_recv(uint32_t rd, uint32_t rd_phy, uint32_t daddr)
+{
+    //PLEASE enable MAC-RX
+
+    // 分别在DMA寄存器4（Transmit Descriptor List Address Register，偏移为0x10）和DMA寄存器3（Receive Descriptor
+    // List Address Register，偏移为 0xC）中填入发送描述符和接收描述符的首物理地址。这个操作大家可以调用我
+    // 们提供的 reg_write_32（）函数对寄存器赋值
+    reg_write_32(DMA_BASE_ADDR + 0xC, (uint32_t)recv_desc_table_ptr);
+    // reg_write_32(DMA_BASE_ADDR + 0xC, rd_phy);
+
+    //分别将 mac 第 0 寄存器的第 2 位和第 3 位(从0开始)设置为 1，这样可以分别使能 MAC 传输功能和接收功能
+    reg_write_32(GMAC_BASE_ADDR, reg_read_32(GMAC_BASE_ADDR) | 0x4);
+    // reg_write_32(GMAC_BASE_ADDR, reg_read_32(GMAC_BASE_ADDR) | (1 << 2) | (1 << 3));
+    // reg_write_32(GMAC_BASE_ADDR,reg_read_32(GMAC_BASE_ADDR)|1<<3|1<<4);
+
+    // 配置 DMA 第 6 寄存器、DMA 第 7 寄存器。这个操作在 do_net_send（）和 do_net_recv（）里已经帮大家实
+    // 现了，请大家查看《Loongson1C300_user_manual_v1.3》手册，了解配置的每一位的含义
+    reg_write_32(DMA_BASE_ADDR + 0x18, reg_read_32(DMA_BASE_ADDR + 0x18) | 0x02200002); // start tx, rx
+    reg_write_32(DMA_BASE_ADDR + 0x1c, 0x10001 | (1 << 6));
+
+    // 在发送和接收前，每个描述符的 OWN 位需置 1，当开始发送和接收后，OWN 位从 1 变成 0 时（硬件自动置
+    // 位），则此描述符已经完成的发送或接收，可以以 OWN 为判断是否完成了发送或接收；
+
+    // 每次接收前需要在 DMA 寄存器 2（Receive Poll Demand Register）中写入任意值，接收 DMA 控制器将会读取
+    // 寄存器 19 对应的描述符，这样当有数据包到达板卡时就会接收一个数据包?
+
+    //注意每次写1对应一个包
+    int l;
+    for(l=0;l<256;l++)
+    {
+        ((desc_t*)(rd+l*DESC_SIZE))->des0=0x80000000;
+    }
+
+    for(l=0;l<256;l++)
+    {
+        reg_write_32(DMA_BASE_ADDR + DmaRxPollDemand, 0x1);
+        // while(((desc_t*)(rd_phy+l*DESC_SIZE))->tdes0&0x80000000)
+        // {
+        //     //pooling
+        // }
+    }
+
+    return 0; //if recev succeed
 }
 
 
