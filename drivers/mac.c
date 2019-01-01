@@ -488,6 +488,17 @@ void check_recv_block_queue(void)
         }
         // vt100_move_cursor(1, 13);
         // printk(" [TI] package recieve 64 succeed. \n");
+
+        vt100_move_cursor(1,15);
+        int i,j;
+
+        for(i = 30; i > 0; i--){
+            for(j = 0; j < 16; j++){
+                printk("%x ",  recv_buffer[(PNUM-i)*PSIZE+j]); 
+            }           
+            printk("\n"); 
+        }
+
         do_unblock_one(&recv_block_queue);
     }
 
