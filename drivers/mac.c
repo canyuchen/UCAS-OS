@@ -1,12 +1,15 @@
 #include "mac.h"
 #include "regs.h"
 #include "irq.h"
+#include "stdio.h"
 
 desc_t *send_desc_table_ptr;
 desc_t *recv_desc_table_ptr;
 
 desc_t send_desc_table[PNUM];
 desc_t recv_desc_table[PNUM];
+
+uint32_t recv_buffer_ptr = 0;
 
 uint32_t reg_read_32(uint32_t addr)
 {
@@ -488,6 +491,33 @@ void check_recv_block_queue(void)
         }
         // vt100_move_cursor(1, 13);
         // printk(" [TI] package recieve 64 succeed. \n");
+
+        vt100_move_cursor(1,15);
+        int i, j;
+
+        for(i = 30; i > 0; i--){
+            for(j = 0; j < 16; j++){
+                printk("%x ",  recv_buffer[(PNUM-i)*PSIZE+j]); 
+            }
+
+            // printk("%x ",  recv_buffer[(PNUM-i)*PSIZE     ]);                
+            // printk("%x ",  recv_buffer[(PNUM-i)*PSIZE + 1 ]);                
+            // printk("%x ",  recv_buffer[(PNUM-i)*PSIZE + 2 ]);                
+            // printk("%x ",  recv_buffer[(PNUM-i)*PSIZE + 3 ]);                
+            // printk("%x ",  recv_buffer[(PNUM-i)*PSIZE + 4 ]);                
+            // printk("%x ",  recv_buffer[(PNUM-i)*PSIZE + 5 ]);                
+            // printk("%x ",  recv_buffer[(PNUM-i)*PSIZE + 6 ]);                
+            // printk("%x ",  recv_buffer[(PNUM-i)*PSIZE + 7 ]); 
+            // printk("%x ",  recv_buffer[(PNUM-i)*PSIZE + 8 ]);                
+            // printk("%x ",  recv_buffer[(PNUM-i)*PSIZE + 9 ]);                
+            // printk("%x ",  recv_buffer[(PNUM-i)*PSIZE + 10]);                
+            // printk("%x ",  recv_buffer[(PNUM-i)*PSIZE + 11]);                
+            // printk("%x ",  recv_buffer[(PNUM-i)*PSIZE + 12]);                
+            // printk("%x ",  recv_buffer[(PNUM-i)*PSIZE + 13]);                
+            // printk("%x ",  recv_buffer[(PNUM-i)*PSIZE + 14]);                
+            // printk("%x\n", recv_buffer[(PNUM-i)*PSIZE + 15]);                
+        }
+        
         do_unblock_one(&recv_block_queue);
     }
 
@@ -572,6 +602,93 @@ void check_irq_mac()
         }
         // printk("invalid interrupt:%x\n",status);
         // panic("irq_mac");
+
+        // vt100_move_cursor(1,20);
+        // int i;
+        // if(recv_buffer_ptr < PNUM){
+        //     for(i = 0; i < PSIZE; i += 16){
+        //         printk("%d", recv_buffer[recv_buffer_ptr*PSIZE + i]);                
+        //         printk("%d", recv_buffer[recv_buffer_ptr*PSIZE + i+1]);                
+        //         printk("%d", recv_buffer[recv_buffer_ptr*PSIZE + i+2]);                
+        //         printk("%d", recv_buffer[recv_buffer_ptr*PSIZE + i+3]);                
+        //         printk("%d", recv_buffer[recv_buffer_ptr*PSIZE + i+4]);                
+        //         printk("%d", recv_buffer[recv_buffer_ptr*PSIZE + i+5]);                
+        //         printk("%d", recv_buffer[recv_buffer_ptr*PSIZE + i+6]);                
+        //         printk("%d\n", recv_buffer[recv_buffer_ptr*PSIZE + i+7]);                
+        //         // printk("%d", recv_buffer[recv_buffer_ptr*PSIZE + i+8]);                
+        //         // printk("%d", recv_buffer[recv_buffer_ptr*PSIZE + i+9]);                
+        //         // printk("%d", recv_buffer[recv_buffer_ptr*PSIZE + i+10]);                
+        //         // printk("%d", recv_buffer[recv_buffer_ptr*PSIZE + i+11]);                
+        //         // printk("%d", recv_buffer[recv_buffer_ptr*PSIZE + i+12]);                
+        //         // printk("%d", recv_buffer[recv_buffer_ptr*PSIZE + i+13]);                
+        //         // printk("%d", recv_buffer[recv_buffer_ptr*PSIZE + i+14]);                
+        //         // printk("%d\n", recv_buffer[recv_buffer_ptr*PSIZE + i+15]);                
+        //     }
+        //     recv_buffer_ptr++;
+        // }
+
+
+        // char recv_buffer_1[8] = {0};                
+        // char recv_buffer_2[8] = {0};
+        // char recv_buffer_3[8] = {0};
+        // char recv_buffer_4[8] = {0};
+        // char recv_buffer_5[8] = {0};
+        // char recv_buffer_6[8] = {0};
+        // char recv_buffer_7[8] = {0};                
+        // char recv_buffer_8[8] = {0};
+/*
+        vt100_move_cursor(1,15);
+        // int i;
+        if(recv_buffer_ptr < PNUM){
+            // for(i = 0; i < PSIZE; i += 8){
+                // htoa(recv_buffer[recv_buffer_ptr*PSIZE + i    ], recv_buffer_1);
+                // htoa(recv_buffer[recv_buffer_ptr*PSIZE + i + 1], recv_buffer_2);
+                // htoa(recv_buffer[recv_buffer_ptr*PSIZE + i + 2], recv_buffer_3);
+                // htoa(recv_buffer[recv_buffer_ptr*PSIZE + i + 3], recv_buffer_4);
+                // htoa(recv_buffer[recv_buffer_ptr*PSIZE + i + 4], recv_buffer_5);
+                // htoa(recv_buffer[recv_buffer_ptr*PSIZE + i + 5], recv_buffer_6);
+                // htoa(recv_buffer[recv_buffer_ptr*PSIZE + i + 6], recv_buffer_7);
+                // htoa(recv_buffer[recv_buffer_ptr*PSIZE + i + 7], recv_buffer_8);
+                
+                // printk("%s ",  recv_buffer_1);                
+                // printk("%s ",  recv_buffer_2);                
+                // printk("%s ",  recv_buffer_3);                
+                // printk("%s ",  recv_buffer_4);                
+                // printk("%s ",  recv_buffer_5);                
+                // printk("%s ",  recv_buffer_6);                
+                // printk("%s ",  recv_buffer_7);                
+                // printk("%s\n", recv_buffer_8);     
+
+                printk("%x ",  recv_buffer[recv_buffer_ptr*PSIZE  ]);                
+                printk("%x ",  recv_buffer[recv_buffer_ptr*PSIZE+1]);                
+                printk("%x ",  recv_buffer[recv_buffer_ptr*PSIZE+2]);                
+                printk("%x ",  recv_buffer[recv_buffer_ptr*PSIZE+3]);                
+                printk("%x ",  recv_buffer[recv_buffer_ptr*PSIZE+4]);                
+                printk("%x ",  recv_buffer[recv_buffer_ptr*PSIZE+5]);                
+                printk("%x ",  recv_buffer[recv_buffer_ptr*PSIZE+6]);                
+                printk("%x ", recv_buffer[recv_buffer_ptr*PSIZE+7]); 
+
+                // printk("%x ",  recv_buffer[recv_buffer_ptr*PSIZE + i  ]);                
+                // printk("%x ",  recv_buffer[recv_buffer_ptr*PSIZE + i+1]);                
+                // printk("%x ",  recv_buffer[recv_buffer_ptr*PSIZE + i+2]);                
+                // printk("%x ",  recv_buffer[recv_buffer_ptr*PSIZE + i+3]);                
+                // printk("%x ",  recv_buffer[recv_buffer_ptr*PSIZE + i+4]);                
+                // printk("%x ",  recv_buffer[recv_buffer_ptr*PSIZE + i+5]);                
+                // printk("%x ",  recv_buffer[recv_buffer_ptr*PSIZE + i+6]);                
+                // printk("%x\n", recv_buffer[recv_buffer_ptr*PSIZE + i+7]); 
+
+                printk("%x ", recv_buffer[recv_buffer_ptr*PSIZE + 8]);                
+                printk("%x ", recv_buffer[recv_buffer_ptr*PSIZE + 9]);                
+                printk("%x ", recv_buffer[recv_buffer_ptr*PSIZE + 10]);                
+                printk("%x ", recv_buffer[recv_buffer_ptr*PSIZE + 11]);                
+                printk("%x ", recv_buffer[recv_buffer_ptr*PSIZE + 12]);                
+                printk("%x ", recv_buffer[recv_buffer_ptr*PSIZE + 13]);                
+                printk("%x ", recv_buffer[recv_buffer_ptr*PSIZE + 14]);                
+                printk("%x \n", recv_buffer[recv_buffer_ptr*PSIZE +15]);                
+            // }
+            recv_buffer_ptr++;
+        }
+*/
         return;
     }
 }
