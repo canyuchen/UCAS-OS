@@ -8,6 +8,9 @@ desc_t *recv_desc_table_ptr;
 desc_t send_desc_table[PNUM];
 desc_t recv_desc_table[PNUM];
 
+uint32_t recv_desc_ptr = 0;
+uint32_t recv_pkg_num = 0;
+
 uint32_t reg_read_32(uint32_t addr)
 {
     return *((uint32_t *)addr);
@@ -244,8 +247,31 @@ void irq_mac(void)
 {
     //TODO
     clear_interrupt();
+/*
     do_unblock_one(&recv_block_queue);
+*/
+    if(recv_pkg_num < 64){
+        recv_desc_table[recv_desc_ptr].des0 |= 0x80000000; 
+        recv_desc_ptr = (recv_desc_ptr + 1) % 64;        
+    }
+    else{
+        do_unblock_one(&recv_block_queue);
+    }
+/*
+    vt100_move_cursor(1,14);
+    printk("recv_pkg_num : %d", recv_pkg_num);
+*/
+    vt100_move_cursor(1,15);
+    int i, j;
 
+    for(i = 30; i > 0; i--){
+        for(j = 0; j < 16; j++){
+            if(recv_buffer[(PNUM-i)*PSIZE+j])
+                printk("%x ",  recv_buffer[(PNUM-i)*PSIZE+j]); 
+        }           
+        printk("\n"); 
+    }
+    
     return;
 }
 
@@ -498,6 +524,7 @@ void check_recv_block_queue(void)
             }           
             printk("\n"); 
         }
+        recv_pkg_num += 64;
 
         do_unblock_one(&recv_block_queue);
     }
