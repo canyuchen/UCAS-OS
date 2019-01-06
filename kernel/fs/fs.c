@@ -30,6 +30,36 @@ void sd_card_write(void *dest, uint32_t sd_offset, uint32_t size)
     sdwrite((char *)dest, sd_offset, size);
 }
 
+void do_mkfs()
+{
+
+}
+
+void do_statfs()
+{
+
+}
+
+void do_cd()
+{
+
+}
+
+void do_mkdir()
+{
+
+}
+
+void do_rmdir()
+{
+
+}
+
+void do_ls()
+{
+    
+}
+
 int do_fopen(char *name, uint32_t mode)
 {
 
