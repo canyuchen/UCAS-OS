@@ -15,7 +15,7 @@ SRC_SYNC    = ./kernel/locking/barrier.c ./kernel/locking/sem.c ./kernel/locking
 SRC_SCHED	= ./kernel/sched/sched.c ./kernel/sched/queue.c ./kernel/sched/time.c
 SRC_SYSCALL	= ./kernel/syscall/syscall.c
 #SRC_LIBS	= ./libs/string.c ./libs/printk.c
-SRC_LIBS	= ./libs/string.c ./libs/printk.c ./libs/mailbox.c ./libs/scanf.c
+SRC_LIBS	= ./libs/string.c ./libs/printk.c ./libs/mailbox.c ./libs/scanf.c ./libs/bitmap.c
 
 #SRC_TEST	= ./test/test.c
 SRC_TEST	= ./test/test.c ./test/test_shell.c
