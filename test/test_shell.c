@@ -322,6 +322,7 @@ void test_shell()
                     
                     printf("> root@UCAS_OS: ");
                 }
+                /*
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'l' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'n'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == ' '
@@ -331,6 +332,7 @@ void test_shell()
                     
                     printf("> root@UCAS_OS: ");
                 }
+                */
                 //---------------------MY OWN ADDITIONAL COMMAND-------------------
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'p' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'w'
