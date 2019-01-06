@@ -34,6 +34,11 @@ enum {
 void sdread(unsigned char *buf, unsigned int base, int n);
 void sdwrite(unsigned char *buf, unsigned int base, int n);
 
+//use libepmon.a to read SD card
+void sd_card_read(void *dest, uint32_t sd_offset, uint32_t size);
+//use libepmon.a to write SD card
+void sd_card_write(void *dest, uint32_t sd_offset, uint32_t size);
+
 int do_fopen(char *name, uint32_t mode);
 void do_fwrite(int fd, char *content, int length);
 void do_fread(int fd, char *buffer, int length);
