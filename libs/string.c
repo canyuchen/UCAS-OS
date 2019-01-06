@@ -49,12 +49,12 @@ int strcmp(char *str1, char *str2)
 	{
 		return 0;
 	}
-
+/*
 	if (*str1 == '\0' && *str2 == '\n')
 	{
 		return 2;
 	}
-
+*/
 	if (*str1 == '\0')
 	{
 		return -1;
