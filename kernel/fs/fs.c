@@ -17,6 +17,9 @@
 uint8_t block_bitmap[BLOCK_BITMAP_SIZE] = {0};
 uint8_t inode_bitmap[INODE_BITMAP_SIZE] = {0};
 
+BitMap_t block_bitmap_ptr = block_bitmap;
+BitMap_t inode_bitmap_ptr = inode_bitmap;
+
 int do_fopen(char *name, uint32_t mode)
 {
 

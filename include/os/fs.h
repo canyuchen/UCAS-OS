@@ -2,6 +2,7 @@
 #define INCLUDE_FS_H_
 
 #include "type.h"
+#include "bitmap.h"
 
 #define O_RDONLY    00000000
 #define O_WRONLY    00000001

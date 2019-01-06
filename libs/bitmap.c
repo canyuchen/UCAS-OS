@@ -11,6 +11,7 @@ BitMap_t alloc_bitmap(unsigned int size) {
     return bmp;
 }
 */
+
 int check_bitmap(BitMap_t bitmap, unsigned int index) {
     
     if (bitmap == NULL) {
@@ -24,6 +25,7 @@ int check_bitmap(BitMap_t bitmap, unsigned int index) {
     uint8_t shift = (0x1 << offset) & bitmap[byte];
     return (shift != 0);
 }
+
 /*
 void free_bitmap(BitMap_t bitmap) {
     if (bitmap != NULL) {
@@ -31,6 +33,7 @@ void free_bitmap(BitMap_t bitmap) {
     }
 }
 */
+
 int set_bitmap(BitMap_t bitmap, unsigned int index) {
     
     if (bitmap == NULL) {

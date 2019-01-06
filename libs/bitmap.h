@@ -11,7 +11,7 @@ typedef uint8_t* BitMap_t;
  * Return: struct representing a new bitmap
  * Side Effects: errno set to ENOMEM if could not allocate 
  */
-BitMap_t alloc_bitmap(unsigned int);
+//BitMap_t alloc_bitmap(unsigned int);
 
 /*
  * Free the bitmap
@@ -27,7 +27,7 @@ int check_bitmap(BitMap_t, unsigned int);
  * Return: None
  * Side Effects: input pointer is invalidated 
  */
-void free_bitmap(BitMap_t);
+//void free_bitmap(BitMap_t);
 
 /*
  * Set the passed index to 1 in the bitmap
