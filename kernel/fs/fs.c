@@ -153,6 +153,21 @@ static void sync_from_disk_file_data(uint32_t file_data_offset)
     read_block(DATA_BLOCK_INDEX + file_data_offset, data_block_buffer);
 }
 
+static void write_to_buffer_inode(uint32_t inum, inode_t *inode_ptr)
+{
+    memcpy((inodetable_block_buffer + (inum % INODE_NUM_PER_BLOCK)*INODE_SIZE), 
+           (uint8_t *)inode_ptr, INODE_SIZE);
+}
+
+static void clear_disk()
+{
+    int i = 0;
+    bzero(data_block_buffer, BLOCK_SIZE);
+    for(; i < BLOCK_NUM; i++){
+        write_block(i, data_block_buffer);
+    }
+}
+
 //-------------------------------------------------------------------------------
 
 void init_fs()
@@ -195,6 +210,8 @@ void init_fs()
 
 void do_mkfs()
 {
+    clear_disk();
+
     superblock_ptr->s_magic = FS_MAGIC_NUMBER;
     superblock_ptr->s_disk_size = FS_SIZE;
     superblock_ptr->s_block_size = BLOCK_SIZE;
@@ -245,8 +262,9 @@ void do_mkfs()
     root_inode_ptr->i_num = 0;
     bzero(root_inode_ptr->padding, 10*sizeof(uint32_t));
 
-    memcpy((inodetable_block_buffer + (root_inum % INODE_NUM_PER_BLOCK)*INODE_SIZE), 
-           (uint8_t *)root_inode_ptr, INODE_SIZE);
+    // memcpy((inodetable_block_buffer + (root_inum % INODE_NUM_PER_BLOCK)*INODE_SIZE), 
+    //        (uint8_t *)root_inode_ptr, INODE_SIZE);
+    write_to_buffer_inode(root_inum, root_inode_ptr);
     uint32_t inode_table_offset = root_inum / INODE_NUM_PER_BLOCK;
     sync_to_disk_inode_table(inode_table_offset);
 
