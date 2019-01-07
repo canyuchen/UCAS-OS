@@ -1,5 +1,5 @@
 #include "fs.h"
-
+#include "time.h"
 /*
 * SD card file system for OS seminar
 * This filesystem looks like this:
@@ -14,15 +14,6 @@
 * --------------------------------------------------------------------------------
 */
 
-// uint8_t block_bitmap[BLOCK_BITMAP_SIZE] = {0};
-// uint8_t inode_bitmap[INODE_BITMAP_SIZE] = {0};
-
-// inode_t inode_table[INODE_NUM] = {0};
-// uint8_t inode_table[INODE_TABLE_SIZE] = {0};
-
-// BitMap_t block_bitmap_ptr = block_bitmap;
-// BitMap_t inode_bitmap_ptr = inode_bitmap;
-
 uint8_t superblock_buffer[BLOCK_SIZE] = {0};
 // uint8_t blockbmp_block_buffer[BLOCK_SIZE] = {0};
 uint8_t blockbmp_buffer[BLOCK_BITMAP_SIZE] = {0};
@@ -35,14 +26,12 @@ uint8_t dentry_block_buffer[BLOCK_SIZE] = {0};
 BitMap_t blockbmp_buffer_ptr = (BitMap_t)blockbmp_buffer;
 BitMap_t inodebmp_block_buffer_ptr = (BitMap_t)inodebmp_block_buffer;
 
-// superblock_t superblock;
-
 file_descriptor_t file_descriptor_table[MAX_FILE_DESCRIPTOR_NUM];
 
 superblock_t *superblock_ptr = (superblock_t *)superblock_buffer;
 
-inode_t root_inode;
-inode_t *root_inode_ptr = &root_inode;
+// inode_t root_inode;
+inode_t *root_inode_ptr = NULL;
 
 static void set_block_bmp(uint32_t block_index)
 {
@@ -206,12 +195,6 @@ void init_fs()
 
 void do_mkfs()
 {
-    // sd_card_read(superblock_buffer, FS_START_SD_OFFSET, BLOCK_SIZE);
-
-    //init superblock and write into sd card
-    // bzero(superblock_buffer, BLOCK_SIZE);
-    // superblock_ptr = (superblock_t *)superblock_buffer;
-
     superblock_ptr->s_magic = FS_MAGIC_NUMBER;
     superblock_ptr->s_disk_size = FS_SIZE;
     superblock_ptr->s_block_size = BLOCK_SIZE;
@@ -245,19 +228,25 @@ void do_mkfs()
     set_block_bmp(root_block_index);
     sync_to_disk_block_bmp();
 
+    root_inode_ptr = (inode_t *)(inodetable_block_buffer + 
+                                (root_inum % INODE_NUM_PER_BLOCK)*INODE_SIZE);
+    root_inode_ptr->i_fmode = S_IFDIR | 0755;
+    //???
+    root_inode_ptr->i_links_cnt = 1;
+    root_inode_ptr->i_fsize = BLOCK_SIZE;
+    root_inode_ptr->i_fnum = 0;
+    root_inode_ptr->i_atime = get_ticks();
+    root_inode_ptr->i_ctime = get_ticks();
+    root_inode_ptr->i_mtime = get_ticks();
+    bzero(root_inode_ptr->i_direct_table, MAX_DIRECT_NUM*sizeof(uint32_t));
+    root_inode_ptr->i_indirect_block_1_ptr = NULL;
+    root_inode_ptr->i_indirect_block_2_ptr = NULL;
+    root_inode_ptr->i_indirect_block_3_ptr = NULL;
+    root_inode_ptr->i_num = 0;
+    bzero(root_inode_ptr->padding, 10*sizeof(uint32_t));
 
-    // root_inode_ptr->i_fmode = S_IFDIR | 0755;
-    // root_inode_ptr->i_links_cnt = 1;
-    // root_inode_ptr->i_fsize = 
-    // root_inode_ptr->
-    // root_inode_ptr->
-    // root_inode_ptr->
-    // root_inode_ptr->
-    // root_inode_ptr->
-    // root_inode_ptr->
-    // root_inode_ptr->
-    // root_inode_ptr->
-    // root_inode_ptr->
+    uint32_t inode_table_offset = root_inum / INODE_NUM_PER_BLOCK;
+    sync_to_disk_inode_table(inode_table_offset);
 
     vt100_move_cursor(1, 1);    
     printk("[FS] Starting initialize file system!\n");
