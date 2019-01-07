@@ -226,5 +226,5 @@ void sys_fexit()
 
 void sys_mkfs()
 {
-    
+    invoke_syscall(SYSCALL_FS_MKFS, IGNORE, IGNORE, IGNORE);
 }

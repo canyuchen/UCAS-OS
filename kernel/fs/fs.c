@@ -184,7 +184,7 @@ void do_mkfs()
     write_block(SUPERBLOCK_BLOCK_INDEX, superblock_buffer);
 
     //init root dir
-
+    
 
     vt100_move_cursor(1, 1);    
     printk("[FS] Starting initialize file system!\n");

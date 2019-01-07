@@ -241,7 +241,7 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'k'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'f'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 's'){
-                    
+                    sys_mkfs();
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 's' 
