@@ -123,6 +123,11 @@ static void sync_to_disk_file_data(uint32_t file_data_offset)
     write_block(DATA_BLOCK_INDEX + file_data_offset, data_block_buffer);
 }
 
+static void sync_to_disk_dentry(uint32_t dentry_offset)
+{
+    write_block(DATA_BLOCK_INDEX + dentry_offset, dentry_block_buffer);
+}
+
 //sync from disk to memory
 static void sync_from_disk_inode_bmp()
 {
@@ -162,7 +167,6 @@ static void write_to_buffer_inode(uint32_t inum, inode_t *inode_ptr)
 static void clear_disk()
 {
     int i = 0;
-    bzero(data_block_buffer, BLOCK_SIZE);
     for(; i < BLOCK_NUM; i++){
         write_block(i, data_block_buffer);
     }
@@ -210,6 +214,13 @@ void init_fs()
 
 void do_mkfs()
 {
+    bzero(data_block_buffer, BLOCK_SIZE);
+    bzero(superblock_buffer, BLOCK_SIZE);
+    bzero(blockbmp_buffer, BLOCK_BITMAP_SIZE);
+    bzero(inodebmp_block_buffer, BLOCK_SIZE);
+    bzero(dentry_block_buffer, BLOCK_SIZE);
+    bzero(inodetable_block_buffer, BLOCK_SIZE);
+
     clear_disk();
 
     superblock_ptr->s_magic = FS_MAGIC_NUMBER;
@@ -240,13 +251,15 @@ void do_mkfs()
     uint32_t root_inum = 0;
     set_inode_bmp(root_inum);
     sync_to_disk_inode_bmp();
+    superblock_ptr->s_free_blocks_cnt--;
+    sync_to_disk_superblock();
 
     uint32_t root_block_index = DATA_BLOCK_INDEX;
     set_block_bmp(root_block_index);
     sync_to_disk_block_bmp();
+    superblock_ptr->s_free_inode_cnt--;
+    sync_to_disk_superblock();
 
-    // root_inode_ptr = (inode_t *)(inodetable_block_buffer + 
-    //                             (root_inum % INODE_NUM_PER_BLOCK)*INODE_SIZE);
     root_inode_ptr->i_fmode = S_IFDIR | 0755;
     //???
     root_inode_ptr->i_links_cnt = 1;
@@ -262,15 +275,19 @@ void do_mkfs()
     root_inode_ptr->i_num = 0;
     bzero(root_inode_ptr->padding, 10*sizeof(uint32_t));
 
-    // memcpy((inodetable_block_buffer + (root_inum % INODE_NUM_PER_BLOCK)*INODE_SIZE), 
-    //        (uint8_t *)root_inode_ptr, INODE_SIZE);
     write_to_buffer_inode(root_inum, root_inode_ptr);
     uint32_t inode_table_offset = root_inum / INODE_NUM_PER_BLOCK;
     sync_to_disk_inode_table(inode_table_offset);
 
+    dentry_t *root_dentry_table = (dentry_t *)dentry_block_buffer;
+    root_dentry_table[0].d_inum = 0;
+    strcpy(root_dentry_table[0].d_name, ".");
+    root_dentry_table[1].d_inum = 0;
+    strcpy(root_dentry_table[1].d_name, "..");
+    uint32_t dentry_offset = 0;
+    sync_to_disk_dentry(dentry_offset);
 
-
-
+    //print FS info
     vt100_move_cursor(1, 1);    
     printk("[FS] Starting initialize file system!\n");
     printk("[FS] Setting superblock...\n");
