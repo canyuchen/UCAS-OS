@@ -126,9 +126,9 @@ void init_fs()
         printk("     file system size : 0x%x\n", superblock_ptr->s_disk_size);
         printk("     block size : 0x%x\n", superblock_ptr->s_block_size);
         printk("     total blocks : %d\n", superblock_ptr->s_total_blocks_cnt);
-        // printk("     free blocks : %d\n", superblock_ptr->s_free_blocks_cnt);
+        printk("     free blocks : %d\n", superblock_ptr->s_free_blocks_cnt);
         printk("     total inodes : %d\n", superblock_ptr->s_total_inodes_cnt);
-        // printk("     free inodes : %d\n", superblock_ptr->s_free_inode_cnt);
+        printk("     free inodes : %d\n", superblock_ptr->s_free_inode_cnt);
         printk("     block bitmap start-block index : %d\n", superblock_ptr->s_blockbmp_block_index);
         printk("                  disk offset : %d B\n", superblock_ptr->s_blockbmp_block_index * BLOCK_SIZE);
         printk("     inode bitmap start-block index : %d\n", superblock_ptr->s_inodebmp_block_index);
