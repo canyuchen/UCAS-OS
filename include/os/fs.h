@@ -96,9 +96,11 @@ enum {
     //dentry
     MAX_NAME_LENGTH = 64,
     DENTRY_SIZE = 128,
+    MAX_PATH_LENGTH = 1024,
 
     //file descriptor
     MAX_FILE_DESCRIPTOR_NUM = 32,
+
 };
 
 typedef struct superblock {
@@ -166,6 +168,7 @@ typedef struct file_descriptor {
     //8
 } file_descriptor_t; //size: 8*sizeof(int) -> 32Byte
 
+typedef uint16_t mode_t;
 
 // extern uint8_t inode_table[INODE_TABLE_SIZE];
 
@@ -187,7 +190,7 @@ void init_fs();
 void do_mkfs();
 void do_statfs();
 // void do_cd();
-void do_mkdir();
+void do_mkdir(const char *path, mode_t mode);
 void do_rmdir();
 // void do_ls();
 

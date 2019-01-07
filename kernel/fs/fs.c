@@ -33,6 +33,9 @@ superblock_t *superblock_ptr = (superblock_t *)superblock_buffer;
 inode_t root_inode;
 inode_t *root_inode_ptr = &root_inode;
 
+char parent[MAX_PATH_LENGTH];
+char name[MAX_NAME_LENGTH];
+
 static void set_block_bmp(uint32_t block_index)
 {
     set_bitmap(blockbmp_buffer_ptr, block_index);        
@@ -174,6 +177,7 @@ static void clear_disk()
 
 //-------------------------------------------------------------------------------
 
+//operations on file system
 void init_fs()
 {
     // sd_card_read(superblock_buffer, FS_START_SD_OFFSET, BLOCK_SIZE);
@@ -220,6 +224,9 @@ void do_mkfs()
     bzero(inodebmp_block_buffer, BLOCK_SIZE);
     bzero(dentry_block_buffer, BLOCK_SIZE);
     bzero(inodetable_block_buffer, BLOCK_SIZE);
+
+    bzero(parent, MAX_PATH_LENGTH);
+    bzero(name, MAX_NAME_LENGTH);
 
     clear_disk();
 
@@ -341,7 +348,22 @@ void do_cd()
 
 }
 */
-void do_mkdir()
+
+static void separate_path(const char *path, char *parent, char *name)
+{
+    strcpy(parent, (char *)path);
+    char* loc = strrchr(parent, '/');
+    strcpy(name, loc + 1);
+    name[MAX_NAME_LENGTH - 1] = 0;
+    if(loc == parent){
+        loc++;
+    } 
+    *loc = 0;
+    return;
+}
+
+//operations on directory
+void do_mkdir(const char *path, mode_t mode)
 {
 
 }
