@@ -30,8 +30,8 @@ file_descriptor_t file_descriptor_table[MAX_FILE_DESCRIPTOR_NUM];
 
 superblock_t *superblock_ptr = (superblock_t *)superblock_buffer;
 
-// inode_t root_inode;
-inode_t *root_inode_ptr = NULL;
+inode_t root_inode;
+inode_t *root_inode_ptr = &root_inode;
 
 static void set_block_bmp(uint32_t block_index)
 {
@@ -228,8 +228,8 @@ void do_mkfs()
     set_block_bmp(root_block_index);
     sync_to_disk_block_bmp();
 
-    root_inode_ptr = (inode_t *)(inodetable_block_buffer + 
-                                (root_inum % INODE_NUM_PER_BLOCK)*INODE_SIZE);
+    // root_inode_ptr = (inode_t *)(inodetable_block_buffer + 
+    //                             (root_inum % INODE_NUM_PER_BLOCK)*INODE_SIZE);
     root_inode_ptr->i_fmode = S_IFDIR | 0755;
     //???
     root_inode_ptr->i_links_cnt = 1;
@@ -245,8 +245,13 @@ void do_mkfs()
     root_inode_ptr->i_num = 0;
     bzero(root_inode_ptr->padding, 10*sizeof(uint32_t));
 
+    memcpy((inodetable_block_buffer + (root_inum % INODE_NUM_PER_BLOCK)*INODE_SIZE), 
+           (uint8_t *)root_inode_ptr, INODE_SIZE);
     uint32_t inode_table_offset = root_inum / INODE_NUM_PER_BLOCK;
     sync_to_disk_inode_table(inode_table_offset);
+
+
+
 
     vt100_move_cursor(1, 1);    
     printk("[FS] Starting initialize file system!\n");
