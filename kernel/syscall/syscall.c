@@ -224,3 +224,7 @@ void sys_fexit()
     invoke_syscall(SYSCALL_FS_EXIT, IGNORE, IGNORE, IGNORE);
 }
 
+void sys_mkfs()
+{
+    
+}

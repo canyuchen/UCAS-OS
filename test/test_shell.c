@@ -318,6 +318,15 @@ void test_shell()
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'l' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'n'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == ' '
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == '-'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 's'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5) == ' '){
+                    
+                    printf("> root@UCAS_OS: ");
+                }
+                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'l' 
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'n'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == ' '){
                     
                     printf("> root@UCAS_OS: ");

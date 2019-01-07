@@ -14,10 +14,9 @@ typedef uint8_t* BitMap_t;
 //BitMap_t alloc_bitmap(unsigned int);
 
 /*
- * Free the bitmap
+ * Check the bitmap
  *
- * Return: 0 on success, nonzero value on error
- * Side Effects: errno set to EINVAL if invalid bitmap 
+ * Return: bit value
  */
 int check_bitmap(BitMap_t, unsigned int);
 
