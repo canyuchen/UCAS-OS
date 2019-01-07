@@ -85,6 +85,7 @@
 #define SYSCALL_FS_EXIT 58
 
 #define SYSCALL_FS_MKFS 59
+#define SYSCALL_FS_STATFS 60
 
 /* syscall function pointer */
 extern int (*syscall[NUM_SYSCALLS])();
@@ -143,4 +144,7 @@ extern void sys_fclose(int fd);
 extern void sys_fexit();
 
 extern void sys_mkfs();
+extern void sys_statfs();
+
+
 #endif

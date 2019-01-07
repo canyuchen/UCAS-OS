@@ -261,6 +261,7 @@ static void init_syscall(void)
 	syscall[SYSCALL_FS_EXIT] = (int (*)()) &do_fexit;
 
 	syscall[SYSCALL_FS_MKFS] = (int (*)()) &do_mkfs;
+	syscall[SYSCALL_FS_STATFS] = (int (*)()) &do_statfs;
 }
 
 // jump from bootloader.

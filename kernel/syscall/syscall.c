@@ -228,3 +228,8 @@ void sys_mkfs()
 {
     invoke_syscall(SYSCALL_FS_MKFS, IGNORE, IGNORE, IGNORE);
 }
+
+void sys_statfs()
+{
+    invoke_syscall(SYSCALL_FS_STATFS, IGNORE, IGNORE, IGNORE);
+}
