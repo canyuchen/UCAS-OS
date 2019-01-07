@@ -86,6 +86,8 @@
 
 #define SYSCALL_FS_MKFS 59
 #define SYSCALL_FS_STATFS 60
+#define SYSCALL_FS_MKDIR 61
+#define SYSCALL_FS_RMDIR 62
 
 /* syscall function pointer */
 extern int (*syscall[NUM_SYSCALLS])();
@@ -145,6 +147,6 @@ extern void sys_fexit();
 
 extern void sys_mkfs();
 extern void sys_statfs();
-
-
+extern void sys_mkdir();
+extern void sys_rmdir();
 #endif

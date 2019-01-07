@@ -233,3 +233,13 @@ void sys_statfs()
 {
     invoke_syscall(SYSCALL_FS_STATFS, IGNORE, IGNORE, IGNORE);
 }
+
+void sys_mkdir()
+{
+
+}
+
+void sys_rmdir()
+{
+
+}
