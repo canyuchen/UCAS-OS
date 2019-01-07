@@ -24,14 +24,16 @@
 // BitMap_t inode_bitmap_ptr = inode_bitmap;
 
 uint8_t superblock_buffer[BLOCK_SIZE] = {0};
-uint8_t blockbmp_block_buffer[BLOCK_SIZE] = {0};
+// uint8_t blockbmp_block_buffer[BLOCK_SIZE] = {0};
+uint8_t blockbmp_buffer[BLOCK_BITMAP_SIZE] = {0};
 uint8_t inodebmp_block_buffer[BLOCK_SIZE] = {0};
 uint8_t inodetable_block_buffer[BLOCK_SIZE] = {0};
+
 uint8_t data_block_buffer[BLOCK_SIZE] = {0};
 uint8_t dentry_block_buffer[BLOCK_SIZE] = {0};
 
-BitMap_t blockbmp_block_buffer_ptr = blockbmp_block_buffer;
-BitMap_t inodebmp_block_buffer_ptr = inodebmp_block_buffer;
+BitMap_t blockbmp_buffer_ptr = (BitMap_t)blockbmp_buffer;
+BitMap_t inodebmp_block_buffer_ptr = (BitMap_t)inodebmp_block_buffer;
 
 // superblock_t superblock;
 
@@ -39,8 +41,8 @@ file_descriptor_t file_descriptor_table[MAX_FILE_DESCRIPTOR_NUM];
 
 superblock_t *superblock_ptr = (superblock_t *)superblock_buffer;
 
-inode_t root;
-inode_t *current_root_ptr = &root;
+inode_t root_inode;
+inode_t *root_inode_ptr = &root_inode;
 
 
 void sd_card_read(void *dest, uint32_t sd_offset, uint32_t size)
@@ -53,36 +55,38 @@ void sd_card_write(void *dest, uint32_t sd_offset, uint32_t size)
     sdwrite((char *)dest, sd_offset, size);
 }
 
-static void write_block_bmp(uint32_t block_bmp_bit, bool_t value)
+static void set_block_bmp(uint32_t block_index)
 {
-    if(value == 1){
-        set_bitmap(blockbmp_block_buffer_ptr, block_bmp_bit);        
-    }
-    else{
-        unset_bitmap(blockbmp_block_buffer_ptr, block_bmp_bit);
-    }
+    set_bitmap(blockbmp_buffer_ptr, block_index);        
     return;
 }
 
-static bool_t read_block_bmp(uint32_t block_bmp_bit)
+static void unset_block_bmp(uint32_t block_index)
 {
-    return check_bitmap(blockbmp_block_buffer_ptr, block_bmp_bit);
+    unset_bitmap(blockbmp_buffer_ptr, block_index);
+    return;
 }
 
-static void write_inode_bmp(uint32_t inode_bmp_bit, bool_t value)
+static bool_t check_block_bmp(uint32_t block_index)
 {
-    if(value == 1){
-        set_bitmap(inodebmp_block_buffer_ptr, inode_bmp_bit);        
-    }
-    else{
-        unset_bitmap(inodebmp_block_buffer_ptr, inode_bmp_bit);
-    }
+    return check_bitmap(blockbmp_buffer_ptr, block_index);
+}
+
+static void set_inode_bmp(uint32_t inum)
+{
+    set_bitmap(inodebmp_block_buffer_ptr, inum);        
     return;   
 }
 
-static bool_t read_inode_bmp(uint32_t inode_bmp_bit)
+static void unset_inode_bmp(uint32_t inum)
 {
-    return check_bitmap(inodebmp_block_buffer_ptr, inode_bmp_bit);
+    unset_bitmap(inodebmp_block_buffer_ptr, inum);
+    return;   
+}
+
+static bool_t check_inode_bmp(uint32_t inum)
+{
+    return check_bitmap(inodebmp_block_buffer_ptr, inum);
 }
 
 /*
@@ -112,14 +116,77 @@ static void read_block(uint32_t block_index, uint8_t *block_buffer)
     sd_card_read(block_buffer, sd_offset, BLOCK_SIZE);
 }
 
+//sync into disk
+static void sync_to_disk_inode_bmp()
+{
+    write_block(INODE_BMP_BLOCK_INDEX, inodebmp_block_buffer);
+}
+
+static void sync_to_disk_block_bmp()
+{
+    int i = 0;
+    for(; i < BLOCK_BMP_BLOCKS_NUM; i++){
+        write_block(BLOCK_BMP_BLOCK_INDEX + i, blockbmp_buffer + BLOCK_SIZE * i);
+    }
+    return;
+}
+
+static void sync_to_disk_superblock()
+{
+    write_block(SUPERBLOCK_BLOCK_INDEX, superblock_buffer);
+}
+
+static void sync_to_disk_inode_table(uint32_t inode_table_offset)
+{
+    write_block(INODE_TABLE_BLOCK_INDEX + inode_table_offset, inodetable_block_buffer);
+}
+
+static void sync_to_disk_file_data(uint32_t file_data_offset)
+{
+    write_block(DATA_BLOCK_INDEX + file_data_offset, data_block_buffer);
+}
+
+//sync from disk
+static void sync_from_disk_inode_bmp()
+{
+    read_block(INODE_BMP_BLOCK_INDEX, inodebmp_block_buffer);
+}
+
+static void sync_from_disk_block_bmp(uint32_t block_bmp_offset)
+{
+    int i = 0;
+    for(; i < BLOCK_BMP_BLOCKS_NUM; i++){
+        read_block(BLOCK_BMP_BLOCK_INDEX + i, blockbmp_buffer + BLOCK_SIZE * i);
+    }
+    return;
+}
+
+static void sync_from_disk_superblock()
+{
+    read_block(SUPERBLOCK_BLOCK_INDEX, superblock_buffer);
+}
+
+static void sync_from_disk_inode_table(uint32_t inode_table_offset)
+{
+    read_block(INODE_TABLE_BLOCK_INDEX + inode_table_offset, inodetable_block_buffer);
+}
+
+static void sync_from_disk_file_data(uint32_t file_data_offset)
+{
+    read_block(DATA_BLOCK_INDEX + file_data_offset, data_block_buffer);
+}
+
 //-------------------------------------------------------------------------------
 
 void init_fs()
 {
     // sd_card_read(superblock_buffer, FS_START_SD_OFFSET, BLOCK_SIZE);
     // superblock_ptr = (superblock_t *)superblock_buffer;
-    read_block(SUPERBLOCK_BLOCK_INDEX, superblock_buffer);
+    // read_block(SUPERBLOCK_BLOCK_INDEX, superblock_buffer);
+    sync_from_disk_superblock();
+
     if(superblock_ptr->s_magic == FS_MAGIC_NUMBER){
+        
         vt100_move_cursor(1, 1);    
         printk("[FS] File system exists in the disk!\n");
         printk("[FS] File system current informatin:\n");
@@ -154,7 +221,7 @@ void do_mkfs()
     // sd_card_read(superblock_buffer, FS_START_SD_OFFSET, BLOCK_SIZE);
 
     //init superblock and write into sd card
-    bzero(superblock_buffer, BLOCK_SIZE);
+    // bzero(superblock_buffer, BLOCK_SIZE);
     // superblock_ptr = (superblock_t *)superblock_buffer;
 
     superblock_ptr->s_magic = FS_MAGIC_NUMBER;
@@ -176,15 +243,37 @@ void do_mkfs()
 
     int i = 0;
     for(; i++; i < INODE_TABLE_BLOCK_INDEX){
-        write_block_bmp(i, 1);
-        superblock_ptr->s_free_blocks_cnt--;
+        // write_block_bmp(i, 1);
+        // superblock_ptr->s_free_blocks_cnt--;
+        set_block_bmp(i);
     }
-    write_block(BLOCK_BMP_BLOCK_INDEX, blockbmp_block_buffer);
-
-    write_block(SUPERBLOCK_BLOCK_INDEX, superblock_buffer);
+    // write_block(BLOCK_BMP_BLOCK_INDEX, blockbmp_buffer);
+    // write_block(SUPERBLOCK_BLOCK_INDEX, superblock_buffer);
+    sync_to_disk_block_bmp();
+    sync_to_disk_superblock();
 
     //init root dir
-    
+    uint32_t root_inum = 0;
+    set_inode_bmp(root_inum);
+    // write_block(INODE_BMP_BLOCK_INDEX, blockbmp_block_buffer);
+
+    uint32_t root_block_bmp_bit = DATA_BLOCK_INDEX;
+    set_block_bmp(root_block_bmp_bit);
+    uint32_t root_block_bmp_offset = root_block_bmp_bit;
+    // sync_to_disk_block_bmp()
+
+    // root_inode_ptr->i_fmode = S_IFDIR | 0755;
+    // root_inode_ptr->i_links_cnt = 1;
+    // root_inode_ptr->i_fsize = 
+    // root_inode_ptr->
+    // root_inode_ptr->
+    // root_inode_ptr->
+    // root_inode_ptr->
+    // root_inode_ptr->
+    // root_inode_ptr->
+    // root_inode_ptr->
+    // root_inode_ptr->
+    // root_inode_ptr->
 
     vt100_move_cursor(1, 1);    
     printk("[FS] Starting initialize file system!\n");
@@ -232,6 +321,7 @@ void do_statfs()
     printk("     inode entry size : %d\n", superblock_ptr->s_inode_size);
     printk("     dir entry size : %d\n", superblock_ptr->s_dentry_size);
 }
+
 /*
 void do_cd()
 {

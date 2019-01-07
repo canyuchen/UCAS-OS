@@ -4,6 +4,7 @@
         "lock.h": "c",
         "screen.h": "c",
         "string.h": "c",
-        "mailbox.h": "c"
+        "mailbox.h": "c",
+        "cstring": "c"
     }
 }

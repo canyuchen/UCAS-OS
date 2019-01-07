@@ -62,4 +62,28 @@ int htoi(char *s);
 
 uint32_t atoh(char *s);
 
+/*
+*copyright@nciaebupt 转载请注明出处
+*原型：char *strpbrk(const char *s1, const char *s2);
+*用法：#include <string.h>
+*功能：在字符串s1中寻找字符串s2中任何一个字符相匹配的第一个字符的位置，
+*   空字符NULL不包括在内。
+*说明：返回指向s1中第一个相匹配的字符的指针，如果没有匹配字符则返回空指针NULL。
+*自己实现strpbrk
+*/
+/*
+#include <cstdio>
+#include <cstring>
+*/
+
+char * strpbrk(const char * string,const char * control);
+
+uint32_t strspn(const char *s, const char *accept);
+
+char *strchr(const char *s, int c);
+
+char *strrchr(const char *s, int c);
+
+char* strtok(char* str_arr,const char* delimiters);
+
 #endif
