@@ -44,17 +44,6 @@ superblock_t *superblock_ptr = (superblock_t *)superblock_buffer;
 inode_t root_inode;
 inode_t *root_inode_ptr = &root_inode;
 
-
-void sd_card_read(void *dest, uint32_t sd_offset, uint32_t size)
-{
-    sdread((char *)dest, sd_offset, size);
-}
-
-void sd_card_write(void *dest, uint32_t sd_offset, uint32_t size)
-{
-    sdwrite((char *)dest, sd_offset, size);
-}
-
 static void set_block_bmp(uint32_t block_index)
 {
     set_bitmap(blockbmp_buffer_ptr, block_index);        
@@ -89,18 +78,17 @@ static bool_t check_inode_bmp(uint32_t inum)
     return check_bitmap(inodebmp_block_buffer_ptr, inum);
 }
 
-/*
-static void write_inode_table(uint32_t inum, uint8_t *inodetable_block_buffer)
-{
-    uint32_t inum %= INODE_NUM_PER_BLOCK;
+//-------------------------------------------------------------------------------
 
+void sd_card_read(void *dest, uint32_t sd_offset, uint32_t size)
+{
+    sdread((char *)dest, sd_offset, size);
 }
 
-static void read_inode_table(uint32_t inum, uint8_t *inodetable_block_buffer)
+void sd_card_write(void *dest, uint32_t sd_offset, uint32_t size)
 {
-
+    sdwrite((char *)dest, sd_offset, size);
 }
-*/
 
 //only write_block(), and read_block() interact with SD card
 //other func interact with buffer in memory
@@ -116,7 +104,7 @@ static void read_block(uint32_t block_index, uint8_t *block_buffer)
     sd_card_read(block_buffer, sd_offset, BLOCK_SIZE);
 }
 
-//sync into disk
+//sync from memory to disk
 static void sync_to_disk_inode_bmp()
 {
     write_block(INODE_BMP_BLOCK_INDEX, inodebmp_block_buffer);
@@ -146,7 +134,7 @@ static void sync_to_disk_file_data(uint32_t file_data_offset)
     write_block(DATA_BLOCK_INDEX + file_data_offset, data_block_buffer);
 }
 
-//sync from disk
+//sync from disk to memory
 static void sync_from_disk_inode_bmp()
 {
     read_block(INODE_BMP_BLOCK_INDEX, inodebmp_block_buffer);
@@ -243,24 +231,20 @@ void do_mkfs()
 
     int i = 0;
     for(; i++; i < INODE_TABLE_BLOCK_INDEX){
-        // write_block_bmp(i, 1);
-        // superblock_ptr->s_free_blocks_cnt--;
         set_block_bmp(i);
     }
-    // write_block(BLOCK_BMP_BLOCK_INDEX, blockbmp_buffer);
-    // write_block(SUPERBLOCK_BLOCK_INDEX, superblock_buffer);
     sync_to_disk_block_bmp();
     sync_to_disk_superblock();
 
     //init root dir
     uint32_t root_inum = 0;
     set_inode_bmp(root_inum);
-    // write_block(INODE_BMP_BLOCK_INDEX, blockbmp_block_buffer);
+    sync_to_disk_inode_bmp();
 
-    uint32_t root_block_bmp_bit = DATA_BLOCK_INDEX;
-    set_block_bmp(root_block_bmp_bit);
-    uint32_t root_block_bmp_offset = root_block_bmp_bit;
-    // sync_to_disk_block_bmp()
+    uint32_t root_block_index = DATA_BLOCK_INDEX;
+    set_block_bmp(root_block_index);
+    sync_to_disk_block_bmp();
+
 
     // root_inode_ptr->i_fmode = S_IFDIR | 0755;
     // root_inode_ptr->i_links_cnt = 1;
