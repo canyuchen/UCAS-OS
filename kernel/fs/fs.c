@@ -116,8 +116,9 @@ static void read_block(uint32_t block_index, uint8_t *block_buffer)
 
 void init_fs()
 {
-    sd_card_read(superblock_buffer, FS_START_SD_OFFSET, BLOCK_SIZE);
+    // sd_card_read(superblock_buffer, FS_START_SD_OFFSET, BLOCK_SIZE);
     // superblock_ptr = (superblock_t *)superblock_buffer;
+    read_block(SUPERBLOCK_BLOCK_INDEX, superblock_buffer);
     if(superblock_ptr->s_magic == FS_MAGIC_NUMBER){
         vt100_move_cursor(1, 1);    
         printk("[FS] File system exists in the disk!\n");
