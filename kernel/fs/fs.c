@@ -31,7 +31,7 @@ file_descriptor_t file_descriptor_table[MAX_FILE_DESCRIPTOR_NUM];
 superblock_t *superblock_ptr = (superblock_t *)superblock_buffer;
 
 uint8_t find_file_buffer[BLOCK_SIZE] = {0};
-uint8_t parse_file_buffer[BLOCK_SIZE] = {0};
+uint8_t parse_file_buffer[MAX_PATH_LENGTH] = {0};
 
 uint32_t buffer1[POINTER_PER_BLOCK] = {0};
 uint32_t buffer2[POINTER_PER_BLOCK] = {0};
@@ -174,6 +174,8 @@ static void write_to_buffer_inode(inode_t *inode_ptr)
            (uint8_t *)inode_ptr, INODE_SIZE);
 }
 
+//------------------------------------------------------------------------------------------
+
 static void read_inode(uint32_t inum, inode_t *inode_ptr)
 {
     uint32_t inode_table_offset = inum / INODE_NUM_PER_BLOCK;
@@ -208,8 +210,13 @@ static int write_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry)
 
     bzero(dentry_block_buffer, BLOCK_SIZE);
     dentry_t *dentry_table = (dentry_t *)dentry_block_buffer;
-    
 
+    if(get_block_index_in_dir(inode_ptr, major_index) == 0){
+
+    }
+    else{
+        
+    }
 }
 
 //-------------------------------------------------------------------------------
@@ -402,7 +409,7 @@ void separate_path(const char *path, char *parent, char *name)
     return;
 }
 
-int get_block_index(inode_t *inode_ptr, uint32_t idx)
+int get_block_index_in_dir(inode_t *inode_ptr, uint32_t idx)
 {
     bzero(buffer1, POINTER_PER_BLOCK*sizeof(uint32_t));
     bzero(buffer2, POINTER_PER_BLOCK*sizeof(uint32_t));
@@ -452,7 +459,8 @@ uint32_t find_file(inode_t *inode_ptr, const char *name)
     dentry_t *p = (dentry_t *)find_file_buffer;
     int i = 0, j = 0;
     for(; i < MAX_BLOCK_INDEX; i++){
-        uint32_t block_index = get_block_index(inode_ptr, i);
+        uint32_t block_index = get_block_index_in_dir(inode_ptr, i);
+        read_block(block_index, find_file_buffer);
         for(; j < POINTER_PER_BLOCK; j++){
             if(strcmp((char *)name, p[j].d_name) == 0){
                 return p[j].d_inum;
@@ -464,7 +472,7 @@ uint32_t find_file(inode_t *inode_ptr, const char *name)
 
 uint32_t parse_path(const char *path)
 {
-    bzero(parse_file_buffer, BLOCK_SIZE);
+    bzero(parse_file_buffer, MAX_PATH_LENGTH);
     char *p;
     strcpy(parse_file_buffer, (char *)path);
     p = strtok(parse_file_buffer, "/");
@@ -593,12 +601,14 @@ void do_rmdir()
 {
 
 }
+
 /*
 void do_ls()
 {
 
 }
 */
+
 int do_fopen(char *name, uint32_t mode)
 {
 

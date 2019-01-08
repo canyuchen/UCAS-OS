@@ -89,8 +89,7 @@ main : 	$(SRC_ARCH) $(SRC_DRIVER) $(SRC_INIT) $(SRC_INT) $(SRC_LOCK) $(SRC_SYNC)
 		-fno-pic -mno-abicalls -fno-builtin -nostdinc -mips3 -Ttext=0xffffffffa0800200 -N -o main \
 		$(SRC_ARCH) $(SRC_DRIVER) $(SRC_INIT) $(SRC_INT) $(SRC_LOCK) $(SRC_SYNC) $(SRC_MM) $(SRC_SCHED) $(SRC_FS) \
 		$(SRC_SYSCALL) $(SRC_PROC) $(SRC_LIBS) $(SRC_TEST) $(SRC_TEST3) $(SRC_TEST4_1) $(SRC_TEST4_2) $(SRC_TEST_NET) $(SRC_TEST_FS)\
-		-L. -lepmon \
-		-nostdlib -Wl,-m -Wl,elf32ltsmip -T ld.script	
+		-nostdlib -Wl,-m -Wl,elf32ltsmip -T ld.script -L. -lepmon
 
 createimage: $(SRC_IMAGE)
 	gcc $(SRC_IMAGE) -o createimage
