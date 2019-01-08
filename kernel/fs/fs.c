@@ -189,6 +189,29 @@ static void clear_disk()
     }
 }
 
+static int write_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry)
+{
+    if(dnum < 2){
+        vt100_move_cursor(1, 45);
+        printk("[FS ERROR] ERROR_DIR_NUM_INCORRECT\n");
+        return ERROR_DIR_NUM_INCORRECT;
+    }
+    if(dnum > inode_ptr->i_fnum + 2){
+        vt100_move_cursor(1, 45);
+        printk("[FS ERROR] ERROR_DENTRY_SETTING_INCORRECT\n");
+        return ERROR_DENTRY_SETTING_INCORRECT;
+    }
+
+    uint32_t major_index, minor_index;
+    major_index = dnum / DENTRY_NUM_PER_BLOCK;
+    minor_index = dnum % DENTRY_NUM_PER_BLOCK;
+
+    bzero(dentry_block_buffer, BLOCK_SIZE);
+    dentry_t *dentry_table = (dentry_t *)dentry_block_buffer;
+    
+
+}
+
 //-------------------------------------------------------------------------------
 
 //operations on file system
@@ -559,10 +582,9 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     uint32_t dentry_offset = 0;
     sync_to_disk_dentry(dentry_offset);
 
-
-
-
-
+    dentry_t parent_dentry;
+    parent_dentry.d_inum = free_inum;
+    strcpy(parent_dentry.d_name, name);
 
 
 }
