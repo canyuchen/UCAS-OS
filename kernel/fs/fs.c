@@ -144,7 +144,7 @@ static void sync_from_disk_inode_bmp()
     read_block(INODE_BMP_BLOCK_INDEX, inodebmp_block_buffer);
 }
 
-static void sync_from_disk_block_bmp(uint32_t block_bmp_offset)
+static void sync_from_disk_block_bmp()
 {
     int i = 0;
     for(; i < BLOCK_BMP_BLOCKS_NUM; i++){
@@ -168,9 +168,9 @@ static void sync_from_disk_file_data(uint32_t file_data_offset)
     read_block(DATA_BLOCK_INDEX + file_data_offset, data_block_buffer);
 }
 
-static void write_to_buffer_inode(uint32_t inum, inode_t *inode_ptr)
+static void write_to_buffer_inode(inode_t *inode_ptr)
 {
-    memcpy((inodetable_block_buffer + (inum % INODE_NUM_PER_BLOCK)*INODE_SIZE), 
+    memcpy((inodetable_block_buffer + (inode_ptr->i_num % INODE_NUM_PER_BLOCK)*INODE_SIZE), 
            (uint8_t *)inode_ptr, INODE_SIZE);
 }
 
@@ -200,7 +200,10 @@ void init_fs()
     sync_from_disk_superblock();
 
     if(superblock_ptr->s_magic == FS_MAGIC_NUMBER){
-        
+
+        sync_from_disk_block_bmp();
+        sync_from_disk_inode_bmp();
+
         vt100_move_cursor(1, 1);    
         printk("[FS] File system exists in the disk!\n");
         printk("[FS] File system current informatin:\n");
@@ -272,13 +275,13 @@ void do_mkfs()
     uint32_t root_inum = 0;
     set_inode_bmp(root_inum);
     sync_to_disk_inode_bmp();
-    superblock_ptr->s_free_blocks_cnt--;
+    superblock_ptr->s_free_inode_cnt--;
     sync_to_disk_superblock();
 
     uint32_t root_block_index = DATA_BLOCK_INDEX;
     set_block_bmp(root_block_index);
     sync_to_disk_block_bmp();
-    superblock_ptr->s_free_inode_cnt--;
+    superblock_ptr->s_free_blocks_cnt--;
     sync_to_disk_superblock();
 
     root_inode_ptr->i_fmode = S_IFDIR | 0755;
@@ -296,7 +299,7 @@ void do_mkfs()
     root_inode_ptr->i_num = 0;
     bzero(root_inode_ptr->padding, 10*sizeof(uint32_t));
 
-    write_to_buffer_inode(root_inum, root_inode_ptr);
+    write_to_buffer_inode(root_inode_ptr);
     uint32_t inode_table_offset = root_inum / INODE_NUM_PER_BLOCK;
     sync_to_disk_inode_table(inode_table_offset);
 
@@ -455,14 +458,42 @@ uint32_t parse_path(const char *path)
     return result;
 }
 
-uint32_t find_free_inode()
+int find_free_inode()
 {
-
+    int i = 0, j = 0;
+    for(; i < INODE_BITMAP_SIZE; i++){
+        if(inodebmp_block_buffer[i] != 0xff){
+            while(check_inode_bmp(j) == 1){
+                j++;
+            }
+            return j;
+        }
+        else{
+            j += BYTE_SIZE;         
+        }
+    }
+    vt100_move_cursor(1, 45);
+    printk("[FS ERROR] ERROR_NO_FREE_INODE\n");
+    return ERROR_NO_FREE_INODE;
 }
 
-uint32_t find_free_block()
+int find_free_block()
 {
-
+    int i = 0, j = 0;
+    for(; i < BLOCK_BITMAP_SIZE; i++){
+        if(blockbmp_buffer[i] != 0xff){
+            while(check_block_bmp(j) == 1){
+                j++;
+            }
+            return j;
+        }
+        else{
+            j += BYTE_SIZE;         
+        }
+    }
+    vt100_move_cursor(1, 45);
+    printk("[FS ERROR] ERROR_NO_FREE_BLOCK\n");
+    return ERROR_NO_FREE_BLOCK;
 }
 
 //operations on directory
@@ -486,7 +517,54 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     }
 
     free_inum = find_free_inode();
+    set_inode_bmp(free_inum);
+    sync_to_disk_inode_bmp();
+
+    superblock_ptr->s_free_inode_cnt--;
+    sync_to_disk_superblock();
+
     free_block_index = find_free_block();
+    set_block_bmp(free_block_index);
+    sync_to_disk_block_bmp();
+
+    superblock_ptr->s_free_blocks_cnt--;
+    sync_to_disk_superblock();    
+
+    new_inode.i_fmode = S_IFDIR | mode;
+    new_inode.i_links_cnt = 1;
+    new_inode.i_fsize = BLOCK_SIZE;
+    new_inode.i_fnum = 0;
+    new_inode.i_atime = get_ticks();
+    new_inode.i_ctime = get_ticks();
+    new_inode.i_mtime = get_ticks();
+    bzero(new_inode.i_direct_table, MAX_DIRECT_NUM*sizeof(uint32_t));
+    new_inode.i_indirect_block_1_ptr = NULL;
+    new_inode.i_indirect_block_2_ptr = NULL;
+    new_inode.i_indirect_block_3_ptr = NULL;
+    new_inode.i_num = free_inum;
+    bzero(new_inode.padding, 10*sizeof(uint32_t));
+
+    bzero(inodetable_block_buffer, BLOCK_SIZE);
+    uint32_t inode_table_offset = free_inum / INODE_NUM_PER_BLOCK;
+    sync_from_disk_inode_table(inode_table_offset);
+    write_to_buffer_inode(&new_inode);
+    sync_to_disk_inode_table(inode_table_offset);
+
+    bzero(dentry_block_buffer, BLOCK_SIZE);
+    dentry_t *new_dentry_table = (dentry_t *)dentry_block_buffer;
+    new_dentry_table[0].d_inum = free_inum;
+    strcpy(new_dentry_table[0].d_name, ".");
+    new_dentry_table[1].d_inum = parent_inum;
+    strcpy(new_dentry_table[1].d_name, "..");
+    uint32_t dentry_offset = 0;
+    sync_to_disk_dentry(dentry_offset);
+
+
+
+
+
+
+
 }
 
 void do_rmdir()

@@ -48,6 +48,8 @@
 //#define pprintf(x) printf(""#x": 0x%x\n", x);
 
 #define ERROR_DUP_DIR_NAME -1
+#define ERROR_NO_FREE_INODE -2
+#define ERROR_NO_FREE_BLOCK -3
 
 enum {
     BYTE_SIZE = 0x8,
