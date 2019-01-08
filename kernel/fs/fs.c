@@ -82,13 +82,13 @@ static bool_t check_inode_bmp(uint32_t inum)
 void sd_card_read(void *dest, uint32_t sd_offset, uint32_t size)
 {
 
-    vt100_move_cursor(1, 5);    
-    printk("[FS] DEBUG >> 5\n");
+    // vt100_move_cursor(1, 5);    
+    // printk("[FS] DEBUG >> 5\n");
 
     sdread((char *)dest, sd_offset, size);
 
-    vt100_move_cursor(1, 6);    
-    printk("[FS] DEBUG >> 6\n");
+    // vt100_move_cursor(1, 6);    
+    // printk("[FS] DEBUG >> 6\n");
 }
 
 void sd_card_write(void *dest, uint32_t sd_offset, uint32_t size)
@@ -106,14 +106,14 @@ static void write_block(uint32_t block_index, uint8_t *block_buffer)
 
 static void read_block(uint32_t block_index, uint8_t *block_buffer)
 {
-    vt100_move_cursor(1, 7);    
-    printk("[FS] DEBUG >> 7\n");
+    // vt100_move_cursor(1, 7);    
+    // printk("[FS] DEBUG >> 7\n");
 
     uint32_t sd_offset = block_index*BLOCK_SIZE + FS_START_SD_OFFSET;
     sd_card_read(block_buffer, sd_offset, BLOCK_SIZE);
 
-    vt100_move_cursor(1, 8);    
-    printk("[FS] DEBUG >> 8\n");
+    // vt100_move_cursor(1, 8);    
+    // printk("[FS] DEBUG >> 8\n");
 }
 
 //sync from memory to disk
@@ -134,13 +134,13 @@ static void sync_to_disk_block_bmp()
 static void sync_to_disk_superblock()
 {
 
-    vt100_move_cursor(1, 9);    
-    printk("[FS] DEBUG >> 9\n");
+    // vt100_move_cursor(1, 9);    
+    // printk("[FS] DEBUG >> 9\n");
 
     write_block(SUPERBLOCK_BLOCK_INDEX, superblock_buffer);
 
-    vt100_move_cursor(1, 10);    
-    printk("[FS] DEBUG >> 10\n");
+    // vt100_move_cursor(1, 10);    
+    // printk("[FS] DEBUG >> 10\n");
 
 }
 
@@ -256,24 +256,24 @@ void init_fs()
     // superblock_ptr = (superblock_t *)superblock_buffer;
     // read_block(SUPERBLOCK_BLOCK_INDEX, superblock_buffer);
 
-    vt100_move_cursor(1, 1);    
-    printk("[FS] DEBUG >> 1\n");
+    // vt100_move_cursor(1, 1);    
+    // printk("[FS] DEBUG >> 1\n");
 
     sync_from_disk_superblock();
 
-    vt100_move_cursor(1, 4);    
-    printk("[FS] DEBUG >> 4\n");
+    // vt100_move_cursor(1, 4);    
+    // printk("[FS] DEBUG >> 4\n");
 
     if(superblock_ptr->s_magic == FS_MAGIC_NUMBER){
 
-        vt100_move_cursor(1, 2);    
-        printk("[FS] DEBUG >> 2\n");
+        // vt100_move_cursor(1, 2);    
+        // printk("[FS] DEBUG >> 2\n");
 
         sync_from_disk_block_bmp();
         sync_from_disk_inode_bmp();
 
-        vt100_move_cursor(1, 3);    
-        printk("[FS] DEBUG >> 3\n");
+        // vt100_move_cursor(1, 3);    
+        // printk("[FS] DEBUG >> 3\n");
 
         vt100_move_cursor(1, 1);    
         printk("[FS] File system exists in the disk!\n");
