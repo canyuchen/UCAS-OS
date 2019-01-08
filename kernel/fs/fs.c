@@ -81,7 +81,14 @@ static bool_t check_inode_bmp(uint32_t inum)
 
 void sd_card_read(void *dest, uint32_t sd_offset, uint32_t size)
 {
+
+    vt100_move_cursor(1, 5);    
+    printk("[FS] DEBUG >> 5\n");
+
     sdread((char *)dest, sd_offset, size);
+
+    vt100_move_cursor(1, 6);    
+    printk("[FS] DEBUG >> 6\n");
 }
 
 void sd_card_write(void *dest, uint32_t sd_offset, uint32_t size)
@@ -99,8 +106,14 @@ static void write_block(uint32_t block_index, uint8_t *block_buffer)
 
 static void read_block(uint32_t block_index, uint8_t *block_buffer)
 {
+    vt100_move_cursor(1, 7);    
+    printk("[FS] DEBUG >> 7\n");
+
     uint32_t sd_offset = block_index*BLOCK_SIZE + FS_START_SD_OFFSET;
     sd_card_read(block_buffer, sd_offset, BLOCK_SIZE);
+
+    vt100_move_cursor(1, 8);    
+    printk("[FS] DEBUG >> 8\n");
 }
 
 //sync from memory to disk
@@ -120,7 +133,15 @@ static void sync_to_disk_block_bmp()
 
 static void sync_to_disk_superblock()
 {
+
+    vt100_move_cursor(1, 9);    
+    printk("[FS] DEBUG >> 9\n");
+
     write_block(SUPERBLOCK_BLOCK_INDEX, superblock_buffer);
+
+    vt100_move_cursor(1, 10);    
+    printk("[FS] DEBUG >> 10\n");
+
 }
 
 static void sync_to_disk_inode_table(uint32_t inode_table_offset)
@@ -188,6 +209,7 @@ static void read_inode(uint32_t inum, inode_t *inode_ptr)
     memcpy((uint8_t *)inode_ptr,inodetable_block_buffer+(inum%INODE_NUM_PER_BLOCK)*INODE_SIZE, INODE_SIZE);
 }
 
+/*
 static void clear_disk()
 {
     int i = 0;
@@ -195,6 +217,7 @@ static void clear_disk()
         write_block(i, data_block_buffer);
     }
 }
+*/
 
 static int write_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry)
 {
@@ -232,12 +255,25 @@ void init_fs()
     // sd_card_read(superblock_buffer, FS_START_SD_OFFSET, BLOCK_SIZE);
     // superblock_ptr = (superblock_t *)superblock_buffer;
     // read_block(SUPERBLOCK_BLOCK_INDEX, superblock_buffer);
+
+    vt100_move_cursor(1, 1);    
+    printk("[FS] DEBUG >> 1\n");
+
     sync_from_disk_superblock();
+
+    vt100_move_cursor(1, 4);    
+    printk("[FS] DEBUG >> 4\n");
 
     if(superblock_ptr->s_magic == FS_MAGIC_NUMBER){
 
+        vt100_move_cursor(1, 2);    
+        printk("[FS] DEBUG >> 2\n");
+
         sync_from_disk_block_bmp();
         sync_from_disk_inode_bmp();
+
+        vt100_move_cursor(1, 3);    
+        printk("[FS] DEBUG >> 3\n");
 
         vt100_move_cursor(1, 1);    
         printk("[FS] File system exists in the disk!\n");
@@ -250,11 +286,11 @@ void init_fs()
         printk("     total inodes : %d\n", superblock_ptr->s_total_inodes_cnt);
         printk("     free inodes : %d\n", superblock_ptr->s_free_inode_cnt);
         printk("     block bitmap start-block index : %d\n", superblock_ptr->s_blockbmp_block_index);
-        printk("                  disk offset : %d B\n", superblock_ptr->s_blockbmp_block_index * BLOCK_SIZE);
+        printk("                  disk offset : %d\n", superblock_ptr->s_blockbmp_block_index * BLOCK_SIZE);
         printk("     inode bitmap start-block index : %d\n", superblock_ptr->s_inodebmp_block_index);
-        printk("                  disk offset : %d B\n", superblock_ptr->s_inodebmp_block_index * BLOCK_SIZE);
+        printk("                  disk offset : %d\n", superblock_ptr->s_inodebmp_block_index * BLOCK_SIZE);
         printk("     inode table start-block index : %d\n", superblock_ptr->s_inodetable_block_index);
-        printk("                 disk offset : %d B\n", superblock_ptr->s_inodetable_block_index * BLOCK_SIZE);
+        printk("                 disk offset : %d\n", superblock_ptr->s_inodetable_block_index * BLOCK_SIZE);
         printk("     file data start-block index : %d\n", superblock_ptr->s_data_block_index);
         printk("     inode entry size : %d\n", superblock_ptr->s_inode_size);
         printk("     dir entry size : %d\n", superblock_ptr->s_dentry_size);
@@ -280,7 +316,7 @@ void do_mkfs()
     bzero(parent, MAX_PATH_LENGTH);
     bzero(name, MAX_NAME_LENGTH);
 
-    clear_disk();
+    //clear_disk();
 
     superblock_ptr->s_magic = FS_MAGIC_NUMBER;
     superblock_ptr->s_disk_size = FS_SIZE;
@@ -299,12 +335,13 @@ void do_mkfs()
     superblock_ptr->s_inode_size = INODE_SIZE;
     superblock_ptr->s_dentry_size = DENTRY_SIZE;
 
+    sync_to_disk_superblock();
+
     int i = 0;
     for(; i++; i < INODE_TABLE_BLOCK_INDEX){
         set_block_bmp(i);
     }
     sync_to_disk_block_bmp();
-    sync_to_disk_superblock();
 
     //init root dir
     uint32_t root_inum = 0;
@@ -319,7 +356,7 @@ void do_mkfs()
     superblock_ptr->s_free_blocks_cnt--;
     sync_to_disk_superblock();
 
-    root_inode_ptr->i_fmode = S_IFDIR | 0755;
+    root_inode_ptr->i_fmode = (S_IFDIR | 0755);
     //???
     root_inode_ptr->i_links_cnt = 1;
     root_inode_ptr->i_fsize = BLOCK_SIZE;
@@ -343,7 +380,7 @@ void do_mkfs()
     strcpy(root_dentry_table[0].d_name, ".");
     root_dentry_table[1].d_inum = 0;
     strcpy(root_dentry_table[1].d_name, "..");
-    uint32_t dentry_offset = 0;
+    uint32_t dentry_offset = root_block_index - DATA_BLOCK_INDEX;
     sync_to_disk_dentry(dentry_offset);
 
     //print FS info
@@ -358,11 +395,11 @@ void do_mkfs()
     printk("     total inodes : %d\n", superblock_ptr->s_total_inodes_cnt);
     // printk("     free inodes : %d\n", superblock_ptr->s_free_inode_cnt);
     printk("     block bitmap start-block index : %d\n", superblock_ptr->s_blockbmp_block_index);
-    printk("                  disk offset : %d B\n", superblock_ptr->s_blockbmp_block_index * BLOCK_SIZE);
+    printk("                  disk offset : %d\n", superblock_ptr->s_blockbmp_block_index * BLOCK_SIZE);
     printk("     inode bitmap start-block index : %d\n", superblock_ptr->s_inodebmp_block_index);
-    printk("                  disk offset : %d B\n", superblock_ptr->s_inodebmp_block_index * BLOCK_SIZE);
+    printk("                  disk offset : %d\n", superblock_ptr->s_inodebmp_block_index * BLOCK_SIZE);
     printk("     inode table start-block index : %d\n", superblock_ptr->s_inodetable_block_index);
-    printk("                 disk offset : %d B\n", superblock_ptr->s_inodetable_block_index * BLOCK_SIZE);
+    printk("                 disk offset : %d\n", superblock_ptr->s_inodetable_block_index * BLOCK_SIZE);
     printk("     file data start-block index : %d\n", superblock_ptr->s_data_block_index);
     printk("     inode entry size : %d\n", superblock_ptr->s_inode_size);
     printk("     dir entry size : %d\n", superblock_ptr->s_dentry_size);
@@ -384,11 +421,11 @@ void do_statfs()
     printk("     total inodes : %d\n", superblock_ptr->s_total_inodes_cnt);
     printk("     free inodes : %d\n", superblock_ptr->s_free_inode_cnt);
     printk("     block bitmap start-block index : %d\n", superblock_ptr->s_blockbmp_block_index);
-    printk("                  disk offset : %d B\n", superblock_ptr->s_blockbmp_block_index * BLOCK_SIZE);
+    printk("                  disk offset : %d\n", superblock_ptr->s_blockbmp_block_index * BLOCK_SIZE);
     printk("     inode bitmap start-block index : %d\n", superblock_ptr->s_inodebmp_block_index);
-    printk("                  disk offset : %d B\n", superblock_ptr->s_inodebmp_block_index * BLOCK_SIZE);
+    printk("                  disk offset : %d\n", superblock_ptr->s_inodebmp_block_index * BLOCK_SIZE);
     printk("     inode table start-block index : %d\n", superblock_ptr->s_inodetable_block_index);
-    printk("                 disk offset : %d B\n", superblock_ptr->s_inodetable_block_index * BLOCK_SIZE);
+    printk("                 disk offset : %d\n", superblock_ptr->s_inodetable_block_index * BLOCK_SIZE);
     printk("     file data start-block index : %d\n", superblock_ptr->s_data_block_index);
     printk("     inode entry size : %d\n", superblock_ptr->s_inode_size);
     printk("     dir entry size : %d\n", superblock_ptr->s_dentry_size);

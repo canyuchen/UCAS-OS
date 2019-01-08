@@ -292,8 +292,6 @@ void __attribute__((section(".entry_function"))) _start(void)
 
 	// init_memory();
 
-	superblock_ptr->s_magic = FS_MAGIC_NUMBER;
-
 	init_fs();
 
 	while (1)
