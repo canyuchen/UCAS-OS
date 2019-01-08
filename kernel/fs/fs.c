@@ -168,13 +168,18 @@ static void sync_from_disk_file_data(uint32_t file_data_offset)
     read_block(DATA_BLOCK_INDEX + file_data_offset, data_block_buffer);
 }
 
+static void sync_from_disk_dentry(uint32_t dentry_offset)
+{
+    read_block(DATA_BLOCK_INDEX + dentry_offset, dentry_block_buffer);
+}
+
+//------------------------------------------------------------------------------------------
+
 static void write_to_buffer_inode(inode_t *inode_ptr)
 {
     memcpy((inodetable_block_buffer + (inode_ptr->i_num % INODE_NUM_PER_BLOCK)*INODE_SIZE), 
            (uint8_t *)inode_ptr, INODE_SIZE);
 }
-
-//------------------------------------------------------------------------------------------
 
 static void read_inode(uint32_t inum, inode_t *inode_ptr)
 {

@@ -221,4 +221,6 @@ uint32_t parse_path(const char *path);
 int find_free_inode();
 int find_free_block();
 
+extern superblock_t *superblock_ptr;
+
 #endif
