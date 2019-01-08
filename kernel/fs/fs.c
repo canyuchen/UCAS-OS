@@ -237,7 +237,7 @@ static void clear_disk()
 }
 */
 
-static int write_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry)
+static int write_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry_ptr)
 {
     if(dnum < 2){
         vt100_move_cursor(1, 45);
@@ -269,15 +269,17 @@ static int write_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry)
         inode_ptr->i_fsize += BLOCK_SIZE;
         inode_ptr->i_fnum++;
         sync_to_disk_inode(inode_ptr);
-
-        // uint32_t inode_table_offset = inode_ptr->i_num / INODE_NUM_PER_BLOCK;
-        // sync_from_disk_inode_table(inode_table_offset);
-        // write_to_buffer_inode(inode_ptr);
-        // sync_from_disk_inode_table(inode_table_offset);
     }
     else{
-        
+        inode_ptr->i_fnum++;
+        sync_to_disk_inode(inode_ptr);
+
+        read_block(get_block_index_in_dir(inode_ptr, major_index), dentry_block_buffer);
     }
+    memcpy((uint8_t *)(&(dentry_table[minor_index])), (uint8_t *)dentry_ptr, DENTRY_SIZE);
+    write_block(get_block_index_in_dir(inode_ptr, major_index), dentry_block_buffer);
+
+    return;
 }
 
 void separate_path(const char *path, char *parent, char *name)
@@ -798,7 +800,7 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     dentry_t parent_dentry;
     parent_dentry.d_inum = free_inum;
     strcpy(parent_dentry.d_name, name);
-
+    write_dentry(&parent_inode, parent_inode.i_fnum+2, &parent_dentry);
 
 }
 
