@@ -216,6 +216,7 @@ void do_rmdir();
 
 void separate_path(const char *path, char *parent, char *name);
 int get_block_index_in_dir(inode_t *inode_ptr, uint32_t idx);
+void write_block_index_in_dir(inode_t *inode_ptr, uint32_t idx, uint32_t block_index);
 uint32_t find_file(inode_t *inode_ptr, const char *name);
 uint32_t parse_path(const char *path);
 int find_free_inode();

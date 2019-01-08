@@ -36,9 +36,13 @@ uint8_t parse_file_buffer[MAX_PATH_LENGTH] = {0};
 uint32_t buffer1[POINTER_PER_BLOCK] = {0};
 uint32_t buffer2[POINTER_PER_BLOCK] = {0};
 uint32_t buffer3[POINTER_PER_BLOCK] = {0};
+uint32_t buffer0[POINTER_PER_BLOCK] = {0};
 
 inode_t root_inode;
 inode_t *root_inode_ptr = &root_inode;
+
+inode_t current_dir;
+inode_t *current_dir_ptr = &current_dir;
 
 char parent[MAX_PATH_LENGTH];
 char name[MAX_NAME_LENGTH];
@@ -196,6 +200,12 @@ static void sync_from_disk_dentry(uint32_t dentry_offset)
 
 //------------------------------------------------------------------------------------------
 
+static clear_block_index(uint32_t block_index)
+{
+    bzero(buffer0, POINTER_PER_BLOCK*sizeof(uint32_t));
+    write_block(block_index, (uint8_t *)buffer0);
+}
+
 static void write_to_buffer_inode(inode_t *inode_ptr)
 {
     memcpy((inodetable_block_buffer + (inode_ptr->i_num % INODE_NUM_PER_BLOCK)*INODE_SIZE), 
@@ -207,6 +217,14 @@ static void read_inode(uint32_t inum, inode_t *inode_ptr)
     uint32_t inode_table_offset = inum / INODE_NUM_PER_BLOCK;
     sync_from_disk_inode_table(inode_table_offset);
     memcpy((uint8_t *)inode_ptr,inodetable_block_buffer+(inum%INODE_NUM_PER_BLOCK)*INODE_SIZE, INODE_SIZE);
+}
+
+static void sync_to_disk_inode(inode_t *inode_ptr)
+{
+    uint32_t inode_table_offset = inode_ptr->i_num / INODE_NUM_PER_BLOCK;
+    sync_from_disk_inode_table(inode_table_offset);
+    write_to_buffer_inode(inode_ptr);
+    sync_from_disk_inode_table(inode_table_offset);
 }
 
 /*
@@ -240,11 +258,287 @@ static int write_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry)
     dentry_t *dentry_table = (dentry_t *)dentry_block_buffer;
 
     if(get_block_index_in_dir(inode_ptr, major_index) == 0){
+        uint32_t free_block_index = find_free_block();
+        set_block_bmp(free_block_index);
+        sync_to_disk_block_bmp();
 
+        superblock_ptr->s_free_blocks_cnt--;
+        sync_to_disk_superblock();
+
+        write_block_index_in_dir(inode_ptr, major_index, free_block_index);
+        inode_ptr->i_fsize += BLOCK_SIZE;
+        inode_ptr->i_fnum++;
+        sync_to_disk_inode(inode_ptr);
+
+        // uint32_t inode_table_offset = inode_ptr->i_num / INODE_NUM_PER_BLOCK;
+        // sync_from_disk_inode_table(inode_table_offset);
+        // write_to_buffer_inode(inode_ptr);
+        // sync_from_disk_inode_table(inode_table_offset);
     }
     else{
         
     }
+}
+
+void separate_path(const char *path, char *parent, char *name)
+{
+    strcpy(parent, (char *)path);
+    char* loc = strrchr(parent, '/');
+    strcpy(name, loc + 1);
+    name[MAX_NAME_LENGTH - 1] = '\0';
+    if(loc == parent){
+        loc++;
+    } 
+    *loc = '\0';
+    return;
+}
+
+int get_block_index_in_dir(inode_t *inode_ptr, uint32_t idx)
+{
+    bzero(buffer1, POINTER_PER_BLOCK*sizeof(uint32_t));
+    bzero(buffer2, POINTER_PER_BLOCK*sizeof(uint32_t));
+    bzero(buffer3, POINTER_PER_BLOCK*sizeof(uint32_t));
+    
+    if(idx < FIRST_POINTER){
+        return inode_ptr->i_direct_table[idx];
+    }
+    if(idx < SECOND_POINTER){
+        if(inode_ptr->i_indirect_block_1_ptr == 0){
+            return -1;
+        }
+        read_block(inode_ptr->i_indirect_block_1_ptr, (uint8_t *)buffer1);
+        return buffer1[idx - FIRST_POINTER];
+    }
+    if(idx < THIRD_POINTER){
+        if(inode_ptr->i_indirect_block_1_ptr == 0){
+            return -1;
+        }
+        read_block(inode_ptr->i_indirect_block_1_ptr, (uint8_t *)buffer1);
+        if(buffer1[(idx - SECOND_POINTER) / POINTER_PER_BLOCK] == 0){
+            return -1;
+        }
+        read_block(buffer1[(idx - SECOND_POINTER) / POINTER_PER_BLOCK], (uint8_t *)buffer2);
+        return buffer2[(idx - SECOND_POINTER) % POINTER_PER_BLOCK];
+    }
+    if(idx < MAX_BLOCK_INDEX){
+        if(inode_ptr->i_indirect_block_1_ptr == 0){
+            return -1;
+        }
+        read_block(inode_ptr->i_indirect_block_1_ptr, (uint8_t *)buffer1);
+        if(buffer1[(idx - THIRD_POINTER) / (POINTER_PER_BLOCK * POINTER_PER_BLOCK)] == 0){
+            return -1;
+        } 
+        read_block(buffer1[(idx - THIRD_POINTER) / (POINTER_PER_BLOCK * POINTER_PER_BLOCK)], (uint8_t *)buffer2);
+        if(buffer2[((idx - THIRD_POINTER) % (POINTER_PER_BLOCK * POINTER_PER_BLOCK)) / POINTER_PER_BLOCK] == 0){
+            return -1;
+        } 
+        read_block(buffer2[((idx - THIRD_POINTER) % (POINTER_PER_BLOCK * POINTER_PER_BLOCK)) / POINTER_PER_BLOCK], (uint8_t *)buffer3);
+        return buffer3[(idx - THIRD_POINTER) % POINTER_PER_BLOCK];
+    }   
+}
+
+void write_block_index_in_dir(inode_t *inode_ptr, uint32_t idx, uint32_t block_index)
+{
+    bzero(buffer1, POINTER_PER_BLOCK*sizeof(uint32_t));
+    bzero(buffer2, POINTER_PER_BLOCK*sizeof(uint32_t));
+    bzero(buffer3, POINTER_PER_BLOCK*sizeof(uint32_t));
+
+    if(idx < FIRST_POINTER){
+        inode_ptr->i_direct_table[idx] = block_index;
+        sync_to_disk_inode(inode_ptr);
+        return;
+    }
+
+    uint32_t free_index_1;
+    if(idx < SECOND_POINTER){
+        if(inode_ptr->i_indirect_block_1_ptr == 0){
+            free_index_1 = find_free_block();
+
+            set_block_bmp(free_index_1);
+            sync_to_disk_block_bmp();
+
+            superblock_ptr->s_free_blocks_cnt--;
+            sync_to_disk_superblock();
+
+            clear_block_index(free_index_1);
+            inode_ptr->i_indirect_block_1_ptr = free_index_1;
+            inode_ptr->i_fsize += BLOCK_SIZE;
+            sync_to_disk_inode(inode_ptr);
+        }
+        read_block(inode_ptr->i_indirect_block_1_ptr, (uint8_t *)buffer1);
+        buffer1[idx - FIRST_POINTER] = block_index;
+        write_block(inode_ptr->i_indirect_block_1_ptr, (uint8_t *)buffer1);
+        return;
+    }
+
+    uint32_t free_index_2;
+    if(idx < THIRD_POINTER){
+        if(inode_ptr->i_indirect_block_2_ptr == 0){
+            free_index_1 = find_free_block();
+
+            set_block_bmp(free_index_1);
+            sync_to_disk_block_bmp();
+
+            superblock_ptr->s_free_blocks_cnt--;
+            sync_to_disk_superblock();
+
+            clear_block_index(free_index_1);
+            inode_ptr->i_indirect_block_2_ptr = free_index_1;
+            inode_ptr->i_fsize += BLOCK_SIZE;
+            sync_to_disk_inode(inode_ptr);
+        }
+        read_block(inode_ptr->i_indirect_block_2_ptr, (uint8_t *)buffer1);
+        if(buffer1[(idx - SECOND_POINTER) / POINTER_PER_BLOCK] == 0){
+            free_index_2 = find_free_block();
+
+            set_block_bmp(free_index_2);
+            sync_to_disk_block_bmp();
+
+            superblock_ptr->s_free_blocks_cnt--;
+            sync_to_disk_superblock();
+
+            clear_block_index(free_index_2);
+            inode_ptr->i_fsize += BLOCK_SIZE;
+            sync_to_disk_inode(inode_ptr);
+
+            buffer1[(idx - SECOND_POINTER) / POINTER_PER_BLOCK] = free_index_2;
+            write_block(inode_ptr->i_indirect_block_2_ptr, (uint8_t *)buffer1);
+        }
+        read_block(buffer1[(idx - SECOND_POINTER) / POINTER_PER_BLOCK], (uint8_t *)buffer2);
+        buffer2[(idx - SECOND_POINTER) % POINTER_PER_BLOCK] = block_index;
+        write_block(buffer1[(idx - SECOND_POINTER) / POINTER_PER_BLOCK], (uint8_t *)buffer2);
+    }
+
+    uint32_t free_index_3;
+    if(idx < MAX_BLOCK_INDEX){
+        if(inode_ptr->i_indirect_block_3_ptr == 0){
+            free_index_1 = find_free_block();
+
+            set_block_bmp(free_index_1);
+            sync_to_disk_block_bmp();
+
+            superblock_ptr->s_free_blocks_cnt--;
+            sync_to_disk_superblock();
+
+            clear_block_index(free_index_1);
+            inode_ptr->i_indirect_block_3_ptr = free_index_1;
+            inode_ptr->i_fsize += BLOCK_SIZE;
+            sync_to_disk_inode(inode_ptr);
+        }
+        read_block(inode_ptr->i_indirect_block_3_ptr, (uint8_t *)buffer1);
+        if(buffer1[(idx - THIRD_POINTER) / (POINTER_PER_BLOCK * POINTER_PER_BLOCK)] == 0){
+            free_index_2 = find_free_block();
+
+            set_block_bmp(free_index_2);
+            sync_to_disk_block_bmp();
+
+            superblock_ptr->s_free_blocks_cnt--;
+            sync_to_disk_superblock();
+
+            clear_block_index(free_index_2);
+            inode_ptr->i_fsize += BLOCK_SIZE;
+            sync_to_disk_inode(inode_ptr);
+
+            buffer1[(idx - THIRD_POINTER) / (POINTER_PER_BLOCK * POINTER_PER_BLOCK)] = free_index_2;
+            write_block(inode_ptr->i_indirect_block_2_ptr, (uint8_t *)buffer1);
+        }
+        read_block(buffer1[(idx - THIRD_POINTER) / (POINTER_PER_BLOCK * POINTER_PER_BLOCK)], (uint8_t *)buffer2);
+        if(buffer2[((idx - THIRD_POINTER) % (POINTER_PER_BLOCK * POINTER_PER_BLOCK)) / POINTER_PER_BLOCK] == 0){
+            free_index_3 = find_free_block();
+
+            set_block_bmp(free_index_3);
+            sync_to_disk_block_bmp();
+
+            superblock_ptr->s_free_blocks_cnt--;
+            sync_to_disk_superblock();
+
+            clear_block_index(free_index_3);
+            inode_ptr->i_fsize += BLOCK_SIZE;
+            sync_to_disk_inode(inode_ptr);
+
+            buffer2[((idx - THIRD_POINTER) % (POINTER_PER_BLOCK * POINTER_PER_BLOCK)) / POINTER_PER_BLOCK] = free_index_3;
+            write_block(buffer1[(idx - THIRD_POINTER) / (POINTER_PER_BLOCK * POINTER_PER_BLOCK)], (uint8_t *)buffer2);
+        }
+        read_block(buffer2[((idx - THIRD_POINTER) % (POINTER_PER_BLOCK * POINTER_PER_BLOCK)) / POINTER_PER_BLOCK], (uint8_t *)buffer3);
+        buffer3[(idx - THIRD_POINTER) % POINTER_PER_BLOCK] = block_index;
+        write_block(buffer2[((idx - THIRD_POINTER) % (POINTER_PER_BLOCK * POINTER_PER_BLOCK)) / POINTER_PER_BLOCK], (uint8_t *)buffer3);
+        return;
+    }
+    return;
+}
+
+uint32_t find_file(inode_t *inode_ptr, const char *name)
+{
+    bzero(find_file_buffer, BLOCK_SIZE);
+    dentry_t *p = (dentry_t *)find_file_buffer;
+    int i = 0, j = 0;
+    for(; i < MAX_BLOCK_INDEX; i++){
+        uint32_t block_index = get_block_index_in_dir(inode_ptr, i);
+        read_block(block_index, find_file_buffer);
+        for(; j < POINTER_PER_BLOCK; j++){
+            if(strcmp((char *)name, p[j].d_name) == 0){
+                return p[j].d_inum;
+            }
+        }
+    }
+    return -1;
+}
+
+uint32_t parse_path(const char *path)
+{
+    bzero(parse_file_buffer, MAX_PATH_LENGTH);
+    char *p;
+    strcpy(parse_file_buffer, (char *)path);
+    p = strtok(parse_file_buffer, "/");
+    if(p == NULL){
+        return 0; //root
+    }
+    uint32_t result = find_file(root_inode_ptr, p); //root dentry
+
+    inode_t inode;
+    while((p = strtok(NULL, "/")) != NULL){
+        read_inode(result, &inode);
+        result = find_file(&inode, p);
+    }
+    return result;
+}
+
+int find_free_inode()
+{
+    int i = 0, j = 0;
+    for(; i < INODE_BITMAP_SIZE; i++){
+        if(inodebmp_block_buffer[i] != 0xff){
+            while(check_inode_bmp(j) == 1){
+                j++;
+            }
+            return j;
+        }
+        else{
+            j += BYTE_SIZE;         
+        }
+    }
+    vt100_move_cursor(1, 45);
+    printk("[FS ERROR] ERROR_NO_FREE_INODE\n");
+    return ERROR_NO_FREE_INODE;
+}
+
+int find_free_block()
+{
+    int i = 0, j = 0;
+    for(; i < BLOCK_BITMAP_SIZE; i++){
+        if(blockbmp_buffer[i] != 0xff){
+            while(check_block_bmp(j) == 1){
+                j++;
+            }
+            return j;
+        }
+        else{
+            j += BYTE_SIZE;         
+        }
+    }
+    vt100_move_cursor(1, 45);
+    printk("[FS ERROR] ERROR_NO_FREE_BLOCK\n");
+    return ERROR_NO_FREE_BLOCK;
 }
 
 //-------------------------------------------------------------------------------
@@ -437,137 +731,6 @@ void do_cd()
 
 }
 */
-
-void separate_path(const char *path, char *parent, char *name)
-{
-    strcpy(parent, (char *)path);
-    char* loc = strrchr(parent, '/');
-    strcpy(name, loc + 1);
-    name[MAX_NAME_LENGTH - 1] = '\0';
-    if(loc == parent){
-        loc++;
-    } 
-    *loc = '\0';
-    return;
-}
-
-int get_block_index_in_dir(inode_t *inode_ptr, uint32_t idx)
-{
-    bzero(buffer1, POINTER_PER_BLOCK*sizeof(uint32_t));
-    bzero(buffer2, POINTER_PER_BLOCK*sizeof(uint32_t));
-    bzero(buffer3, POINTER_PER_BLOCK*sizeof(uint32_t));
-    
-    if(idx < FIRST_POINTER){
-        return inode_ptr->i_direct_table[idx];
-    }
-    if(idx < SECOND_POINTER){
-        if(inode_ptr->i_indirect_block_1_ptr == 0){
-            return -1;
-        }
-        read_block(inode_ptr->i_indirect_block_1_ptr, (uint8_t *)buffer1);
-        return buffer1[idx - FIRST_POINTER];
-    }
-    if(idx < THIRD_POINTER){
-        if(inode_ptr->i_indirect_block_1_ptr == 0){
-            return -1;
-        }
-        read_block(inode_ptr->i_indirect_block_1_ptr, (uint8_t *)buffer1);
-        if(buffer1[(idx - SECOND_POINTER) / POINTER_PER_BLOCK] == 0){
-            return -1;
-        }
-        read_block(buffer1[(idx - SECOND_POINTER) / POINTER_PER_BLOCK], (uint8_t *)buffer2);
-        return buffer2[(idx - SECOND_POINTER) % POINTER_PER_BLOCK];
-    }
-    if(idx < MAX_BLOCK_INDEX){
-        if(inode_ptr->i_indirect_block_1_ptr == 0){
-            return -1;
-        }
-        read_block(inode_ptr->i_indirect_block_1_ptr, (uint8_t *)buffer1);
-        if(buffer1[(idx - THIRD_POINTER) / (POINTER_PER_BLOCK * POINTER_PER_BLOCK)] == 0){
-            return -1;
-        } 
-        read_block(buffer1[(idx - THIRD_POINTER) / (POINTER_PER_BLOCK * POINTER_PER_BLOCK)], (uint8_t *)buffer2);
-        if(buffer2[((idx - THIRD_POINTER) % (POINTER_PER_BLOCK * POINTER_PER_BLOCK)) / POINTER_PER_BLOCK] == 0){
-            return -1;
-        } 
-        read_block(buffer2[((idx - THIRD_POINTER) % (POINTER_PER_BLOCK * POINTER_PER_BLOCK)) / POINTER_PER_BLOCK], (uint8_t *)buffer3);
-        return buffer3[(idx - THIRD_POINTER) % POINTER_PER_BLOCK];
-    }   
-}
-
-uint32_t find_file(inode_t *inode_ptr, const char *name)
-{
-    bzero(find_file_buffer, BLOCK_SIZE);
-    dentry_t *p = (dentry_t *)find_file_buffer;
-    int i = 0, j = 0;
-    for(; i < MAX_BLOCK_INDEX; i++){
-        uint32_t block_index = get_block_index_in_dir(inode_ptr, i);
-        read_block(block_index, find_file_buffer);
-        for(; j < POINTER_PER_BLOCK; j++){
-            if(strcmp((char *)name, p[j].d_name) == 0){
-                return p[j].d_inum;
-            }
-        }
-    }
-    return -1;
-}
-
-uint32_t parse_path(const char *path)
-{
-    bzero(parse_file_buffer, MAX_PATH_LENGTH);
-    char *p;
-    strcpy(parse_file_buffer, (char *)path);
-    p = strtok(parse_file_buffer, "/");
-    if(p == NULL){
-        return 0; //root
-    }
-    uint32_t result = find_file(root_inode_ptr, p); //root dentry
-
-    inode_t inode;
-    while((p = strtok(NULL, "/")) != NULL){
-        read_inode(result, &inode);
-        result = find_file(&inode, p);
-    }
-    return result;
-}
-
-int find_free_inode()
-{
-    int i = 0, j = 0;
-    for(; i < INODE_BITMAP_SIZE; i++){
-        if(inodebmp_block_buffer[i] != 0xff){
-            while(check_inode_bmp(j) == 1){
-                j++;
-            }
-            return j;
-        }
-        else{
-            j += BYTE_SIZE;         
-        }
-    }
-    vt100_move_cursor(1, 45);
-    printk("[FS ERROR] ERROR_NO_FREE_INODE\n");
-    return ERROR_NO_FREE_INODE;
-}
-
-int find_free_block()
-{
-    int i = 0, j = 0;
-    for(; i < BLOCK_BITMAP_SIZE; i++){
-        if(blockbmp_buffer[i] != 0xff){
-            while(check_block_bmp(j) == 1){
-                j++;
-            }
-            return j;
-        }
-        else{
-            j += BYTE_SIZE;         
-        }
-    }
-    vt100_move_cursor(1, 45);
-    printk("[FS ERROR] ERROR_NO_FREE_BLOCK\n");
-    return ERROR_NO_FREE_BLOCK;
-}
 
 //operations on directory
 uint32_t do_mkdir(const char *path, mode_t mode)
