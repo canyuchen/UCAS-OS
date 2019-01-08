@@ -200,7 +200,7 @@ static void sync_from_disk_dentry(uint32_t dentry_offset)
 
 //------------------------------------------------------------------------------------------
 
-static clear_block_index(uint32_t block_index)
+static void clear_block_index(uint32_t block_index)
 {
     bzero(buffer0, POINTER_PER_BLOCK*sizeof(uint32_t));
     write_block(block_index, (uint8_t *)buffer0);
@@ -280,6 +280,11 @@ static int write_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry_ptr)
     write_block(get_block_index_in_dir(inode_ptr, major_index), dentry_block_buffer);
 
     return;
+}
+
+static int remove_dentry(inode_t* inode_ptr, uint32_t dnum)
+{
+
 }
 
 void separate_path(const char *path, char *parent, char *name)
@@ -543,6 +548,89 @@ int find_free_block()
     return ERROR_NO_FREE_BLOCK;
 }
 
+void release_inode_block(inode_t *inode_ptr)
+{
+    uint32_t i, j, k;
+    bzero(buffer1, POINTER_PER_BLOCK*sizeof(uint32_t));
+    bzero(buffer2, POINTER_PER_BLOCK*sizeof(uint32_t));
+    bzero(buffer3, POINTER_PER_BLOCK*sizeof(uint32_t));
+
+    for(i = 0; i < FIRST_POINTER; i++){
+        if(inode_ptr->i_direct_table[i] == 0){
+            return;
+        }
+        unset_block_bmp(inode_ptr->i_direct_table[i]);
+    }
+
+    if(inode_ptr->i_indirect_block_1_ptr == 0){
+        return;
+    }
+    read_block(inode_ptr->i_indirect_block_1_ptr, (uint8_t *)buffer1);
+    for(i = 0; i < POINTER_PER_BLOCK; i++){
+        if(buffer1[i] == 0){
+            unset_block_bmp(inode_ptr->i_indirect_block_1_ptr);
+            return;
+        }
+        unset_block_bmp(buffer1[i]);
+    }
+    unset_block_bmp(inode_ptr->i_indirect_block_1_ptr);
+
+    if(inode_ptr->i_indirect_block_2_ptr == 0){
+        return;
+    }
+    read_block(inode_ptr->i_indirect_block_2_ptr, (uint8_t *)buffer1);
+    for(i = 0; i < POINTER_PER_BLOCK; i++){
+        if(buffer1[i] == 0){
+            unset_block_bmp(inode_ptr->i_indirect_block_2_ptr);
+            return;
+        }
+        read_block(buffer1[i], (uint8_t *)buffer2);
+        for(j = 0; j < POINTER_PER_BLOCK; j++){
+            if(buffer2[j] == 0){
+                unset_block_bmp(buffer1[i]);
+                unset_block_bmp(inode_ptr->i_indirect_block_2_ptr);
+                return;
+            }
+            unset_block_bmp(buffer2[j]);
+        }
+        unset_block_bmp(buffer1[i]);
+    }
+    unset_block_bmp(inode_ptr->i_indirect_block_2_ptr);
+
+    if(inode_ptr->i_indirect_block_3_ptr == 0){
+        return;
+    }
+    read_block(inode_ptr->i_indirect_block_3_ptr, (uint8_t *)buffer1);
+    for(i = 0; i < POINTER_PER_BLOCK; i++){
+        if(buffer1[i] == 0){
+            unset_block_bmp(inode_ptr->i_indirect_block_3_ptr);
+            return;
+        }
+        read_block(buffer1[i], (uint8_t *)buffer2);
+        for(j = 0; j < POINTER_PER_BLOCK; j++){
+            if(buffer2[j] == 0){
+                unset_block_bmp(buffer1[i]);
+                unset_block_bmp(inode_ptr->i_indirect_block_3_ptr);
+                return;
+            }
+            read_block(buffer2[j], (uint8_t *)buffer3);
+            for(k = 0; k < POINTER_PER_BLOCK; k++){
+                if(buffer3[k] == 0){
+                    unset_block_bmp(buffer2[j]);
+                    unset_block_bmp(buffer1[i]);
+                    unset_block_bmp(inode_ptr->i_indirect_block_3_ptr);
+                    return;
+                }
+                unset_block_bmp(buffer3[k]);
+            }
+            unset_block_bmp(buffer2[j]);
+        }
+        unset_block_bmp(buffer1[i]);
+    }
+    unset_block_bmp(inode_ptr->i_indirect_block_3_ptr);
+    return;
+}
+
 //-------------------------------------------------------------------------------
 
 //operations on file system
@@ -802,10 +890,21 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     strcpy(parent_dentry.d_name, name);
     write_dentry(&parent_inode, parent_inode.i_fnum+2, &parent_dentry);
 
+    return 0;
 }
 
-void do_rmdir()
+void do_rmdir(const char *path)
 {
+    uint32_t current_inum;
+    inode_t current_inode;
+    current_inum = parse_path(path);
+    read_inode(current_inum, &current_inode);
+
+    unset_inode_bmp(current_inum);
+    release_inode_block(&current_inode);
+
+    inode_t parent_inode;
+    uint32_t parent_inum;
 
 }
 
