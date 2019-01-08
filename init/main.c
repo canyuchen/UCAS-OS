@@ -292,7 +292,7 @@ void __attribute__((section(".entry_function"))) _start(void)
 
 	// init_memory();
 
-	// init_fs();
+	init_fs();
 
 	while (1)
 	{
