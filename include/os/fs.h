@@ -47,6 +47,8 @@
 
 //#define pprintf(x) printf(""#x": 0x%x\n", x);
 
+#define ERROR_DUP_DIR_NAME -1
+
 enum {
     BYTE_SIZE = 0x8,
 
@@ -96,10 +98,18 @@ enum {
     //dentry
     MAX_NAME_LENGTH = 64,
     DENTRY_SIZE = 128,
-    MAX_PATH_LENGTH = 1024,
+    MAX_PATH_LENGTH = 512,
+
+    DENTRY_NUM_PER_BLOCK = BLOCK_SIZE / DENTRY_SIZE,
 
     //file descriptor
     MAX_FILE_DESCRIPTOR_NUM = 32,
+
+    POINTER_PER_BLOCK = (BLOCK_SIZE / sizeof(int32_t)),
+    FIRST_POINTER = MAX_DIRECT_NUM,
+    SECOND_POINTER = (FIRST_POINTER + POINTER_PER_BLOCK),
+    THIRD_POINTER = (SECOND_POINTER + POINTER_PER_BLOCK * POINTER_PER_BLOCK),
+    MAX_BLOCK_INDEX = (THIRD_POINTER + POINTER_PER_BLOCK * POINTER_PER_BLOCK * POINTER_PER_BLOCK),
 
 };
 
@@ -190,7 +200,7 @@ void init_fs();
 void do_mkfs();
 void do_statfs();
 // void do_cd();
-void do_mkdir(const char *path, mode_t mode);
+uint32_t do_mkdir(const char *path, mode_t mode);
 void do_rmdir();
 // void do_ls();
 

@@ -30,6 +30,13 @@ file_descriptor_t file_descriptor_table[MAX_FILE_DESCRIPTOR_NUM];
 
 superblock_t *superblock_ptr = (superblock_t *)superblock_buffer;
 
+uint8_t find_file_buffer[BLOCK_SIZE] = {0};
+uint8_t parse_file_buffer[BLOCK_SIZE] = {0};
+
+uint32_t buffer1[POINTER_PER_BLOCK] = {0};
+uint32_t buffer2[POINTER_PER_BLOCK] = {0};
+uint32_t buffer3[POINTER_PER_BLOCK] = {0};
+
 inode_t root_inode;
 inode_t *root_inode_ptr = &root_inode;
 
@@ -165,6 +172,13 @@ static void write_to_buffer_inode(uint32_t inum, inode_t *inode_ptr)
 {
     memcpy((inodetable_block_buffer + (inum % INODE_NUM_PER_BLOCK)*INODE_SIZE), 
            (uint8_t *)inode_ptr, INODE_SIZE);
+}
+
+static void read_inode(uint32_t inum, inode_t *inode_ptr)
+{
+    uint32_t inode_table_offset = inum / INODE_NUM_PER_BLOCK;
+    sync_from_disk_inode_table(inode_table_offset);
+    memcpy((uint8_t *)inode_ptr,inodetable_block_buffer+(inum%INODE_NUM_PER_BLOCK)*INODE_SIZE, INODE_SIZE);
 }
 
 static void clear_disk()
@@ -349,23 +363,130 @@ void do_cd()
 }
 */
 
-static void separate_path(const char *path, char *parent, char *name)
+void separate_path(const char *path, char *parent, char *name)
 {
     strcpy(parent, (char *)path);
     char* loc = strrchr(parent, '/');
     strcpy(name, loc + 1);
-    name[MAX_NAME_LENGTH - 1] = 0;
+    name[MAX_NAME_LENGTH - 1] = '\0';
     if(loc == parent){
         loc++;
     } 
-    *loc = 0;
+    *loc = '\0';
     return;
 }
 
-//operations on directory
-void do_mkdir(const char *path, mode_t mode)
+int get_block_index(inode_t *inode_ptr, uint32_t idx)
+{
+    bzero(buffer1, POINTER_PER_BLOCK*sizeof(uint32_t));
+    bzero(buffer2, POINTER_PER_BLOCK*sizeof(uint32_t));
+    bzero(buffer3, POINTER_PER_BLOCK*sizeof(uint32_t));
+    
+    if(idx < FIRST_POINTER){
+        return inode_ptr->i_direct_table[idx];
+    }
+    if(idx < SECOND_POINTER){
+        if(inode_ptr->i_indirect_block_1_ptr == 0){
+            return -1;
+        }
+        read_block(inode_ptr->i_indirect_block_1_ptr, (uint8_t *)buffer1);
+        return buffer1[idx - FIRST_POINTER];
+    }
+    if(idx < THIRD_POINTER){
+        if(inode_ptr->i_indirect_block_1_ptr == 0){
+            return -1;
+        }
+        read_block(inode_ptr->i_indirect_block_1_ptr, (uint8_t *)buffer1);
+        if(buffer1[(idx - SECOND_POINTER) / POINTER_PER_BLOCK] == 0){
+            return -1;
+        }
+        read_block(buffer1[(idx - SECOND_POINTER) / POINTER_PER_BLOCK], (uint8_t *)buffer2);
+        return buffer2[(idx - SECOND_POINTER) % POINTER_PER_BLOCK];
+    }
+    if(idx < MAX_BLOCK_INDEX){
+        if(inode_ptr->i_indirect_block_1_ptr == 0){
+            return -1;
+        }
+        read_block(inode_ptr->i_indirect_block_1_ptr, (uint8_t *)buffer1);
+        if(buffer1[(idx - THIRD_POINTER) / (POINTER_PER_BLOCK * POINTER_PER_BLOCK)] == 0){
+            return -1;
+        } 
+        read_block(buffer1[(idx - THIRD_POINTER) / (POINTER_PER_BLOCK * POINTER_PER_BLOCK)], (uint8_t *)buffer2);
+        if(buffer2[((idx - THIRD_POINTER) % (POINTER_PER_BLOCK * POINTER_PER_BLOCK)) / POINTER_PER_BLOCK] == 0){
+            return -1;
+        } 
+        read_block(buffer2[((idx - THIRD_POINTER) % (POINTER_PER_BLOCK * POINTER_PER_BLOCK)) / POINTER_PER_BLOCK], (uint8_t *)buffer3);
+        return buffer3[(idx - THIRD_POINTER) % POINTER_PER_BLOCK];
+    }   
+}
+
+uint32_t find_file(inode_t *inode_ptr, const char *name)
+{
+    bzero(find_file_buffer, BLOCK_SIZE);
+    dentry_t *p = (dentry_t *)find_file_buffer;
+    int i = 0, j = 0;
+    for(; i < MAX_BLOCK_INDEX; i++){
+        uint32_t block_index = get_block_index(inode_ptr, i);
+        for(; j < POINTER_PER_BLOCK; j++){
+            if(strcmp((char *)name, p[j].d_name) == 0){
+                return p[j].d_inum;
+            }
+        }
+    }
+    return -1;
+}
+
+uint32_t parse_path(const char *path)
+{
+    bzero(parse_file_buffer, BLOCK_SIZE);
+    char *p;
+    strcpy(parse_file_buffer, (char *)path);
+    p = strtok(parse_file_buffer, "/");
+    if(p == NULL){
+        return 0; //root
+    }
+    uint32_t result = find_file(root_inode_ptr, p); //root dentry
+
+    inode_t inode;
+    while((p = strtok(NULL, "/")) != NULL){
+        read_inode(result, &inode);
+        result = find_file(&inode, p);
+    }
+    return result;
+}
+
+uint32_t find_free_inode()
 {
 
+}
+
+uint32_t find_free_block()
+{
+
+}
+
+//operations on directory
+uint32_t do_mkdir(const char *path, mode_t mode)
+{
+    bzero(parent, MAX_PATH_LENGTH);
+    bzero(name, MAX_NAME_LENGTH);
+
+    separate_path(path, parent, name);
+
+    uint32_t parent_inum, free_inum, free_block_index;
+    parent_inum = parse_path(parent);
+    
+    inode_t parent_inode, new_inode;
+    read_inode(parent_inum, &parent_inode);
+
+    if(find_file(&parent_inode, name) != -1){
+        vt100_move_cursor(1, 45);
+        printk("[FS ERROR] ERROR_DUP_DIR_NAME\n");
+        return ERROR_DUP_DIR_NAME;
+    }
+
+    free_inum = find_free_inode();
+    free_block_index = find_free_block();
 }
 
 void do_rmdir()
