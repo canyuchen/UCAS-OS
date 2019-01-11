@@ -254,3 +254,20 @@ void sys_ls()
 {
     invoke_syscall(SYSCALL_FS_LS, IGNORE, IGNORE, IGNORE);
 }
+
+
+void sys_touch(char *name)
+{
+
+}
+
+void sys_cat(char *name)
+{
+
+}
+
+void sys_find(char *path, char *name)
+{
+
+}
+

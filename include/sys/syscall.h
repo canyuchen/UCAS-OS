@@ -153,4 +153,8 @@ extern void sys_mkdir(char *name);
 extern void sys_rmdir(char *name);
 extern void sys_cd(char *name);
 extern void sys_ls();
+
+extern void sys_touch(char *name);
+extern void sys_cat(char *name);
+extern void sys_find(char *path, char *name);
 #endif

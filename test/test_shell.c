@@ -178,6 +178,47 @@ static void handle_input(char *name)
     }
 }
 
+#define MAX_PARAMETER_LENGTH 20
+#define MAX_PARAMETER_NUM 10
+
+// char param_buffer_char_1[MAX_PARAMETER_LENGTH];
+// char param_buffer_char_2[MAX_PARAMETER_LENGTH];
+
+// typedef struct string {
+//     char str[MAX_PARAMETER_LENGTH];
+// } string_t;
+
+// string_t param_buffer_string[MAX_PARAMETER_NUM];
+
+// int param_buffer_int[MAX_PARAMETER_NUM];
+
+typedef struct param {
+    char param[MAX_PARAMETER_LENGTH];
+} param_t;
+
+param_t param_buffer[MAX_PARAMETER_NUM];
+
+static void separate_params(char *param)
+{
+    int i, j = 0, k = 0;
+    for(i = 0; i < INPUT_BUFFER_MAX_LENGTH; i++){
+        if(*(param + i) == '\0'){
+            param_buffer[j].param[k] = '\0';
+            return;
+        }
+        else if(*(param + i) == ' '){
+            param_buffer[j].param[k] = '\0';
+            j++;
+            k = 0;
+        }
+        else{
+            param_buffer[j].param[k] = *(param + i);
+            k++;
+        }
+    }
+    return;
+}
+
 void test_shell()
 {
     sys_move_cursor(1, 50);
@@ -309,14 +350,16 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'c'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 'h'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5) == ' '){
-                    
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 6);
+                    sys_touch(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 6);
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'c' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'a'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 't'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == ' '){
-                    
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4);
+                    sys_cat(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4);                    
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'f' 
@@ -324,7 +367,9 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'n'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'd'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == ' '){
-                    
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5);
+                    separate_params(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5);
+                    sys_find(&(param_buffer[0].param[0]), &(param_buffer[1].param[0]));                    
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'r' 
@@ -403,15 +448,6 @@ void test_shell()
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'r' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'm'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == ' '){
-                    
-                    printf("> root@UCAS_OS: ");
-                }
-                else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'r' 
-                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'm'
-                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'd'
-                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'i'
-                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 'r'
-                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5) == ' '){
                     
                     printf("> root@UCAS_OS: ");
                 }
