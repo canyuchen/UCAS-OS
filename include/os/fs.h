@@ -118,6 +118,7 @@ enum {
     THIRD_POINTER = (SECOND_POINTER + POINTER_PER_BLOCK * POINTER_PER_BLOCK),
     MAX_BLOCK_INDEX = (THIRD_POINTER + POINTER_PER_BLOCK * POINTER_PER_BLOCK * POINTER_PER_BLOCK),
 
+    MAX_LS_NUM = 10,
 };
 
 typedef struct superblock {
@@ -187,6 +188,9 @@ typedef struct file_descriptor {
 
 typedef uint16_t mode_t;
 
+
+extern dentry_t ls_buffer[MAX_LS_NUM];
+
 // extern uint8_t inode_table[INODE_TABLE_SIZE];
 
 void sdread(unsigned char *buf, unsigned int base, int n);
@@ -206,10 +210,10 @@ void do_fexit();
 void init_fs();
 void do_mkfs();
 void do_statfs();
-// void do_cd();
+void do_cd(char *name);
 uint32_t do_mkdir(const char *path, mode_t mode);
 void do_rmdir();
-// void do_ls();
+void do_ls();
 
 
 //only for FS
@@ -217,9 +221,12 @@ void do_rmdir();
 void separate_path(const char *path, char *parent, char *name);
 int get_block_index_in_dir(inode_t *inode_ptr, uint32_t idx);
 void write_block_index_in_dir(inode_t *inode_ptr, uint32_t idx, uint32_t block_index);
-uint32_t find_file(inode_t *inode_ptr, const char *name);
+int find_file(inode_t *inode_ptr, const char *name);
 uint32_t parse_path(const char *path);
 int find_free_inode();
 int find_free_block();
+void read_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry_ptr);
+
+
 
 #endif

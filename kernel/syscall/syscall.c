@@ -234,12 +234,23 @@ void sys_statfs()
     invoke_syscall(SYSCALL_FS_STATFS, IGNORE, IGNORE, IGNORE);
 }
 
-void sys_mkdir()
+void sys_mkdir(char *name)
 {
-
+    int mode = 0;
+    invoke_syscall(SYSCALL_FS_MKDIR, (int)name, mode, IGNORE);
 }
 
-void sys_rmdir()
+void sys_rmdir(char *name)
 {
+    invoke_syscall(SYSCALL_FS_RMDIR, (int)name, IGNORE, IGNORE);
+}
 
+void sys_cd(char *name)
+{
+    invoke_syscall(SYSCALL_FS_CD, (int)name, IGNORE, IGNORE);
+}
+
+void sys_ls()
+{
+    invoke_syscall(SYSCALL_FS_LS, IGNORE, IGNORE, IGNORE);
 }

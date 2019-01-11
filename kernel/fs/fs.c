@@ -43,6 +43,8 @@ inode_t *current_dir_ptr = &current_dir;
 char parent[MAX_PATH_LENGTH];
 char name[MAX_NAME_LENGTH];
 
+dentry_t ls_buffer[MAX_LS_NUM] = {0};
+
 static void set_block_bmp(uint32_t block_index)
 {
     set_bitmap((BitMap_t)blockbmp_buffer, block_index);        
@@ -250,8 +252,28 @@ static int write_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry_ptr)
 
 static int remove_dentry(inode_t* inode_ptr, uint32_t dnum)
 {
-
+    dentry_t den;
+    bzero(&den, sizeof(dentry_t));
+    // read_dentry(inode_ptr, inode_ptr->i_fnum + 1, &last_dentry);
+    write_dentry(inode_ptr, dnum, &den);
+    inode_ptr->i_fnum--;
+    sync_to_disk_inode(inode_ptr);
+    return;
 }
+
+void read_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry_ptr)
+{
+    uint32_t major_loc, minor_loc;
+    major_loc = dnum / DENTRY_NUM_PER_BLOCK;
+    minor_loc = dnum % DENTRY_NUM_PER_BLOCK;
+    bzero(find_file_buffer, BLOCK_SIZE);
+    dentry_t *den_tmp =(dentry_t *)find_file_buffer;
+    read_block(get_block_index_in_dir(inode_ptr, major_loc), find_file_buffer);
+    memcpy((void*)dentry_ptr, (void*)&(den_tmp[minor_loc]), sizeof(dentry_t));
+    return;
+}
+
+//----------------------------------------------------------------------------------------
 
 void separate_path(const char *path, char *parent, char *name)
 {
@@ -440,7 +462,7 @@ void write_block_index_in_dir(inode_t *inode_ptr, uint32_t idx, uint32_t block_i
     return;
 }
 
-uint32_t find_file(inode_t *inode_ptr, const char *name)
+int find_file(inode_t *inode_ptr, const char *name)
 {
     bzero(find_file_buffer, BLOCK_SIZE);
     dentry_t *p = (dentry_t *)find_file_buffer;
@@ -451,6 +473,22 @@ uint32_t find_file(inode_t *inode_ptr, const char *name)
         for(; j < POINTER_PER_BLOCK; j++){
             if(strcmp((char *)name, p[j].d_name) == 0){
                 return p[j].d_inum;
+            }
+        }
+    }
+    return -1;
+}
+
+int find_dentry(inode_t* inode_ptr, const char* name) {
+    uint32_t i, j;
+    bzero(find_file_buffer, BLOCK_SIZE);
+    dentry_t *p = (dentry_t *)find_file_buffer;
+    for(i = 0;i < MAX_BLOCK_INDEX; i++) {
+        uint32_t block_index = get_block_index_in_dir(inode_ptr, i);
+        read_block(block_index, find_file_buffer);
+        for(j = 0; j < DENTRY_NUM_PER_BLOCK;j++) {
+            if(strcmp((char *)name, p[j].d_name) == 0){
+                return (i * DENTRY_NUM_PER_BLOCK + j);                
             }
         }
     }
@@ -597,6 +635,11 @@ void release_inode_block(inode_t *inode_ptr)
     return;
 }
 
+int is_empty_dnetry(dentry_t *dentry_ptr)
+{
+    return ((dentry_ptr->d_inum == 0) && (dentry_ptr->d_name == 0));
+}
+
 //-------------------------------------------------------------------------------
 
 //operations on file system
@@ -608,6 +651,9 @@ void init_fs()
 
         sync_from_disk_block_bmp();
         sync_from_disk_inode_bmp();
+
+        sync_from_disk_inode(0, root_inode_ptr);
+        memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(dentry_t));
 
         vt100_move_cursor(1, 1);    
         printk("[FS] File system exists in the disk!\n");
@@ -704,6 +750,8 @@ void do_mkfs()
     strcpy(root_dentry_table[1].d_name, "..");
     sync_to_disk_dentry(DATA_BLOCK_INDEX);
 
+    memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(dentry_t));
+
     //print FS info
     vt100_move_cursor(1, 1);    
     printk("[FS] Starting initialize file system!\n");
@@ -752,13 +800,6 @@ void do_statfs()
     printk("     dir entry size : %d\n", superblock_ptr->s_dentry_size);
 }
 
-/*
-void do_cd()
-{
-
-}
-*/
-
 //operations on directory
 uint32_t do_mkdir(const char *path, mode_t mode)
 {
@@ -773,7 +814,7 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     inode_t parent_inode, new_inode;
     sync_from_disk_inode(parent_inum, &parent_inode);
 
-    if(find_file(&parent_inode, name) != -1){
+    if(find_dentry(&parent_inode, name) != -1){
         vt100_move_cursor(1, 45);
         printk("[FS ERROR] ERROR_DUP_DIR_NAME\n");
         return ERROR_DUP_DIR_NAME;
@@ -838,17 +879,50 @@ void do_rmdir(const char *path)
 
     inode_t parent_inode;
     uint32_t parent_inum;
+    bzero(parent, MAX_PATH_LENGTH);
+    bzero(name, MAX_NAME_LENGTH);
+    separate_path(path, parent, name);
 
+    parent_inum = parse_path(parent);
+    sync_from_disk_inode(parent_inum, &parent_inode);
 
+    uint32_t dnum = find_dentry(&parent_inode, name);
+    remove_dentry(&parent_inode, dnum);
+    sync_to_disk_inode(&parent_inode);
 
+    return;
 }
 
-/*
+
 void do_ls()
-{
-
+{   
+    uint32_t i, j;
+    uint32_t k = 0;
+    bzero(find_file_buffer, BLOCK_SIZE);
+    bzero(ls_buffer, MAX_LS_NUM * sizeof(dentry_t));
+    dentry_t* p = (dentry_t *)find_file_buffer;
+    for(i = 0;i < MAX_BLOCK_INDEX; i++) {
+        uint32_t block_index = get_block_index_in_dir(current_dir_ptr, i);
+        read_block(block_index, find_file_buffer);
+        for(j = 0; j < DENTRY_NUM_PER_BLOCK;j++) {
+            if(is_empty_dnetry(&p[j]) != 0){
+                memcpy((uint8_t *)&ls_buffer[k], (uint8_t *)&p[j], sizeof(dentry_t));
+                k++;
+            } 
+        }
+    }
 }
-*/
+
+void do_cd(char *name)
+{
+    uint32_t inum;
+    if((inum = find_file(current_dir_ptr, name)) != -1){
+        inode_t ino;
+        sync_from_disk_inode(inum, &ino);
+        memcpy((int8_t *)current_dir_ptr, (int8_t *)&ino, sizeof(inode_t));
+    }
+    return;
+}
 
 int do_fopen(char *name, uint32_t mode)
 {

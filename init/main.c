@@ -265,7 +265,8 @@ static void init_syscall(void)
 
 	syscall[SYSCALL_FS_MKDIR] = (int (*)()) &do_mkdir;
 	syscall[SYSCALL_FS_RMDIR] = (int (*)()) &do_rmdir;
-	
+	syscall[SYSCALL_FS_CD] = (int (*)()) &do_cd;
+	syscall[SYSCALL_FS_LS] = (int (*)()) &do_ls;
 }
 
 // jump from bootloader.

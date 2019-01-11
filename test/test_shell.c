@@ -32,6 +32,7 @@
 #include "string.h"
 #include "sched.h"
 #include "queue.h"
+#include "fs.h"
 
 static void disable_interrupt()
 {
@@ -166,6 +167,17 @@ static inline const char *status_type_to_string(task_status_t status)
     return "Invalid Status";
 }
 
+static void handle_input(char *name)
+{
+    int i = 0;
+    for(; i < MAX_PATH_LENGTH; i++){
+        if(*(name + i) == '\n'){
+            *(name + i) = '\0';
+            return;
+        }
+    }
+}
+
 void test_shell()
 {
     sys_move_cursor(1, 50);
@@ -256,7 +268,8 @@ void test_shell()
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'c' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'd'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == ' '){
-                    
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3);
+                    sys_cd(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3);
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'm' 
@@ -265,7 +278,8 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'i'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 'r'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5) == ' '){
-                    
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 6);
+                    sys_mkdir(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 6);
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'r' 
@@ -274,12 +288,19 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'i'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 'r'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5) == ' '){
-                    
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 6);
+                    sys_rmdir(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 6);                    
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'l' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 's'){
-                    
+                    sys_ls();
+                    int j = 0;
+                    while(ls_buffer[j].d_name){
+                        printf("  %s", ls_buffer[j].d_name);
+                        j++;
+                    }                    
+                    printf("\n");
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 't' 
