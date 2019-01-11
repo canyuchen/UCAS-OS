@@ -212,7 +212,7 @@ void do_mkfs();
 void do_statfs();
 void do_cd(char *name);
 uint32_t do_mkdir(const char *path, mode_t mode);
-void do_rmdir();
+void do_rmdir(const char *path);
 void do_ls();
 
 
