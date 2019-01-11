@@ -271,3 +271,8 @@ void sys_find(char *path, char *name)
 
 }
 
+void sys_rename(char *old_name, char *new_name)
+{
+
+}
+

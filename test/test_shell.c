@@ -201,6 +201,7 @@ param_t param_buffer[MAX_PARAMETER_NUM];
 static void separate_params(char *param)
 {
     int i, j = 0, k = 0;
+    bzero(param_buffer, MAX_PARAMETER_NUM * sizeof(param_t));
     for(i = 0; i < INPUT_BUFFER_MAX_LENGTH; i++){
         if(*(param + i) == '\0'){
             param_buffer[j].param[k] = '\0';
@@ -379,7 +380,9 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 'm'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5) == 'e'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 6) == ' '){
-                    
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 7);
+                    separate_params(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 7);
+                    sys_rename(&(param_buffer[0].param[0]), &(param_buffer[1].param[0]));                      
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'l' 

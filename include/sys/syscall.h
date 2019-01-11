@@ -157,4 +157,5 @@ extern void sys_ls();
 extern void sys_touch(char *name);
 extern void sys_cat(char *name);
 extern void sys_find(char *path, char *name);
+extern void sys_rename(char *old_name, char *new_name);
 #endif
