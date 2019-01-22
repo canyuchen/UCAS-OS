@@ -653,7 +653,8 @@ void init_fs()
         sync_from_disk_inode_bmp();
 
         sync_from_disk_inode(0, root_inode_ptr);
-        memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(dentry_t));
+        // memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(dentry_t));
+        memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(inode_t));
 
         vt100_move_cursor(1, 1);    
         printk("[FS] File system exists in the disk!\n");
@@ -750,7 +751,8 @@ void do_mkfs()
     strcpy(root_dentry_table[1].d_name, "..");
     sync_to_disk_dentry(DATA_BLOCK_INDEX);
 
-    memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(dentry_t));
+    // memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(dentry_t));
+    memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(inode_t));
 
     //print FS info
     vt100_move_cursor(1, 1);    
