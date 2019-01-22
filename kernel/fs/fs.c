@@ -817,7 +817,7 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     inode_t parent_inode, new_inode;
     sync_from_disk_inode(parent_inum, &parent_inode);
 
-    if(find_dentry(&parent_inode, name) == -1){
+    if(find_dentry(&parent_inode, name) != -1){
         vt100_move_cursor(1, 45);
         printk("[FS ERROR] ERROR_DUP_DIR_NAME\n");
         return ERROR_DUP_DIR_NAME;

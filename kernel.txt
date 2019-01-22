@@ -12074,7 +12074,7 @@ a080b8fc:	0c2028a1 	jal	a080a284 <find_dentry>
 a080b900:	00000000 	nop
 a080b904:	00401821 	move	v1,v0
 a080b908:	2402ffff 	li	v0,-1
-a080b90c:	1462000d 	bne	v1,v0,a080b944 <do_mkdir+0xec>
+a080b90c:	1062000d 	beq	v1,v0,a080b944 <do_mkdir+0xec>
 a080b910:	00000000 	nop
 a080b914:	24040001 	li	a0,1
 a080b918:	2405002d 	li	a1,45
