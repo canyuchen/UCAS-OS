@@ -296,7 +296,8 @@ char *strrchr(const char *s, int c)
         return NULL;
     }
 
-    char *p_char = NULL;
+    // char *p_char = NULL;
+    char *p_char = (char *)s;
     while(*s != '\0')
     {
         if(*s == (char)c)

@@ -495,7 +495,7 @@ int find_dentry(inode_t* inode_ptr, const char* name) {
     return -1;
 }
 
-uint32_t parse_path(const char *path)
+uint32_t parse_path(const char *path, inode_t *inode_ptr)
 {
     bzero(parse_file_buffer, MAX_PATH_LENGTH);
     char *p;
@@ -504,7 +504,8 @@ uint32_t parse_path(const char *path)
     if(p == NULL){
         return 0; //root
     }
-    uint32_t result = find_file(root_inode_ptr, p); //root dentry
+    // uint32_t result = find_file(root_inode_ptr, p); //root dentry
+    uint32_t result = find_file(inode_ptr, p); //root dentry
 
     inode_t inode;
     while((p = strtok(NULL, "/")) != NULL){
@@ -811,12 +812,12 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     separate_path(path, parent, name);
 
     uint32_t parent_inum, free_inum, free_block_index;
-    parent_inum = parse_path(parent);
+    parent_inum = parse_path(parent, current_dir_ptr);
     
     inode_t parent_inode, new_inode;
     sync_from_disk_inode(parent_inum, &parent_inode);
 
-    if(find_dentry(&parent_inode, name) != -1){
+    if(find_dentry(&parent_inode, name) == -1){
         vt100_move_cursor(1, 45);
         printk("[FS ERROR] ERROR_DUP_DIR_NAME\n");
         return ERROR_DUP_DIR_NAME;
@@ -873,7 +874,7 @@ void do_rmdir(const char *path)
 {
     uint32_t current_inum;
     inode_t current_inode;
-    current_inum = parse_path(path);
+    current_inum = parse_path(path, current_dir_ptr);
     sync_from_disk_inode(current_inum, &current_inode);
 
     unset_inode_bmp(current_inum);
@@ -885,7 +886,7 @@ void do_rmdir(const char *path)
     bzero(name, MAX_NAME_LENGTH);
     separate_path(path, parent, name);
 
-    parent_inum = parse_path(parent);
+    parent_inum = parse_path(parent, current_dir_ptr);
     sync_from_disk_inode(parent_inum, &parent_inode);
 
     uint32_t dnum = find_dentry(&parent_inode, name);

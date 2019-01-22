@@ -246,6 +246,14 @@ void test_shell()
             inputBuffer_ptr->input_length++;
             i++;
             if(ch == '\r'){
+                //----------------------------- PROCESS--------------------------------
+                /*
+                *COMMAND:
+                *   ps
+                *   clear
+                *   exec 0 ~ 23
+                */
+
                 if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'p' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 's'){
                     sys_ps();
@@ -291,6 +299,18 @@ void test_shell()
                     printf("> root@UCAS_OS: ");
                 }      
                 //-------------------------FILE SYSTEM------------------------
+                /*
+                *COMMAND:
+                *   cd .. | cd . | cd ./1 | cd ./1/2 | cd /
+                *   ls
+                *   mkdir ./1 | mkdir ./1/2
+                *   rmdir ./1 | rmdir ./1/2
+                *   mkfs
+                *   statfs
+                * 
+                * 
+                */
+
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'm' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'k'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'f'
