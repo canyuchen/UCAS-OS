@@ -171,7 +171,9 @@ static void handle_input(char *name)
 {
     int i = 0;
     for(; i < MAX_PATH_LENGTH; i++){
-        if(*(name + i) == '\n'){
+        // if(*(name + i) == '\n'){
+        //BUG!!!!!!!!!!!!!!!
+        if(*(name + i) == '\r'){
             *(name + i) = '\0';
             return;
         }
@@ -331,6 +333,7 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'd'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == ' '){
                     handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3);
+                    // printf("> DEBUG: 1 %s", inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3);
                     sys_cd(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3);
                     printf("> root@UCAS_OS: ");
                 }

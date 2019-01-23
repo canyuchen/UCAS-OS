@@ -462,7 +462,8 @@ void write_block_index_in_dir(inode_t *inode_ptr, uint32_t idx, uint32_t block_i
     return;
 }
 
-int find_file(inode_t *inode_ptr, const char *name)
+// int find_file(inode_t *inode_ptr, const char *name)
+int find_file(inode_t *inode_ptr, char *name)
 {
     bzero(find_file_buffer, BLOCK_SIZE);
     dentry_t *p = (dentry_t *)find_file_buffer;
@@ -470,6 +471,39 @@ int find_file(inode_t *inode_ptr, const char *name)
     for(; i < MAX_BLOCK_INDEX; i++){
         uint32_t block_index = get_block_index_in_dir(inode_ptr, i);
         read_block(block_index, find_file_buffer);
+
+        //debug
+        vt100_move_cursor(1, 26);
+        printk("strcmp:%d, j:%d, block_index:%d, p[i].d_name:%s", \
+                strcmp((char *)name, p[j].d_name), j, block_index, p[i].d_name);
+        printk(",name:%s", name);
+        return;
+
+/*
+//-----------------------------------------------------
+        //printk BUG!!!!!!!!
+        // printk("name:%s, ", name);  //ERROR!!!!
+        // printk("name:%s", name);  //CORRECT!!!
+//------------------------------------------------------
+        // vt100_move_cursor(1, 29);
+        // printk("name:%s, ", \
+        //         name);
+        // vt100_move_cursor(1, 30);
+        // printk("name:%s, ");
+
+        // vt100_move_cursor(1, 31);
+        // printk("strcmp:%d, name:%s, ", s, name);
+        vt100_move_cursor(1, 29);
+        printk("name:%s", \
+                name);
+        vt100_move_cursor(1, 30);
+        printk("name:%s");
+
+        vt100_move_cursor(1, 31);
+        printk("strcmp:%d, name:%s", s, name);
+
+        return;
+*/
         for(; j < POINTER_PER_BLOCK; j++){
             if(strcmp((char *)name, p[j].d_name) == 0){
                 return p[j].d_inum;
@@ -655,28 +689,28 @@ void init_fs()
 
         sync_from_disk_inode(0, root_inode_ptr);
         // memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(dentry_t));
-        // memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(inode_t));
-        current_dir_ptr = root_inode_ptr;
+        memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(inode_t));
+        // current_dir_ptr = root_inode_ptr;
 
         vt100_move_cursor(1, 1);    
-        printk("[FS] File system exists in the disk!\n");
-        printk("[FS] File system current informatin:\n");
-        printk("     magic number : 0x%x\n", superblock_ptr->s_magic);
-        printk("     file system size : 0x%x\n", superblock_ptr->s_disk_size);
-        printk("     block size : 0x%x\n", superblock_ptr->s_block_size);
-        printk("     total blocks : %d\n", superblock_ptr->s_total_blocks_cnt);
-        printk("     free blocks : %d\n", superblock_ptr->s_free_blocks_cnt);
-        printk("     total inodes : %d\n", superblock_ptr->s_total_inodes_cnt);
-        printk("     free inodes : %d\n", superblock_ptr->s_free_inode_cnt);
-        printk("     block bitmap start-block index : %d\n", superblock_ptr->s_blockbmp_block_index);
-        printk("                  disk offset : %d\n", superblock_ptr->s_blockbmp_block_index * BLOCK_SIZE);
-        printk("     inode bitmap start-block index : %d\n", superblock_ptr->s_inodebmp_block_index);
-        printk("                  disk offset : %d\n", superblock_ptr->s_inodebmp_block_index * BLOCK_SIZE);
-        printk("     inode table start-block index : %d\n", superblock_ptr->s_inodetable_block_index);
-        printk("                 disk offset : %d\n", superblock_ptr->s_inodetable_block_index * BLOCK_SIZE);
-        printk("     file data start-block index : %d\n", superblock_ptr->s_data_block_index);
-        printk("     inode entry size : %d\n", superblock_ptr->s_inode_size);
-        printk("     dir entry size : %d\n", superblock_ptr->s_dentry_size);
+        printk("[FS] File system exists in the disk!      \n");
+        printk("[FS] File system current informatin:      \n");
+        printk("     magic number : 0x%x                  \n", superblock_ptr->s_magic);
+        printk("     file system size : 0x%x              \n", superblock_ptr->s_disk_size);
+        printk("     block size : 0x%x                    \n", superblock_ptr->s_block_size);
+        printk("     total blocks : %d                    \n", superblock_ptr->s_total_blocks_cnt);
+        printk("     free blocks : %d                     \n", superblock_ptr->s_free_blocks_cnt);
+        printk("     total inodes : %d                    \n", superblock_ptr->s_total_inodes_cnt);
+        printk("     free inodes : %d                     \n", superblock_ptr->s_free_inode_cnt);
+        printk("     block bitmap start-block index : %d  \n", superblock_ptr->s_blockbmp_block_index);
+        printk("                  disk offset : %d        \n", superblock_ptr->s_blockbmp_block_index * BLOCK_SIZE);
+        printk("     inode bitmap start-block index : %d  \n", superblock_ptr->s_inodebmp_block_index);
+        printk("                  disk offset : %d        \n", superblock_ptr->s_inodebmp_block_index * BLOCK_SIZE);
+        printk("     inode table start-block index : %d   \n", superblock_ptr->s_inodetable_block_index);
+        printk("                 disk offset : %d         \n", superblock_ptr->s_inodetable_block_index * BLOCK_SIZE);
+        printk("     file data start-block index : %d     \n", superblock_ptr->s_data_block_index);
+        printk("     inode entry size : %d                \n", superblock_ptr->s_inode_size);
+        printk("     dir entry size : %d                  \n", superblock_ptr->s_dentry_size);
     }
     else{
         do_mkfs();
@@ -754,8 +788,8 @@ void do_mkfs()
     sync_to_disk_dentry(DATA_BLOCK_INDEX);
 
     // memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(dentry_t));
-    // memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(inode_t));
-    current_dir_ptr = root_inode_ptr;
+    memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(inode_t));
+    // current_dir_ptr = root_inode_ptr;
 
     //debug
     vt100_move_cursor(1, 22);
@@ -763,26 +797,26 @@ void do_mkfs()
 
     //print FS info
     vt100_move_cursor(1, 1);    
-    printk("[FS] Starting initialize file system!\n");
-    printk("[FS] Setting superblock...\n");
-    printk("     magic number : 0x%x\n", superblock_ptr->s_magic);
-    printk("     file system size : 0x%x\n", superblock_ptr->s_disk_size);
-    printk("     block size : 0x%x\n", superblock_ptr->s_block_size);
-    printk("     total blocks : %d\n", superblock_ptr->s_total_blocks_cnt);
-    printk("     total inodes : %d\n", superblock_ptr->s_total_inodes_cnt);
-    printk("     block bitmap start-block index : %d\n", superblock_ptr->s_blockbmp_block_index);
-    printk("                  disk offset : %d\n", superblock_ptr->s_blockbmp_block_index * BLOCK_SIZE);
-    printk("     inode bitmap start-block index : %d\n", superblock_ptr->s_inodebmp_block_index);
-    printk("                  disk offset : %d\n", superblock_ptr->s_inodebmp_block_index * BLOCK_SIZE);
-    printk("     inode table start-block index : %d\n", superblock_ptr->s_inodetable_block_index);
-    printk("                 disk offset : %d\n", superblock_ptr->s_inodetable_block_index * BLOCK_SIZE);
-    printk("     file data start-block index : %d\n", superblock_ptr->s_data_block_index);
-    printk("     inode entry size : %d\n", superblock_ptr->s_inode_size);
-    printk("     dir entry size : %d\n", superblock_ptr->s_dentry_size);
-    printk("[FS] Setting inode bitmap...\n");
-    printk("[FS] Setting block bitmap...\n");
-    printk("[FS] Setting inode table...\n");
-    printk("[FS] Initializing file system finished!\n");
+    printk("[FS] Starting initialize file system!      \n");
+    printk("[FS] Setting superblock...                 \n");
+    printk("     magic number : 0x%x,                  \n", superblock_ptr->s_magic);
+    printk("     file system size : 0x%x,              \n", superblock_ptr->s_disk_size);
+    printk("     block size : 0x%x,                    \n", superblock_ptr->s_block_size);
+    printk("     total blocks : %d,                    \n", superblock_ptr->s_total_blocks_cnt);
+    printk("     total inodes : %d,                    \n", superblock_ptr->s_total_inodes_cnt);
+    printk("     block bitmap start-block index : %d,  \n", superblock_ptr->s_blockbmp_block_index);
+    printk("                  disk offset : %d,        \n", superblock_ptr->s_blockbmp_block_index * BLOCK_SIZE);
+    printk("     inode bitmap start-block index : %d,  \n", superblock_ptr->s_inodebmp_block_index);
+    printk("                  disk offset : %d,        \n", superblock_ptr->s_inodebmp_block_index * BLOCK_SIZE);
+    printk("     inode table start-block index : %d,   \n", superblock_ptr->s_inodetable_block_index);
+    printk("                 disk offset : %d,         \n", superblock_ptr->s_inodetable_block_index * BLOCK_SIZE);
+    printk("     file data start-block index : %d,     \n", superblock_ptr->s_data_block_index);
+    printk("     inode entry size : %d,                \n", superblock_ptr->s_inode_size);
+    printk("     dir entry size : %d,                  \n", superblock_ptr->s_dentry_size);
+    printk("[FS] Setting inode bitmap...               \n");
+    printk("[FS] Setting block bitmap...               \n");
+    printk("[FS] Setting inode table...                \n");
+    printk("[FS] Initializing file system finished!    \n");
 }
 
 void do_statfs()
@@ -790,23 +824,23 @@ void do_statfs()
     sync_from_disk_superblock();
     
     vt100_move_cursor(1, 23);
-    printk("[FS] File system current informatin:\n");
-    printk("     magic number : 0x%x\n", superblock_ptr->s_magic);
-    printk("     file system size : 0x%x\n", superblock_ptr->s_disk_size);
-    printk("     block size : 0x%x\n", superblock_ptr->s_block_size);
-    printk("     total blocks : %d\n", superblock_ptr->s_total_blocks_cnt);
-    printk("     free blocks : %d\n", superblock_ptr->s_free_blocks_cnt);
-    printk("     total inodes : %d\n", superblock_ptr->s_total_inodes_cnt);
-    printk("     free inodes : %d\n", superblock_ptr->s_free_inode_cnt);
-    printk("     block bitmap start-block index : %d\n", superblock_ptr->s_blockbmp_block_index);
-    printk("                  disk offset : %d\n", superblock_ptr->s_blockbmp_block_index * BLOCK_SIZE);
-    printk("     inode bitmap start-block index : %d\n", superblock_ptr->s_inodebmp_block_index);
-    printk("                  disk offset : %d\n", superblock_ptr->s_inodebmp_block_index * BLOCK_SIZE);
-    printk("     inode table start-block index : %d\n", superblock_ptr->s_inodetable_block_index);
-    printk("                 disk offset : %d\n", superblock_ptr->s_inodetable_block_index * BLOCK_SIZE);
-    printk("     file data start-block index : %d\n", superblock_ptr->s_data_block_index);
-    printk("     inode entry size : %d\n", superblock_ptr->s_inode_size);
-    printk("     dir entry size : %d\n", superblock_ptr->s_dentry_size);
+    printk("[FS] File system current informatin:     \n");
+    printk("     magic number : 0x%x                 \n", superblock_ptr->s_magic);
+    printk("     file system size : 0x%x             \n", superblock_ptr->s_disk_size);
+    printk("     block size : 0x%x                   \n", superblock_ptr->s_block_size);
+    printk("     total blocks : %d                   \n", superblock_ptr->s_total_blocks_cnt);
+    printk("     free blocks : %d                    \n", superblock_ptr->s_free_blocks_cnt);
+    printk("     total inodes : %d                   \n", superblock_ptr->s_total_inodes_cnt);
+    printk("     free inodes : %d                    \n", superblock_ptr->s_free_inode_cnt);
+    printk("     block bitmap start-block index : %d \n", superblock_ptr->s_blockbmp_block_index);
+    printk("                  disk offset : %d       \n", superblock_ptr->s_blockbmp_block_index * BLOCK_SIZE);
+    printk("     inode bitmap start-block index : %d \n", superblock_ptr->s_inodebmp_block_index);
+    printk("                  disk offset : %d       \n", superblock_ptr->s_inodebmp_block_index * BLOCK_SIZE);
+    printk("     inode table start-block index : %d  \n", superblock_ptr->s_inodetable_block_index);
+    printk("                 disk offset : %d        \n", superblock_ptr->s_inodetable_block_index * BLOCK_SIZE);
+    printk("     file data start-block index : %d    \n", superblock_ptr->s_data_block_index);
+    printk("     inode entry size : %d               \n", superblock_ptr->s_inode_size);
+    printk("     dir entry size : %d                 \n", superblock_ptr->s_dentry_size);
 }
 
 //operations on directory
@@ -946,6 +980,11 @@ void do_cd(char *name)
 {
     uint32_t inum;
     if((inum = find_file(current_dir_ptr, name)) != -1){
+
+        //debug
+        vt100_move_cursor(1, 25);
+        printk("inum:%d, name:%s", inum, name);
+
         inode_t ino;
         sync_from_disk_inode(inum, &ino);
         memcpy((int8_t *)current_dir_ptr, (int8_t *)&ino, sizeof(inode_t));

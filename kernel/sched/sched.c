@@ -195,8 +195,8 @@ void do_spawn(task_info_t *task_info)
 		pcb[i].lock[j] = NULL;
 	}
     pcb[i].kernel_context.regs[29] = STACK_TOP;
-	// pcb[i].user_context.regs[29] = STACK_TOP + STACK_SIZE;
-    pcb[i].user_context.regs[29] = USER_STACK_TOP + VM_STACK_SIZE;
+	pcb[i].user_context.regs[29] = STACK_TOP + STACK_SIZE;
+    // pcb[i].user_context.regs[29] = USER_STACK_TOP + VM_STACK_SIZE;
 	pcb[i].kernel_context.regs[30] = STACK_TOP;
 	pcb[i].user_context.regs[30] = STACK_TOP + STACK_SIZE;
 	pcb[i].kernel_stack_top = STACK_TOP;

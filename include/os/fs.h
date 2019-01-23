@@ -212,17 +212,22 @@ void do_mkfs();
 void do_statfs();
 void do_cd(char *name);
 uint32_t do_mkdir(const char *path, mode_t mode);
+// uint32_t do_mkdir(const char *path, mode_t mode);
 void do_rmdir(const char *path);
+// void do_rmdir(const char *path);
 void do_ls();
 
 
 //only for FS
 
 void separate_path(const char *path, char *parent, char *name);
+// void separate_path(char *path, char *parent, char *name);
 int get_block_index_in_dir(inode_t *inode_ptr, uint32_t idx);
 void write_block_index_in_dir(inode_t *inode_ptr, uint32_t idx, uint32_t block_index);
-int find_file(inode_t *inode_ptr, const char *name);
+// int find_file(inode_t *inode_ptr, const char *name);
+int find_file(inode_t *inode_ptr, char *name);
 uint32_t parse_path(const char *path, inode_t *inode_ptr);
+// uint32_t parse_path(char *path, inode_t *inode_ptr);
 int find_free_inode();
 int find_free_block();
 void read_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry_ptr);
