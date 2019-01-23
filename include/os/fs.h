@@ -120,7 +120,7 @@ enum {
 
     MAX_LS_NUM = 10,
 
-    MAX_DENTRY_NUM_PER_DIR = FIRST_POINTER,
+    MAX_DENTRY_BLOCK_NUM = FIRST_POINTER,
 };
 
 typedef struct superblock {

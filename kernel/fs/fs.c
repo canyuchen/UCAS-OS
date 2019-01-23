@@ -514,7 +514,7 @@ int find_dentry(inode_t* inode_ptr, const char* name) {
     // for(; i < MAX_BLOCK_INDEX; i++){
     //MAX_BLOCK_INDEX is TOO BIG!!!!!!!!
     // for(; i < FIRST_POINTER; i++){
-    for(; i < MAX_DENTRY_NUM_PER_DIR; i++){
+    for(; i < MAX_DENTRY_BLOCK_NUM; i++){
         uint32_t block_index = get_block_index_in_dir(inode_ptr, i);
         read_block(block_index, find_file_buffer);
         // for(; j < POINTER_PER_BLOCK; j++){
@@ -869,10 +869,10 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     // parent_inum = parse_path(parent, current_dir_ptr);
     parent_inum = find_file(current_dir_ptr, parent_buffer);
     
-    // //debug
+    //debug
     // vt100_move_cursor(1, 31);
-    // printk("[DEBUG 9 mkdir] parent_inum:%d, parent:%s", parent_inum, parent);
-    // printk(" name:%s", name);
+    // printk("[DEBUG 9 mkdir] parent_inum:%d, parent:%s", parent_inum, parent_buffer);
+    // printk(" name:%s", name_buffer);
     // printk(" path:%s", path);
     // printk(" path_buffer:%s", path_buffer);
 
@@ -894,7 +894,7 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     // printk("[DEBUG 12 mkdir] parent_inode.i_num:%d", \
     //                          parent_inode.i_num);
     // printk("[DEBUG 12 mkdir] find_dentry(&parent_inode, name):%d", \
-    //                          find_dentry(&parent_inode, name));
+    //                          find_dentry(&parent_inode, name_buffer));
 
     if(find_dentry(&parent_inode, name_buffer) != -1){
         vt100_move_cursor(1, 45);
@@ -960,31 +960,61 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     strcpy(parent_dentry.d_name, name_buffer);
     write_dentry(&parent_inode, parent_inode.i_fnum+2, &parent_dentry);
 
+    vt100_move_cursor(1, 31);
+    printk("[DEBUG 3 mkdir] free_inum:%d           \n", free_inum);
+    printk("                free_block_index:%d    \n", free_block_index);
+    printk("                parent_inum:%d         \n", parent_inum);
+
+
     return 0;
 }
 
 void do_rmdir(const char *path)
 {
-    uint32_t current_inum;
-    inode_t current_inode;
-    current_inum = parse_path(path, current_dir_ptr);
-    sync_from_disk_inode(current_inum, &current_inode);
+    sync_from_disk_block_bmp();
+    sync_from_disk_inode_bmp();
 
-    unset_inode_bmp(current_inum);
-    release_inode_block(&current_inode);
+    bzero(parent_buffer, MAX_PATH_LENGTH);
+    bzero(path_buffer, MAX_PATH_LENGTH);
+    bzero(name_buffer, MAX_NAME_LENGTH);
+
+    memcpy((uint8_t *)path_buffer, (uint8_t *)path, strlen((char *)path));
+    path_buffer[strlen((char *)path)] = '\0';
+
+    // separate_path(path, parent, name);
+    separate_path(path_buffer, parent_buffer, name_buffer);
+
+    uint32_t parent_inum = 0;
+    // parent_inum = parse_path(parent, current_dir_ptr);
+    parent_inum = find_file(current_dir_ptr, parent_buffer);
 
     inode_t parent_inode;
-    uint32_t parent_inum;
-    bzero(parent_buffer, MAX_PATH_LENGTH);
-    bzero(name_buffer, MAX_NAME_LENGTH);
-    separate_path(path, parent_buffer, name_buffer);
-
-    parent_inum = parse_path(parent_buffer, current_dir_ptr);
     sync_from_disk_inode(parent_inum, &parent_inode);
+
+    inode_t child_inode;
+    uint32_t child_inum = 0;
+    child_inum = find_file(&parent_inode, name_buffer);
+
+    sync_from_disk_inode(child_inum, &child_inode);
+
+    unset_inode_bmp(child_inum);
+    sync_to_disk_inode_bmp();
+
+    release_inode_block(&child_inode);
+    sync_to_disk_block_bmp();
+
+    // //debug
+    vt100_move_cursor(1, 29);
+    printk("[DEBUG 3 rmdir] find_dentry(&parent_inode, name_buffer):%d", find_dentry(&parent_inode, name_buffer));
 
     uint32_t dnum = find_dentry(&parent_inode, name_buffer);
     remove_dentry(&parent_inode, dnum);
     sync_to_disk_inode(&parent_inode);
+
+    // //debug
+    vt100_move_cursor(1, 30);
+    printk("[DEBUG 3 rmdir] find_dentry(&parent_inode, name_buffer):%d", find_dentry(&parent_inode, name_buffer));
+
 
     return;
 }
@@ -1013,7 +1043,7 @@ void do_ls()
                 memcpy((uint8_t *)&ls_buffer[k], (uint8_t *)&p[j], sizeof(dentry_t));
                 k++;
             } 
-            else{
+            else if(is_empty_dnetry(&p[j]) && is_empty_dnetry(&p[j+1]) && is_empty_dnetry(&p[j+2])){
                 return;
             }
         }
