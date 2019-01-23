@@ -358,7 +358,7 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 's'){
                     sys_ls();
                     int j = 0;
-                    while(ls_buffer[j].d_name){
+                    while(ls_buffer[j].d_name[0] != 0){
                         printf("  %s", ls_buffer[j].d_name);
                         j++;
                     }                    

@@ -638,7 +638,7 @@ void release_inode_block(inode_t *inode_ptr)
 
 int is_empty_dnetry(dentry_t *dentry_ptr)
 {
-    return ((dentry_ptr->d_inum == 0) && (dentry_ptr->d_name == 0));
+    return ((dentry_ptr->d_inum == 0) && (dentry_ptr->d_name[0] == '\0'));
 }
 
 //-------------------------------------------------------------------------------
@@ -655,7 +655,8 @@ void init_fs()
 
         sync_from_disk_inode(0, root_inode_ptr);
         // memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(dentry_t));
-        memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(inode_t));
+        // memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(inode_t));
+        current_dir_ptr = root_inode_ptr;
 
         vt100_move_cursor(1, 1);    
         printk("[FS] File system exists in the disk!\n");
@@ -753,7 +754,12 @@ void do_mkfs()
     sync_to_disk_dentry(DATA_BLOCK_INDEX);
 
     // memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(dentry_t));
-    memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(inode_t));
+    // memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(inode_t));
+    current_dir_ptr = root_inode_ptr;
+
+    //debug
+    vt100_move_cursor(1, 22);
+    printk("block_index:%d root_dentry_table[0].d_name:%s", DATA_BLOCK_INDEX, root_dentry_table[0].d_name);
 
     //print FS info
     vt100_move_cursor(1, 1);    
@@ -773,9 +779,9 @@ void do_mkfs()
     printk("     file data start-block index : %d\n", superblock_ptr->s_data_block_index);
     printk("     inode entry size : %d\n", superblock_ptr->s_inode_size);
     printk("     dir entry size : %d\n", superblock_ptr->s_dentry_size);
-    printk("[FS] inode bitmap...\n");
-    printk("[FS] block bitmap...\n");
-    printk("[FS] inode table...\n");
+    printk("[FS] Setting inode bitmap...\n");
+    printk("[FS] Setting block bitmap...\n");
+    printk("[FS] Setting inode table...\n");
     printk("[FS] Initializing file system finished!\n");
 }
 
@@ -862,6 +868,10 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     strcpy(new_dentry_table[1].d_name, "..");
     sync_to_disk_dentry(free_block_index);
 
+    //debug
+    vt100_move_cursor(1, 22);
+    printk("block_index:%d new_dentry_table[0].d_name:%s", free_block_index, new_dentry_table[0].d_name);
+
     dentry_t parent_dentry;
     parent_dentry.d_inum = free_inum;
     strcpy(parent_dentry.d_name, name);
@@ -906,12 +916,28 @@ void do_ls()
     dentry_t* p = (dentry_t *)find_file_buffer;
     for(i = 0;i < MAX_BLOCK_INDEX; i++) {
         uint32_t block_index = get_block_index_in_dir(current_dir_ptr, i);
+
         read_block(block_index, find_file_buffer);
+
+        //debug
+        vt100_move_cursor(1, 23);
+        printk("block_index:%d p[0].d_name:%s", block_index, p[0].d_name);
+
         for(j = 0; j < DENTRY_NUM_PER_BLOCK;j++) {
-            if(is_empty_dnetry(&p[j]) != 0){
+            // if(is_empty_dnetry(&p[j]) != 0){
+            //!!!!!!!!!
+            if(is_empty_dnetry(&p[j]) == 0){
                 memcpy((uint8_t *)&ls_buffer[k], (uint8_t *)&p[j], sizeof(dentry_t));
                 k++;
             } 
+            else{
+                //debug
+                vt100_move_cursor(1, 24);
+                printk("is_empty_dnetry(&p[j]):%d, k:%d, block_index:%d, ls_buffer[0].d_name:%s", \
+                        is_empty_dnetry(&p[j]), k, block_index, ls_buffer[0].d_name);
+                
+                return;
+            }
         }
     }
 }
