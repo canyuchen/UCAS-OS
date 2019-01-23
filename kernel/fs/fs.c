@@ -664,7 +664,7 @@ int is_empty_dnetry(dentry_t *dentry_ptr)
     return ((dentry_ptr->d_inum == 0) && (dentry_ptr->d_name[0] == '\0'));
 }
 
-//-------------------------------------------------------------------------------
+//---------------------------------FILE SYSTEM OPERATIONS-----------------------------------------
 
 //operations on file system
 void init_fs()
@@ -851,6 +851,8 @@ void do_statfs()
     printk("     inode entry size : %d               \n", superblock_ptr->s_inode_size);
     printk("     dir entry size : %d                 \n", superblock_ptr->s_dentry_size);
 }
+
+//-----------------------------------DIRECTORY OPERATIONS--------------------------------------------
 
 //operations on directory
 uint32_t do_mkdir(const char *path, mode_t mode)
@@ -1125,6 +1127,8 @@ void do_cd(char *name)
         return;   
     }
 }
+
+//---------------------------------------FILE OPERATIONS---------------------------------------------
 
 int do_fopen(char *name, uint32_t mode)
 {
