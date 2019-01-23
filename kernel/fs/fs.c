@@ -40,9 +40,11 @@ inode_t *root_inode_ptr = &root_inode;
 inode_t current_dir;
 inode_t *current_dir_ptr = &current_dir;
 
-char parent[MAX_PATH_LENGTH];
+char parent_buffer[MAX_PATH_LENGTH];
+char parent_buffer_1[MAX_PATH_LENGTH];
+char parent_buffer_2[MAX_PATH_LENGTH];
 char path_buffer[MAX_PATH_LENGTH];
-char name[MAX_NAME_LENGTH];
+char name_buffer[MAX_NAME_LENGTH];
 
 dentry_t ls_buffer[MAX_LS_NUM] = {0};
 
@@ -174,6 +176,18 @@ static void sync_from_disk_file_data(uint32_t block_index)
 static void sync_from_disk_dentry(uint32_t block_index)
 {
     read_block(block_index, dentry_block_buffer);
+}
+
+static bool_t count_char_in_string(char c, char *str)
+{
+    int i = 0, cnt = 0;
+    while(str[i] != '\0'){
+        if(str[i] == c){
+            cnt++;
+        }
+        i++;
+    }
+    return cnt;
 }
 
 //------------------------------------------------------------------------------------------
@@ -700,8 +714,8 @@ void do_mkfs()
     bzero(dentry_block_buffer, BLOCK_SIZE);
     bzero(inodetable_block_buffer, BLOCK_SIZE);
 
-    bzero(parent, MAX_PATH_LENGTH);
-    bzero(name, MAX_NAME_LENGTH);
+    bzero(parent_buffer, MAX_PATH_LENGTH);
+    bzero(name_buffer, MAX_NAME_LENGTH);
 
     sync_to_disk_block_bmp();
     sync_to_disk_inode_bmp();
@@ -840,19 +854,19 @@ void do_statfs()
 //operations on directory
 uint32_t do_mkdir(const char *path, mode_t mode)
 {
-    bzero(parent, MAX_PATH_LENGTH);
+    bzero(parent_buffer, MAX_PATH_LENGTH);
     bzero(path_buffer, MAX_PATH_LENGTH);
-    bzero(name, MAX_NAME_LENGTH);
+    bzero(name_buffer, MAX_NAME_LENGTH);
 
     memcpy((uint8_t *)path_buffer, (uint8_t *)path, strlen((char *)path));
     path_buffer[strlen((char *)path)] = '\0';
 
     // separate_path(path, parent, name);
-    separate_path(path_buffer, parent, name);
+    separate_path(path_buffer, parent_buffer, name_buffer);
 
     uint32_t parent_inum = 0, free_inum, free_block_index;
     // parent_inum = parse_path(parent, current_dir_ptr);
-    parent_inum = find_file(current_dir_ptr, parent);
+    parent_inum = find_file(current_dir_ptr, parent_buffer);
     
     // //debug
     // vt100_move_cursor(1, 31);
@@ -881,7 +895,7 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     // printk("[DEBUG 12 mkdir] find_dentry(&parent_inode, name):%d", \
     //                          find_dentry(&parent_inode, name));
 
-    if(find_dentry(&parent_inode, name) != -1){
+    if(find_dentry(&parent_inode, name_buffer) != -1){
         vt100_move_cursor(1, 45);
         printk("[FS ERROR] ERROR_DUP_DIR_NAME\n");
         return ERROR_DUP_DIR_NAME;
@@ -942,7 +956,7 @@ uint32_t do_mkdir(const char *path, mode_t mode)
 
     dentry_t parent_dentry;
     parent_dentry.d_inum = free_inum;
-    strcpy(parent_dentry.d_name, name);
+    strcpy(parent_dentry.d_name, name_buffer);
     write_dentry(&parent_inode, parent_inode.i_fnum+2, &parent_dentry);
 
     return 0;
@@ -960,14 +974,14 @@ void do_rmdir(const char *path)
 
     inode_t parent_inode;
     uint32_t parent_inum;
-    bzero(parent, MAX_PATH_LENGTH);
-    bzero(name, MAX_NAME_LENGTH);
-    separate_path(path, parent, name);
+    bzero(parent_buffer, MAX_PATH_LENGTH);
+    bzero(name_buffer, MAX_NAME_LENGTH);
+    separate_path(path, parent_buffer, name_buffer);
 
-    parent_inum = parse_path(parent, current_dir_ptr);
+    parent_inum = parse_path(parent_buffer, current_dir_ptr);
     sync_from_disk_inode(parent_inum, &parent_inode);
 
-    uint32_t dnum = find_dentry(&parent_inode, name);
+    uint32_t dnum = find_dentry(&parent_inode, name_buffer);
     remove_dentry(&parent_inode, dnum);
     sync_to_disk_inode(&parent_inode);
 
@@ -990,11 +1004,6 @@ void do_ls()
 
         read_block(block_index, find_file_buffer);
 
-        // //debug
-        // vt100_move_cursor(1, 23);
-        // printk("[DEBUG 4 ls] block_index:%d p[0].d_name:%s", block_index, p[0].d_name);
-        // printk(" current_dir_ptr->i_direct_table[0]:%d", current_dir_ptr->i_direct_table[0]);
-
         for(j = 0; j < DENTRY_NUM_PER_BLOCK;j++) {
             // if(is_empty_dnetry(&p[j]) != 0){
             //!!!!!!!!!
@@ -1004,11 +1013,6 @@ void do_ls()
                 k++;
             } 
             else{
-                // //debug
-                // vt100_move_cursor(1, 24);
-                // printk("[DEBUG 5 ls] is_empty_dnetry(&p[j]):%d, k:%d, block_index:%d, ls_buffer[0].d_name:%s", \
-                //         is_empty_dnetry(&p[j]), k, block_index, ls_buffer[0].d_name);
-                
                 return;
             }
         }
@@ -1017,28 +1021,73 @@ void do_ls()
 
 void do_cd(char *name)
 {
-    uint32_t inum;
-    if((inum = find_file(current_dir_ptr, name)) != -1){
+    bzero(path_buffer, strlen(name));
+    bzero(parent_buffer, MAX_PATH_LENGTH);
+    bzero(parent_buffer_1, MAX_PATH_LENGTH);
+    bzero(parent_buffer_2, MAX_PATH_LENGTH);
+    bzero(name_buffer, MAX_NAME_LENGTH);
 
-        // //debug
-        // vt100_move_cursor(1, 27);
-        // printk("[DEBUG 6 cd] inum:%d, name:%s", inum, name);
+    memcpy(path_buffer, name, strlen(name));
 
-        inode_t ino;
-        sync_from_disk_inode(inum, &ino);
+    char c = '\\';
 
-        // //debug
-        // vt100_move_cursor(1, 28);
-        // printk("[DEBUG 7 cd] ino.i_num:%d", ino.i_num);
-
-        memcpy((int8_t *)current_dir_ptr, (int8_t *)&ino, sizeof(inode_t));
-
-        // //debug
-        // vt100_move_cursor(1, 29);
-        // printk("[DEBUG 8 cd] current_dir_pt->i_num:%d", current_dir_ptr->i_num);
-        // printk(" current_dir_ptr->i_direct_table[0]:%d", current_dir_ptr->i_direct_table[0]);
+    if(count_char_in_string(c, path_buffer) == 0){
+        uint32_t inum;
+        if((inum = find_file(current_dir_ptr, name)) != -1){
+        // if((inum = find_dentry(current_dir_ptr, name)) != -1){
+            inode_t ino;
+            sync_from_disk_inode(inum, &ino);
+            memcpy((int8_t *)current_dir_ptr, (int8_t *)&ino, sizeof(inode_t));
+        }
+        return;
     }
-    return;
+    else if(count_char_in_string(c, path_buffer) == 1){
+        separate_path(path_buffer, parent_buffer, name_buffer);
+        uint32_t inum_1, inum_2;
+        if((inum_1 = find_file(current_dir_ptr, parent_buffer)) != -1){
+        // if((inum_1 = find_dentry(current_dir_ptr, parent_buffer)) != -1){
+
+            inode_t ino_1;
+            sync_from_disk_inode(inum_1, &ino_1);
+            memcpy((int8_t *)current_dir_ptr, (int8_t *)&ino_1, sizeof(inode_t));
+
+            if((inum_2 = find_file(current_dir_ptr, name_buffer)) != -1){
+            // if((inum_2 = find_dentry(current_dir_ptr, name_buffer)) != -1){
+
+                inode_t ino_2;
+                sync_from_disk_inode(inum_2, &ino_2);
+                memcpy((int8_t *)current_dir_ptr, (int8_t *)&ino_2, sizeof(inode_t));
+            }            
+        }
+        return;        
+    }
+    else if(count_char_in_string(c, path_buffer) == 2){
+        separate_path(path_buffer, parent_buffer, name_buffer);
+        separate_path(parent_buffer, parent_buffer_1, parent_buffer_2);
+        uint32_t inum_1, inum_2, inum_3;
+
+        if((inum_1 = find_file(current_dir_ptr, parent_buffer_1)) != -1){
+
+            inode_t ino_1;
+            sync_from_disk_inode(inum_1, &ino_1);
+            memcpy((int8_t *)current_dir_ptr, (int8_t *)&ino_1, sizeof(inode_t));
+
+            if((inum_2 = find_file(current_dir_ptr, parent_buffer_2)) != -1){
+
+                inode_t ino_2;
+                sync_from_disk_inode(inum_2, &ino_2);
+                memcpy((int8_t *)current_dir_ptr, (int8_t *)&ino_2, sizeof(inode_t));
+
+                if((inum_3 = find_file(current_dir_ptr, name_buffer)) != -1){
+
+                    inode_t ino_3;
+                    sync_from_disk_inode(inum_3, &ino_3);
+                    memcpy((int8_t *)current_dir_ptr, (int8_t *)&ino_3, sizeof(inode_t));
+                }  
+            }            
+        }
+        return;   
+    }
 }
 
 int do_fopen(char *name, uint32_t mode)
