@@ -258,12 +258,12 @@ void sys_ls()
 
 void sys_touch(char *name)
 {
-
+    invoke_syscall(SYSCALL_FS_TOUCH, (int)name, IGNORE, IGNORE);
 }
 
 void sys_cat(char *name)
 {
-
+    invoke_syscall(SYSCALL_FS_CAT, (int)name, IGNORE, IGNORE);
 }
 
 void sys_find(char *path, char *name)

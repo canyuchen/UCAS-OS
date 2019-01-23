@@ -91,6 +91,9 @@
 #define SYSCALL_FS_LS 63
 #define SYSCALL_FS_CD 64
 
+#define SYSCALL_FS_TOUCH 65
+#define SYSCALL_FS_CAT 66
+
 /* syscall function pointer */
 extern int (*syscall[NUM_SYSCALLS])();
 

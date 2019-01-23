@@ -219,6 +219,8 @@ void do_rmdir(const char *path);
 // void do_rmdir(const char *path);
 void do_ls();
 
+void do_touch(char *name);
+void do_cat(char *name);
 
 //only for FS
 
