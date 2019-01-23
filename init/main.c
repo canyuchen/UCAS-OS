@@ -258,7 +258,7 @@ static void init_syscall(void)
 	syscall[SYSCALL_FS_WRITE] = (int (*)()) &do_fwrite;
 	syscall[SYSCALL_FS_READ] = (int (*)()) &do_fread;
 	syscall[SYSCALL_FS_CLOSE] = (int (*)()) &do_fclose;
-	syscall[SYSCALL_FS_EXIT] = (int (*)()) &do_fexit;
+	// syscall[SYSCALL_FS_EXIT] = (int (*)()) &do_fexit;
 
 	syscall[SYSCALL_FS_MKFS] = (int (*)()) &do_mkfs;
 	syscall[SYSCALL_FS_STATFS] = (int (*)()) &do_statfs;

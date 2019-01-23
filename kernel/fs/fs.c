@@ -1150,11 +1150,6 @@ void do_fclose(int fd)
 
 }
 
-void do_fexit()
-{
-
-}
-
 void do_touch(char *name)
 {
 
@@ -1162,6 +1157,6 @@ void do_touch(char *name)
 
 void do_cat(char *name)
 {
-    
+
 }
 

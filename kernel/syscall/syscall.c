@@ -219,10 +219,10 @@ void sys_fclose(int fd)
     invoke_syscall(SYSCALL_FS_CLOSE, fd, IGNORE, IGNORE);
 }
 
-void sys_fexit()
-{
-    invoke_syscall(SYSCALL_FS_EXIT, IGNORE, IGNORE, IGNORE);
-}
+// void sys_fexit()
+// {
+//     invoke_syscall(SYSCALL_FS_EXIT, IGNORE, IGNORE, IGNORE);
+// }
 
 void sys_mkfs()
 {

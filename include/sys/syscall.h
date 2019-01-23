@@ -82,7 +82,7 @@
 #define SYSCALL_FS_WRITE 55
 #define SYSCALL_FS_READ 56
 #define SYSCALL_FS_CLOSE 57
-#define SYSCALL_FS_EXIT 58
+// #define SYSCALL_FS_EXIT 58
 
 #define SYSCALL_FS_MKFS 59
 #define SYSCALL_FS_STATFS 60
@@ -148,7 +148,7 @@ extern int sys_fopen(char *name, uint32_t mode);
 extern void sys_fwrite(int fd, char *content, int length);
 extern void sys_fread(int fd, char *buffer, int length);
 extern void sys_fclose(int fd);
-extern void sys_fexit();
+// extern void sys_fexit();
 
 extern void sys_mkfs();
 extern void sys_statfs();

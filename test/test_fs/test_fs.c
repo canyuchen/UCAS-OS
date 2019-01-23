@@ -27,5 +27,5 @@ void test_fs(void)
     }
 
     sys_fclose(fd);
-    sys_fexit();
+    sys_exit();
 }
