@@ -202,7 +202,8 @@ static void sync_to_disk_inode(inode_t *inode_ptr)
     uint32_t inode_table_offset = inode_ptr->i_num / INODE_NUM_PER_BLOCK;
     sync_from_disk_inode_table(inode_table_offset);
     write_to_buffer_inode(inode_ptr);
-    sync_from_disk_inode_table(inode_table_offset);
+    // sync_from_disk_inode_table(inode_table_offset);
+    sync_to_disk_inode_table(inode_table_offset);
 }
 
 static int write_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry_ptr)
@@ -474,11 +475,12 @@ int find_file(inode_t *inode_ptr, char *name)
 
         //debug
         vt100_move_cursor(1, 26);
-        printk("strcmp:%d, j:%d, block_index:%d, p[i].d_name:%s", \
+        printk("[DEBUG 1] strcmp:%d, j:%d, block_index:%d, p[i].d_name:%s", \
                 strcmp((char *)name, p[j].d_name), j, block_index, p[i].d_name);
-        printk(",name:%s", name);
+        printk(", name:%s", name);
+/*
         return;
-
+*/
 /*
 //-----------------------------------------------------
         //printk BUG!!!!!!!!
@@ -793,7 +795,7 @@ void do_mkfs()
 
     //debug
     vt100_move_cursor(1, 22);
-    printk("block_index:%d root_dentry_table[0].d_name:%s", DATA_BLOCK_INDEX, root_dentry_table[0].d_name);
+    printk("[DEBUG 2] block_index:%d root_dentry_table[0].d_name:%s", DATA_BLOCK_INDEX, root_dentry_table[0].d_name);
 
     //print FS info
     vt100_move_cursor(1, 1);    
@@ -904,7 +906,7 @@ uint32_t do_mkdir(const char *path, mode_t mode)
 
     //debug
     vt100_move_cursor(1, 22);
-    printk("block_index:%d new_dentry_table[0].d_name:%s", free_block_index, new_dentry_table[0].d_name);
+    printk("[DEBUG 3] block_index:%d new_dentry_table[0].d_name:%s", free_block_index, new_dentry_table[0].d_name);
 
     dentry_t parent_dentry;
     parent_dentry.d_inum = free_inum;
@@ -949,13 +951,17 @@ void do_ls()
     bzero(ls_buffer, MAX_LS_NUM * sizeof(dentry_t));
     dentry_t* p = (dentry_t *)find_file_buffer;
     for(i = 0;i < MAX_BLOCK_INDEX; i++) {
+
+        sync_from_disk_inode(0, current_dir_ptr);
+
         uint32_t block_index = get_block_index_in_dir(current_dir_ptr, i);
 
         read_block(block_index, find_file_buffer);
 
         //debug
         vt100_move_cursor(1, 23);
-        printk("block_index:%d p[0].d_name:%s", block_index, p[0].d_name);
+        printk("[DEBUG 4] block_index:%d p[0].d_name:%s", block_index, p[0].d_name);
+        printk(" current_dir_ptr->i_direct_table[0]:%d", current_dir_ptr->i_direct_table[0]);
 
         for(j = 0; j < DENTRY_NUM_PER_BLOCK;j++) {
             // if(is_empty_dnetry(&p[j]) != 0){
@@ -967,7 +973,7 @@ void do_ls()
             else{
                 //debug
                 vt100_move_cursor(1, 24);
-                printk("is_empty_dnetry(&p[j]):%d, k:%d, block_index:%d, ls_buffer[0].d_name:%s", \
+                printk("[DEBUG 5] is_empty_dnetry(&p[j]):%d, k:%d, block_index:%d, ls_buffer[0].d_name:%s", \
                         is_empty_dnetry(&p[j]), k, block_index, ls_buffer[0].d_name);
                 
                 return;
@@ -982,12 +988,22 @@ void do_cd(char *name)
     if((inum = find_file(current_dir_ptr, name)) != -1){
 
         //debug
-        vt100_move_cursor(1, 25);
-        printk("inum:%d, name:%s", inum, name);
+        vt100_move_cursor(1, 27);
+        printk("[DEBUG 6] inum:%d, name:%s", inum, name);
 
         inode_t ino;
         sync_from_disk_inode(inum, &ino);
+
+        //debug
+        vt100_move_cursor(1, 28);
+        printk("[DEBUG 7] ino.i_num:%d", ino.i_num);
+
         memcpy((int8_t *)current_dir_ptr, (int8_t *)&ino, sizeof(inode_t));
+
+        //debug
+        vt100_move_cursor(1, 29);
+        printk("[DEBUG 8] current_dir_pt->i_num:%d", current_dir_ptr->i_num);
+        printk(" current_dir_ptr->i_direct_table[0]:%d", current_dir_ptr->i_direct_table[0]);
     }
     return;
 }
