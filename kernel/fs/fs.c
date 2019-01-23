@@ -505,13 +505,6 @@ int find_dentry(inode_t* inode_ptr, const char* name) {
         // for(; j < POINTER_PER_BLOCK; j++){
         for(; j < DENTRY_NUM_PER_BLOCK; j++){
             if(strcmp((char *)name, p[j].d_name) == 0){
-
-                // //debug
-                // vt100_move_cursor(1, 37);
-                // printk("[DEBUG 1 find_dentry] strcmp:%d, j:%d, block_index:%d, p[i].d_name:%s", \
-                //         strcmp((char *)name, p[j].d_name), j, block_index, p[i].d_name);
-                // printk(", name:%s", name);
-
                 return (i * DENTRY_NUM_PER_BLOCK + j);     
             }
         }
@@ -521,56 +514,8 @@ int find_dentry(inode_t* inode_ptr, const char* name) {
 
 uint32_t parse_path(const char *path, inode_t *inode_ptr)
 {
-//     bzero(parse_file_buffer, MAX_PATH_LENGTH);
-//     char *p;
-//     strcpy(parse_file_buffer, (char *)path);
-
-//     int i = 0;
-//     while(parse_file_buffer[i]){
-//         if(parse_file_buffer[i] == '/'){
-//             break;
-//         }
-//         else if(parse_file_buffer[i] == '\0'){
-//             return find_file(inode_ptr, parse_file_buffer);
-//             // return 0;
-//         }
-//         i++;
-//     }
-
-// //-------------------------------------------------------
-//     p = strtok(parse_file_buffer, "/");
-// /*
-//     if(p == NULL){
-//         return 0; //root
-//     }
-// */
-
-//     //debug
-//     vt100_move_cursor(1, 32);
-//     printk("[DEBUG 9 parse_path] p:%s", p);
-//     printk(" name:%s", name);
-//     printk(" path:%s", path);
-
-//     // uint32_t result = find_file(root_inode_ptr, p); //root dentry
-//     uint32_t result = find_file(inode_ptr, p); //root dentry
-
-//     inode_t inode;
-//     while((p = strtok(NULL, "/")) != NULL){
-//         sync_from_disk_inode(result, &inode);
-//         result = find_file(&inode, p);
-//     }
-//     return result;
-
     return find_file(inode_ptr, (char *)path);
 }
-
-// uint32_t parse_path(const char *path, inode_t *inode_ptr)
-// {
-//     bzero(parse_file_buffer, MAX_PATH_LENGTH);
-//     strcpy(parse_file_buffer, (char *)path);
-
-
-// }
 
 int find_free_inode()
 {
@@ -904,11 +849,6 @@ uint32_t do_mkdir(const char *path, mode_t mode)
 
     // separate_path(path, parent, name);
     separate_path(path_buffer, parent, name);
-
-    // //debug
-    // vt100_move_cursor(1, 32);
-    // printk("[DEBUG 10 mkdir] parent_inum:%d, parent:%s", parent_inum, parent);
-    // printk(" name:%s", name);
 
     uint32_t parent_inum = 0, free_inum, free_block_index;
     // parent_inum = parse_path(parent, current_dir_ptr);
