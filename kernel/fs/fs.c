@@ -297,7 +297,8 @@ void separate_path(const char *path, char *parent, char *name)
     strcpy(parent, (char *)path);
     char* loc = strrchr(parent, '/');
     strcpy(name, loc + 1);
-    name[MAX_NAME_LENGTH - 1] = '\0';
+    // name[MAX_NAME_LENGTH - 1] = '\0';
+    name[strlen(loc + 1)] = '\0';
     if(loc == parent){
         loc++;
     } 
@@ -1021,15 +1022,20 @@ void do_ls()
 
 void do_cd(char *name)
 {
-    bzero(path_buffer, strlen(name));
+    bzero(path_buffer, MAX_PATH_LENGTH);
     bzero(parent_buffer, MAX_PATH_LENGTH);
     bzero(parent_buffer_1, MAX_PATH_LENGTH);
     bzero(parent_buffer_2, MAX_PATH_LENGTH);
     bzero(name_buffer, MAX_NAME_LENGTH);
 
     memcpy(path_buffer, name, strlen(name));
+    parent_buffer[strlen(name)] = '\0';
 
-    char c = '\\';
+    char c = '/';
+
+    // //debug
+    vt100_move_cursor(1, 30);
+    printk("[DEBUG 3 cd] count_char_in_string(c, path_buffer):%d ", count_char_in_string(c, path_buffer));
 
     if(count_char_in_string(c, path_buffer) == 0){
         uint32_t inum;
