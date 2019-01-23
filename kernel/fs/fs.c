@@ -203,6 +203,7 @@ static void sync_to_disk_inode(inode_t *inode_ptr)
     sync_from_disk_inode_table(inode_table_offset);
     write_to_buffer_inode(inode_ptr);
     // sync_from_disk_inode_table(inode_table_offset);
+    //BUG!!!!!!!!!!!!!
     sync_to_disk_inode_table(inode_table_offset);
 }
 
@@ -966,7 +967,8 @@ void do_ls()
         for(j = 0; j < DENTRY_NUM_PER_BLOCK;j++) {
             // if(is_empty_dnetry(&p[j]) != 0){
             //!!!!!!!!!
-            if(is_empty_dnetry(&p[j]) == 0){
+            // if(is_empty_dnetry(&p[j]) == 0){
+            if(!is_empty_dnetry(&p[j])){
                 memcpy((uint8_t *)&ls_buffer[k], (uint8_t *)&p[j], sizeof(dentry_t));
                 k++;
             } 
