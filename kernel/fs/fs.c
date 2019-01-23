@@ -953,7 +953,7 @@ void do_ls()
     dentry_t* p = (dentry_t *)find_file_buffer;
     for(i = 0;i < MAX_BLOCK_INDEX; i++) {
 
-        sync_from_disk_inode(0, current_dir_ptr);
+        // sync_from_disk_inode(0, current_dir_ptr);
 
         uint32_t block_index = get_block_index_in_dir(current_dir_ptr, i);
 
