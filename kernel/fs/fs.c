@@ -873,7 +873,7 @@ void do_statfs()
 {
     sync_from_disk_superblock();
     
-    vt100_move_cursor(1, 23);
+    vt100_move_cursor(1, 40);
     printk("[FS] File system current informatin:     \n");
     printk("     magic number : 0x%x                 \n", superblock_ptr->s_magic);
     printk("     file system size : 0x%x             \n", superblock_ptr->s_disk_size);

@@ -11995,7 +11995,7 @@ a080b7b8:	03a0f021 	move	s8,sp
 a080b7bc:	0c2023e7 	jal	a0808f9c <sync_from_disk_superblock>
 a080b7c0:	00000000 	nop
 a080b7c4:	24040001 	li	a0,1
-a080b7c8:	24050017 	li	a1,23
+a080b7c8:	24050028 	li	a1,40
 a080b7cc:	0c2004dc 	jal	a0801370 <vt100_move_cursor>
 a080b7d0:	00000000 	nop
 a080b7d4:	3c02a081 	lui	v0,0xa081
