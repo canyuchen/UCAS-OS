@@ -439,13 +439,17 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == '-'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 's'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5) == ' '){
-                    
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 6);
+                    separate_params(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 6);
+                    sys_symlink(&(param_buffer[0].param[0]), &(param_buffer[1].param[0]));                     
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'l' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'n'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == ' '){
-                    
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3);
+                    separate_params(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3);
+                    sys_link(&(param_buffer[0].param[0]), &(param_buffer[1].param[0]));                     
                     printf("> root@UCAS_OS: ");
                 }
                 /*
