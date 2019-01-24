@@ -809,9 +809,9 @@ void do_mkfs()
     memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(inode_t));
     // current_dir_ptr = root_inode_ptr;
 
-    //debug
-    vt100_move_cursor(1, 22);
-    printk("[DEBUG 2 mkfs] block_index:%d root_dentry_table[0].d_name:%s", DATA_BLOCK_INDEX, root_dentry_table[0].d_name);
+    // //debug
+    // vt100_move_cursor(1, 22);
+    // printk("[DEBUG 2 mkfs] block_index:%d root_dentry_table[0].d_name:%s", DATA_BLOCK_INDEX, root_dentry_table[0].d_name);
 
     //print FS info
     vt100_move_cursor(1, 1);    
@@ -971,10 +971,10 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     strcpy(parent_dentry.d_name, name_buffer);
     write_dentry(&parent_inode, parent_inode.i_fnum+2, &parent_dentry);
 
-    vt100_move_cursor(1, 31);
-    printk("[DEBUG 3 mkdir] free_inum:%d           \n", free_inum);
-    printk("                free_block_index:%d    \n", free_block_index);
-    printk("                parent_inum:%d         \n", parent_inum);
+    // vt100_move_cursor(1, 31);
+    // printk("[DEBUG 3 mkdir] free_inum:%d           \n", free_inum);
+    // printk("                free_block_index:%d    \n", free_block_index);
+    // printk("                parent_inum:%d         \n", parent_inum);
 
 
     return 0;
@@ -1014,17 +1014,17 @@ void do_rmdir(const char *path)
     release_inode_block(&child_inode);
     sync_to_disk_block_bmp();
 
-    // //debug
-    vt100_move_cursor(1, 29);
-    printk("[DEBUG 3 rmdir] find_dentry(&parent_inode, name_buffer):%d", find_dentry(&parent_inode, name_buffer));
+    // // //debug
+    // vt100_move_cursor(1, 29);
+    // printk("[DEBUG 3 rmdir] find_dentry(&parent_inode, name_buffer):%d", find_dentry(&parent_inode, name_buffer));
 
     uint32_t dnum = find_dentry(&parent_inode, name_buffer);
     remove_dentry(&parent_inode, dnum);
     sync_to_disk_inode(&parent_inode);
 
-    // //debug
-    vt100_move_cursor(1, 30);
-    printk("[DEBUG 3 rmdir] find_dentry(&parent_inode, name_buffer):%d", find_dentry(&parent_inode, name_buffer));
+    // // //debug
+    // vt100_move_cursor(1, 30);
+    // printk("[DEBUG 3 rmdir] find_dentry(&parent_inode, name_buffer):%d", find_dentry(&parent_inode, name_buffer));
 
 
     return;
@@ -1074,9 +1074,9 @@ void do_cd(char *name)
 
     char c = '/';
 
-    // //debug
-    vt100_move_cursor(1, 30);
-    printk("[DEBUG 3 cd] count_char_in_string(c, path_buffer):%d ", count_char_in_string(c, path_buffer));
+    // // //debug
+    // vt100_move_cursor(1, 30);
+    // printk("[DEBUG 3 cd] count_char_in_string(c, path_buffer):%d ", count_char_in_string(c, path_buffer));
 
     if(count_char_in_string(c, path_buffer) == 0){
         uint32_t inum;
