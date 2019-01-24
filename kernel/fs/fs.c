@@ -1541,7 +1541,38 @@ int do_find(char *path, char *name)
 
 void do_rename(char *old_name, char *new_name)
 {
+    bzero(parent_buffer, MAX_PATH_LENGTH);
+    bzero(path_buffer, MAX_PATH_LENGTH);
+    bzero(name_buffer, MAX_NAME_LENGTH);
 
+    char *p = "./";
+    strcpy(path_buffer, p);
+    strcpy(path_buffer+2, old_name);
+
+    // separate_path(path, parent, name);
+    separate_path(path_buffer, parent_buffer, name_buffer);
+
+    uint32_t parent_inum = 0;
+    // parent_inum = parse_path(parent, current_dir_ptr);
+    parent_inum = find_file(current_dir_ptr, parent_buffer);
+
+    inode_t parent_inode;
+    sync_from_disk_inode(parent_inum, &parent_inode);
+
+    inode_t child_inode;
+    uint32_t child_inum = 0;
+    child_inum = find_file(&parent_inode, name_buffer);
+
+    sync_from_disk_inode(child_inum, &child_inode);
+
+    uint32_t dnum = find_dentry(&parent_inode, old_name);
+    dentry_t den;
+    bzero(&den, sizeof(dentry_t));
+    den.d_inum = child_inum;
+    memcpy(den.d_name, new_name, strlen(new_name));
+    write_dentry(&parent_inode, dnum, &den);
+
+    return;
 }
 
 
