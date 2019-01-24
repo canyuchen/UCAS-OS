@@ -1150,10 +1150,10 @@ int do_fopen(char *name, uint32_t mode)
     bzero(path_buffer, MAX_PATH_LENGTH);
     bzero(name_buffer, MAX_NAME_LENGTH);
 
-    vt100_move_cursor(1, 29);
-    printk("[DEBUG 3 fopen]  fd_table[0].fd_inum:%d", file_descriptor_table[0].fd_inum);
-    printk("  fd_table[0].fd_r_offset:%d", file_descriptor_table[0].fd_r_offset);
-    printk("  fd_table[0].fd_w_offset:%d", file_descriptor_table[0].fd_w_offset);
+    // vt100_move_cursor(1, 29);
+    // printk("[DEBUG 3 fopen]  fd_table[0].fd_inum:%d", file_descriptor_table[0].fd_inum);
+    // printk("  fd_table[0].fd_r_offset:%d", file_descriptor_table[0].fd_r_offset);
+    // printk("  fd_table[0].fd_w_offset:%d", file_descriptor_table[0].fd_w_offset);
 
     // memcpy((uint8_t *)path_buffer, (uint8_t *)path, strlen((char *)path));
     // path_buffer[strlen((char *)path)] = '\0';
@@ -1196,10 +1196,10 @@ int do_fopen(char *name, uint32_t mode)
         file_descriptor_table[j].fd_w_offset = 0;
     }
 
-    vt100_move_cursor(1, 30);
-    printk("[DEBUG 3 fopen]  fd_table[0].fd_inum:%d", file_descriptor_table[0].fd_inum);
-    printk("  fd_table[0].fd_r_offset:%d", file_descriptor_table[0].fd_r_offset);
-    printk("  fd_table[0].fd_w_offset:%d", file_descriptor_table[0].fd_w_offset);
+    // vt100_move_cursor(1, 30);
+    // printk("[DEBUG 3 fopen]  fd_table[0].fd_inum:%d", file_descriptor_table[0].fd_inum);
+    // printk("  fd_table[0].fd_r_offset:%d", file_descriptor_table[0].fd_r_offset);
+    // printk("  fd_table[0].fd_w_offset:%d", file_descriptor_table[0].fd_w_offset);
 
     return j;
 }
@@ -1398,10 +1398,10 @@ int do_touch(char *name, mode_t mode)
     strcpy(parent_dentry.d_name, name_buffer);
     write_dentry(&parent_inode, parent_inode.i_fnum+2, &parent_dentry);
 
-    vt100_move_cursor(1, 31);
-    printk("[DEBUG 3 touch]  free_inum:%d           \n", free_inum);
-    // printk("                free_block_index:%d    \n", free_block_index);
-    printk("                 parent_inum:%d         \n", parent_inum);
+    // vt100_move_cursor(1, 31);
+    // printk("[DEBUG 3 touch]  free_inum:%d           \n", free_inum);
+    // // printk("                free_block_index:%d    \n", free_block_index);
+    // printk("                 parent_inum:%d         \n", parent_inum);
 
     return 0;
 }
@@ -1415,8 +1415,8 @@ void do_cat(char *name)
     // inode_t inode;
     // sync_from_disk_inode(file_descriptor_table[fd].fd_inum, &inode);
 
-    do_fread(fd, cat_buffer, 200);
-    cat_buffer[200] = '\0';
+    do_fread(fd, cat_buffer, CAT_LENGTH);
+    cat_buffer[CAT_LENGTH] = '\0';
 
     // char Buff[64];
     // int i, j;

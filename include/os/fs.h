@@ -129,6 +129,8 @@ enum {
 
     CAT_BLOCK_NUM = 5,
     CAT_MAX_LENGTH = CAT_BLOCK_NUM * BLOCK_SIZE,
+
+    CAT_LENGTH = 200,
 };
 
 typedef struct superblock {
