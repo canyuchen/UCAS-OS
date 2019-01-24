@@ -514,6 +514,32 @@ int find_file(inode_t *inode_ptr, char *name)
     return -1;
 }
 
+static int _find_file(inode_t *inode_ptr, char *name)
+{
+    bzero(find_file_buffer, BLOCK_SIZE);
+    dentry_t *p = (dentry_t *)find_file_buffer;
+    int i = 0, j = 0;
+    for(; i < 2; i++){
+        uint32_t block_index = get_block_index_in_dir(inode_ptr, i);
+        read_block(block_index, find_file_buffer);
+
+        // for(; j < POINTER_PER_BLOCK; j++){
+        for(; j < DENTRY_NUM_PER_BLOCK; j++){
+            if(strcmp((char *)name, p[j].d_name) == 0){
+
+                // //debug
+                // vt100_move_cursor(1, 26);
+                // printk("[DEBUG 1 find_file] strcmp:%d, j:%d, block_index:%d, p[i].d_name:%s", \
+                //         strcmp((char *)name, p[j].d_name), j, block_index, p[i].d_name);
+                // printk(", name:%s", name);
+                
+                return p[j].d_inum;
+            }
+        }
+    }
+    return -1;
+}
+
 int find_dentry(inode_t* inode_ptr, const char* name) {
     bzero(find_file_buffer, BLOCK_SIZE);
     dentry_t *p = (dentry_t *)find_file_buffer;
@@ -1510,63 +1536,71 @@ int do_find(char *path, char *name)
 
     if(count_char_in_string(c, path_buffer) == 0){
         uint32_t inum;
-        if((inum = find_file(_current_dir_ptr, name)) != -1){
+        if((inum = _find_file(_current_dir_ptr, name)) != -1){
         // if((inum = find_dentry(_current_dir_ptr, name)) != -1){
             inode_t ino;
             sync_from_disk_inode(inum, &ino);
             memcpy((int8_t *)_current_dir_ptr, (int8_t *)&ino, sizeof(inode_t));
+
+            return 1;
         }
         
-        return (find_file(_current_dir_ptr, name) != -1);
+        // return (_find_file(_current_dir_ptr, name) != -1);
+        return 0;
     }
     else if(count_char_in_string(c, path_buffer) == 1){
         separate_path(path_buffer, parent_buffer, name_buffer);
         uint32_t inum_1, inum_2;
-        if((inum_1 = find_file(_current_dir_ptr, parent_buffer)) != -1){
+        if((inum_1 = _find_file(_current_dir_ptr, parent_buffer)) != -1){
         // if((inum_1 = find_dentry(_current_dir_ptr, parent_buffer)) != -1){
 
             inode_t ino_1;
             sync_from_disk_inode(inum_1, &ino_1);
             memcpy((int8_t *)_current_dir_ptr, (int8_t *)&ino_1, sizeof(inode_t));
 
-            if((inum_2 = find_file(_current_dir_ptr, name_buffer)) != -1){
+            if((inum_2 = _find_file(_current_dir_ptr, name_buffer)) != -1){
             // if((inum_2 = find_dentry(_current_dir_ptr, name_buffer)) != -1){
 
                 inode_t ino_2;
                 sync_from_disk_inode(inum_2, &ino_2);
                 memcpy((int8_t *)_current_dir_ptr, (int8_t *)&ino_2, sizeof(inode_t));
+
+                return 1;
             }            
         }
-
-        return (find_file(_current_dir_ptr, name) != -1);     
+        return 0;
+        // return (_find_file(_current_dir_ptr, name) != -1);     
     }
     else if(count_char_in_string(c, path_buffer) == 2){
         separate_path(path_buffer, parent_buffer, name_buffer);
         separate_path(parent_buffer, parent_buffer_1, parent_buffer_2);
         uint32_t inum_1, inum_2, inum_3;
 
-        if((inum_1 = find_file(_current_dir_ptr, parent_buffer_1)) != -1){
+        if((inum_1 = _find_file(_current_dir_ptr, parent_buffer_1)) != -1){
 
             inode_t ino_1;
             sync_from_disk_inode(inum_1, &ino_1);
             memcpy((int8_t *)_current_dir_ptr, (int8_t *)&ino_1, sizeof(inode_t));
 
-            if((inum_2 = find_file(_current_dir_ptr, parent_buffer_2)) != -1){
+            if((inum_2 = _find_file(_current_dir_ptr, parent_buffer_2)) != -1){
 
                 inode_t ino_2;
                 sync_from_disk_inode(inum_2, &ino_2);
                 memcpy((int8_t *)_current_dir_ptr, (int8_t *)&ino_2, sizeof(inode_t));
 
-                if((inum_3 = find_file(_current_dir_ptr, name_buffer)) != -1){
+                if((inum_3 = _find_file(_current_dir_ptr, name_buffer)) != -1){
 
                     inode_t ino_3;
                     sync_from_disk_inode(inum_3, &ino_3);
                     memcpy((int8_t *)_current_dir_ptr, (int8_t *)&ino_3, sizeof(inode_t));
+
+                    return 1;
                 }  
             }            
         }
 
-        return (find_file(_current_dir_ptr, name) != -1);   
+        return 0;
+        // return (find_file(_current_dir_ptr, name) != -1);   
     }
 }
 
