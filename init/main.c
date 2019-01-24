@@ -270,6 +270,9 @@ static void init_syscall(void)
 
 	syscall[SYSCALL_FS_TOUCH] = (int (*)()) &do_touch;
 	syscall[SYSCALL_FS_CAT] = (int (*)()) &do_cat;
+
+	syscall[SYSCALL_FS_FIND] = (int (*)()) &do_find;
+	syscall[SYSCALL_FS_RENAME] = (int (*)()) &do_rename;
 }
 
 // jump from bootloader.

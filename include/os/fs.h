@@ -235,6 +235,8 @@ void do_ls();
 int do_touch(char *name, mode_t mode);
 void do_cat(char *name);
 
+int do_find(char *path, char *name);
+void do_rename(char *old_name, char *new_name);
 //only for FS
 
 void separate_path(const char *path, char *parent, char *name);

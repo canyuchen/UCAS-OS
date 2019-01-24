@@ -267,13 +267,13 @@ void sys_cat(char *name)
     invoke_syscall(SYSCALL_FS_CAT, (int)name, IGNORE, IGNORE);
 }
 
-void sys_find(char *path, char *name)
+int sys_find(char *path, char *name)
 {
-
+    invoke_syscall(SYSCALL_FS_FIND, (int)path, (int)name, IGNORE);
 }
 
 void sys_rename(char *old_name, char *new_name)
 {
-
+    invoke_syscall(SYSCALL_FS_RENAME, (int)old_name, (int)new_name, IGNORE);
 }
 

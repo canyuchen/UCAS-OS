@@ -1453,3 +1453,106 @@ void do_cat(char *name)
 //     printk("               inode.i_fsize:%d  \n", inode.i_fsize);
 }
 
+//-------------------------------------BONUS----------------------------------------------
+
+int do_find(char *path, char *name)
+{
+    bzero(path_buffer, MAX_PATH_LENGTH);
+    bzero(parent_buffer, MAX_PATH_LENGTH);
+    bzero(parent_buffer_1, MAX_PATH_LENGTH);
+    bzero(parent_buffer_2, MAX_PATH_LENGTH);
+    bzero(name_buffer, MAX_NAME_LENGTH);
+
+    memcpy(path_buffer, path, strlen(path));
+    parent_buffer[strlen(path)] = '\0';
+
+    char c = '/';
+
+    inode_t _current_dir;
+    inode_t *_current_dir_ptr = &_current_dir;
+    memcpy((uint8_t *)_current_dir_ptr, (uint8_t *)current_dir_ptr, INODE_SIZE);
+
+    // // //debug
+    // vt100_move_cursor(1, 30);
+    // printk("[DEBUG 3 cd] count_char_in_string(c, path_buffer):%d ", count_char_in_string(c, path_buffer));
+
+    if(count_char_in_string(c, path_buffer) == 0){
+        uint32_t inum;
+        if((inum = find_file(_current_dir_ptr, name)) != -1){
+        // if((inum = find_dentry(_current_dir_ptr, name)) != -1){
+            inode_t ino;
+            sync_from_disk_inode(inum, &ino);
+            memcpy((int8_t *)_current_dir_ptr, (int8_t *)&ino, sizeof(inode_t));
+        }
+        
+        return (find_file(_current_dir_ptr, name) != -1);
+    }
+    else if(count_char_in_string(c, path_buffer) == 1){
+        separate_path(path_buffer, parent_buffer, name_buffer);
+        uint32_t inum_1, inum_2;
+        if((inum_1 = find_file(_current_dir_ptr, parent_buffer)) != -1){
+        // if((inum_1 = find_dentry(_current_dir_ptr, parent_buffer)) != -1){
+
+            inode_t ino_1;
+            sync_from_disk_inode(inum_1, &ino_1);
+            memcpy((int8_t *)_current_dir_ptr, (int8_t *)&ino_1, sizeof(inode_t));
+
+            if((inum_2 = find_file(_current_dir_ptr, name_buffer)) != -1){
+            // if((inum_2 = find_dentry(_current_dir_ptr, name_buffer)) != -1){
+
+                inode_t ino_2;
+                sync_from_disk_inode(inum_2, &ino_2);
+                memcpy((int8_t *)_current_dir_ptr, (int8_t *)&ino_2, sizeof(inode_t));
+            }            
+        }
+
+        return (find_file(_current_dir_ptr, name) != -1);     
+    }
+    else if(count_char_in_string(c, path_buffer) == 2){
+        separate_path(path_buffer, parent_buffer, name_buffer);
+        separate_path(parent_buffer, parent_buffer_1, parent_buffer_2);
+        uint32_t inum_1, inum_2, inum_3;
+
+        if((inum_1 = find_file(_current_dir_ptr, parent_buffer_1)) != -1){
+
+            inode_t ino_1;
+            sync_from_disk_inode(inum_1, &ino_1);
+            memcpy((int8_t *)_current_dir_ptr, (int8_t *)&ino_1, sizeof(inode_t));
+
+            if((inum_2 = find_file(_current_dir_ptr, parent_buffer_2)) != -1){
+
+                inode_t ino_2;
+                sync_from_disk_inode(inum_2, &ino_2);
+                memcpy((int8_t *)_current_dir_ptr, (int8_t *)&ino_2, sizeof(inode_t));
+
+                if((inum_3 = find_file(_current_dir_ptr, name_buffer)) != -1){
+
+                    inode_t ino_3;
+                    sync_from_disk_inode(inum_3, &ino_3);
+                    memcpy((int8_t *)_current_dir_ptr, (int8_t *)&ino_3, sizeof(inode_t));
+                }  
+            }            
+        }
+
+        return (find_file(_current_dir_ptr, name) != -1);   
+    }
+}
+
+
+void do_rename(char *old_name, char *new_name)
+{
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

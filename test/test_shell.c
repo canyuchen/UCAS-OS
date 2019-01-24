@@ -413,7 +413,12 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == ' '){
                     handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5);
                     separate_params(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5);
-                    sys_find(&(param_buffer[0].param[0]), &(param_buffer[1].param[0]));                    
+                    if(sys_find(&(param_buffer[0].param[0]), &(param_buffer[1].param[0])) == 1){
+                        printf("Exist in the directory\n");
+                    }                   
+                    else{
+                        printf("Not exist in the directory\n");
+                    }
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'r' 
