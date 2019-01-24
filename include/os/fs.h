@@ -5,9 +5,9 @@
 #include "bitmap.h"
 #include "string.h"
 
-#define O_RDONLY    00000000
-#define O_WRONLY    00000001
-#define O_RDWR      00000002
+#define O_RDONLY    00000000    //只读打开。
+#define O_WRONLY    00000001    //只写打开。
+#define O_RDWR      00000002    //读、写打开。
 
 #define S_IFMT      0170000     //文件类型的位遮罩
 #define S_IFSOCK    0140000     //socket
@@ -121,6 +121,14 @@ enum {
     MAX_LS_NUM = 10,
 
     MAX_DENTRY_BLOCK_NUM = FIRST_POINTER,
+
+    FILE_READ_BLOCK_NUM = 5,
+    FILE_READ_MAX_LENGTH = FILE_READ_BLOCK_NUM * BLOCK_SIZE,
+    FILE_WRITE_BLOCK_NUM = 5,
+    FILE_WRITE_MAX_LENGTH = FILE_READ_BLOCK_NUM * BLOCK_SIZE,
+
+    CAT_BLOCK_NUM = 5,
+    CAT_MAX_LENGTH = CAT_BLOCK_NUM * BLOCK_SIZE,
 };
 
 typedef struct superblock {
@@ -182,9 +190,10 @@ typedef struct dentry {
 typedef struct file_descriptor {
     uint32_t fd_inum;
     uint32_t fd_mode;
-    uint32_t fd_offset;
-    //3
-    uint32_t padding[5];
+    uint32_t fd_r_offset;
+    uint32_t fd_w_offset;
+    //4
+    uint32_t padding[4];
     //8
 } file_descriptor_t; //size: 8*sizeof(int) -> 32Byte
 
@@ -192,6 +201,8 @@ typedef uint16_t mode_t;
 
 
 extern dentry_t ls_buffer[MAX_LS_NUM];
+
+extern uint8_t cat_buffer[CAT_MAX_LENGTH];
 
 // extern uint8_t inode_table[INODE_TABLE_SIZE];
 
@@ -204,8 +215,8 @@ void sd_card_read(void *dest, uint32_t sd_offset, uint32_t size);
 void sd_card_write(void *dest, uint32_t sd_offset, uint32_t size);
 
 int do_fopen(char *name, uint32_t mode);
-void do_fwrite(int fd, char *content, int length);
-void do_fread(int fd, char *buffer, int length);
+int do_fwrite(int fd, char *buffer, int length);
+int do_fread(int fd, char *buffer, int length);
 void do_fclose(int fd);
 // void do_fexit();
 
@@ -219,7 +230,7 @@ void do_rmdir(const char *path);
 // void do_rmdir(const char *path);
 void do_ls();
 
-void do_touch(char *name);
+int do_touch(char *name, mode_t mode);
 void do_cat(char *name);
 
 //only for FS
@@ -235,7 +246,5 @@ uint32_t parse_path(const char *path, inode_t *inode_ptr);
 int find_free_inode();
 int find_free_block();
 void read_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry_ptr);
-
-
 
 #endif

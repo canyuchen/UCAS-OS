@@ -6,6 +6,8 @@
 #include "syscall.h"
 #include "queue.h"
 
+#include "fs.h"
+
 static char blank[] = {"                                                              "};
 
 mutex_lock_t lock1;
@@ -13,6 +15,35 @@ mutex_lock_t lock2;
 extern pcb_t *current_running;
 
 mutex_lock_t *Lock[MAX_LOCK_NUM_TOTAL] = {0};
+
+// static char test_fs_buff[64];
+
+// void test_fs_1()
+// {
+//     sys_move_cursor(1,35);
+//     printf("[DEBUG test_fs]");
+
+//     int i, j;
+//     int fd = sys_fopen("1.txt", O_RDWR);
+
+//     for (i = 0; i < 10; i++)
+//     {
+//         sys_fwrite(fd, "hello world!\n", 13);
+//     }
+
+//     for (i = 0; i < 10; i++)
+//     {
+//         sys_fread(fd, test_fs_buff, 13);
+//         sys_move_cursor(1,i);
+//         for (j = 0; j < 13; j++)
+//         {
+//             printf("%c", test_fs_buff[j]);
+//         }
+//     }
+
+//     sys_fclose(fd);
+//     sys_exit();
+// }
 
 // pid = 2
 void ready_to_exit_task()

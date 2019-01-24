@@ -85,7 +85,7 @@ bootblock: $(SRC_BOOT)
 main : 	$(SRC_ARCH) $(SRC_DRIVER) $(SRC_INIT) $(SRC_INT) $(SRC_LOCK) $(SRC_SYNC) $(SRC_MM) $(SRC_SCHED) $(SRC_FS) \
         $(SRC_SYSCALL) $(SRC_LIBS) $(SRC_TEST) $(SRC_TEST3) $(SRC_TEST4_1) $(SRC_TEST4_2) $(SRC_TEST_NET) $(SRC_TEST_FS)
 		${CC} -G 0 -O0 -Iinclude -Ilibs -Iarch/mips/include -Idrivers -Iinclude/os -Iinclude/sys \
-		-Itest -Itest/test_project3 -Itest/test_project4_task1 -Itest/test_project4_task2 -Itest/test_net \
+		-Itest -Itest/test_project3 -Itest/test_project4_task1 -Itest/test_project4_task2 -Itest/test_net -Itest/test_fs \
 		-fno-pic -mno-abicalls -fno-builtin -nostdinc -mips3 -Ttext=0xffffffffa0800200 -N -o main \
 		$(SRC_ARCH) $(SRC_DRIVER) $(SRC_INIT) $(SRC_INT) $(SRC_LOCK) $(SRC_SYNC) $(SRC_MM) $(SRC_SCHED) $(SRC_FS) \
 		$(SRC_SYSCALL) $(SRC_PROC) $(SRC_LIBS) $(SRC_TEST) $(SRC_TEST3) $(SRC_TEST4_1) $(SRC_TEST4_2) $(SRC_TEST_NET) $(SRC_TEST_FS)\

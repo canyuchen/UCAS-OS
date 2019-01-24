@@ -5,10 +5,13 @@
 #include "string.h"
 #include "syscall.h"
 
-static char buff[64];
+static char Buff[64];
 
 void test_fs(void)
 {
+    // sys_move_cursor(1,35);
+    // printf("[DEBUG test_fs]");
+
     int i, j;
     int fd = sys_fopen("1.txt", O_RDWR);
 
@@ -19,10 +22,11 @@ void test_fs(void)
 
     for (i = 0; i < 10; i++)
     {
-        sys_fread(fd, buff, 13);
+        sys_fread(fd, Buff, 13);
+        sys_move_cursor(1,i);
         for (j = 0; j < 13; j++)
         {
-            printf("%c", buff[j]);
+            printf("%c", Buff[j]);
         }
     }
 

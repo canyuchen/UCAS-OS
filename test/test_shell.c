@@ -99,6 +99,7 @@ struct task_info task5_3 = {"initmac",(uint32_t)&phy_regs_task3, USER_PROCESS};
 struct task_info task5_bonus = {"bonus",(uint32_t)&phy_regs_task_bonus, USER_PROCESS};
 
 struct task_info task_fs = {"test_fs", (uint32_t)&test_fs, USER_PROCESS};
+// struct task_info task_fs_1 = {"test_fs_1", (uint32_t)&test_fs_1, USER_PROCESS};
 
 static uint32_t num_test_tasks = 24;
 
@@ -109,7 +110,16 @@ static struct task_info *test_tasks[24] = {&task1, &task2, &task3,
                                            &task13, &task14, &task15,
                                            &task16, &task17, &task18, &task19,
                                            &task5_1, &task5_2, &task5_3, &task5_bonus,
-                                           &test_fs
+                                        //    &test_fs, &test_fs_1
+
+//-------------------------------------------------------------------------------
+//BUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//./test/test_shell.c:113: warning: initialization from incompatible pointer type
+//&test_fs NO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//------------------------------------------------------------------------------
+
+                                           &task_fs
                                            };
 
 #define INPUT_BUFFER_MAX_LENGTH 1000
@@ -286,6 +296,9 @@ void test_shell()
                 && (k = atoi(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5)) >= 0
                 && k <= num_test_tasks - 1 ){
                     printf("exec test_tasks[%d].\n", k);
+                    // printf("test_tasks[k]->task_name:%s", test_tasks[k]->task_name);
+                    // printf("\n");
+                    // BUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     sys_spawn(test_tasks[k]);
                     printf("> root@UCAS_OS: ");
                 }                 
@@ -383,7 +396,14 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 't'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == ' '){
                     handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4);
-                    sys_cat(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4);                    
+                    sys_cat(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4);     
+                    int j = 0;
+                    printf("cat output:\n");
+                    while(cat_buffer[j]){
+                        printf("%c", cat_buffer[j]);
+                        j++;
+                    }
+                    // printk("%s", cat_buffer);
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'f' 

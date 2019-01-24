@@ -40,6 +40,11 @@ inode_t *root_inode_ptr = &root_inode;
 inode_t current_dir;
 inode_t *current_dir_ptr = &current_dir;
 
+uint8_t cat_buffer[CAT_MAX_LENGTH] = {0};
+
+uint8_t fread_buffer[FILE_READ_MAX_LENGTH];
+uint8_t fwrite_buffer[FILE_WRITE_MAX_LENGTH];
+
 char parent_buffer[MAX_PATH_LENGTH];
 char parent_buffer_1[MAX_PATH_LENGTH];
 char parent_buffer_2[MAX_PATH_LENGTH];
@@ -47,6 +52,8 @@ char path_buffer[MAX_PATH_LENGTH];
 char name_buffer[MAX_NAME_LENGTH];
 
 dentry_t ls_buffer[MAX_LS_NUM] = {0};
+
+// static uint32_t flag_first_write = 0;
 
 static void set_block_bmp(uint32_t block_index)
 {
@@ -715,6 +722,8 @@ void do_mkfs()
     bzero(dentry_block_buffer, BLOCK_SIZE);
     bzero(inodetable_block_buffer, BLOCK_SIZE);
 
+    bzero(file_descriptor_table, sizeof(file_descriptor_t)*MAX_FILE_DESCRIPTOR_NUM);
+
     bzero(parent_buffer, MAX_PATH_LENGTH);
     bzero(name_buffer, MAX_NAME_LENGTH);
 
@@ -1130,33 +1139,317 @@ void do_cd(char *name)
 
 //---------------------------------------FILE OPERATIONS---------------------------------------------
 
+static bool_t is_empty_fd(file_descriptor_t *fd_ptr)
+{
+    return (fd_ptr->fd_inum == 0) && (fd_ptr->fd_mode == 0) && (fd_ptr->fd_r_offset == 0) && (fd_ptr->fd_w_offset == 0);
+}
+
 int do_fopen(char *name, uint32_t mode)
 {
+    bzero(parent_buffer, MAX_PATH_LENGTH);
+    bzero(path_buffer, MAX_PATH_LENGTH);
+    bzero(name_buffer, MAX_NAME_LENGTH);
 
+    vt100_move_cursor(1, 29);
+    printk("[DEBUG 3 fopen]  fd_table[0].fd_inum:%d", file_descriptor_table[0].fd_inum);
+    printk("  fd_table[0].fd_r_offset:%d", file_descriptor_table[0].fd_r_offset);
+    printk("  fd_table[0].fd_w_offset:%d", file_descriptor_table[0].fd_w_offset);
+
+    // memcpy((uint8_t *)path_buffer, (uint8_t *)path, strlen((char *)path));
+    // path_buffer[strlen((char *)path)] = '\0';
+
+    char *p = "./";
+    strcpy(path_buffer, p);
+    strcpy(path_buffer+2, name);
+
+    // separate_path(path, parent, name);
+    separate_path(path_buffer, parent_buffer, name_buffer);
+
+    uint32_t parent_inum = 0;
+    // parent_inum = parse_path(parent, current_dir_ptr);
+    parent_inum = find_file(current_dir_ptr, parent_buffer);
+
+    inode_t parent_inode;
+    sync_from_disk_inode(parent_inum, &parent_inode);
+
+    inode_t child_inode;
+    uint32_t child_inum = 0;
+    child_inum = find_file(&parent_inode, name_buffer);
+
+    sync_from_disk_inode(child_inum, &child_inode);
+
+    int i = 0;
+    for(; i < MAX_FILE_DESCRIPTOR_NUM; i++){
+        if(file_descriptor_table[i].fd_inum == child_inum){
+            return i;
+        }
+    }
+
+    int j = 0;
+    if(i == MAX_FILE_DESCRIPTOR_NUM){
+        while(!is_empty_fd(&file_descriptor_table[j])){
+            j++;
+        }
+        file_descriptor_table[j].fd_inum = child_inum;
+        file_descriptor_table[j].fd_mode = mode;
+        file_descriptor_table[j].fd_r_offset = 0;
+        file_descriptor_table[j].fd_w_offset = 0;
+    }
+
+    vt100_move_cursor(1, 30);
+    printk("[DEBUG 3 fopen]  fd_table[0].fd_inum:%d", file_descriptor_table[0].fd_inum);
+    printk("  fd_table[0].fd_r_offset:%d", file_descriptor_table[0].fd_r_offset);
+    printk("  fd_table[0].fd_w_offset:%d", file_descriptor_table[0].fd_w_offset);
+
+    return j;
 }
 
-void do_fwrite(int fd, char *content, int length)
+int do_fwrite(int fd, char *buffer, int length)
 {
+    bzero(fwrite_buffer, FILE_READ_MAX_LENGTH);
 
+    uint32_t begin_block = file_descriptor_table[fd].fd_w_offset / BLOCK_SIZE;
+    uint32_t end_block = (file_descriptor_table[fd].fd_w_offset + length) / BLOCK_SIZE;
+
+    uint32_t block_need = end_block - begin_block;
+
+    inode_t inode;
+    sync_from_disk_inode(file_descriptor_table[fd].fd_inum, &inode);
+
+    // if(flag_first_write == 0){
+    if(file_descriptor_table[fd].fd_w_offset == 0){
+        int i = 0;
+        for(; i <= block_need; i++){
+            uint32_t free_index = find_free_block();
+
+            set_block_bmp(free_index);
+            sync_to_disk_block_bmp();
+
+            superblock_ptr->s_free_blocks_cnt--;
+            sync_to_disk_superblock();
+
+            clear_block_index(free_index);
+            inode.i_indirect_block_1_ptr = free_index;
+            inode.i_fsize += BLOCK_SIZE;
+
+            //TO DO
+            inode.i_direct_table[begin_block + i] = free_index;
+            sync_to_disk_inode(&inode);
+        }
+    }
+    else if(block_need != 0){
+        int i = 1;
+        for(; i <= block_need; i++){
+            uint32_t free_index = find_free_block();
+
+            set_block_bmp(free_index);
+            sync_to_disk_block_bmp();
+
+            superblock_ptr->s_free_blocks_cnt--;
+            sync_to_disk_superblock();
+
+            clear_block_index(free_index);
+            inode.i_indirect_block_1_ptr = free_index;
+            inode.i_fsize += BLOCK_SIZE;
+
+            //TO DO
+            inode.i_direct_table[begin_block + i] = free_index;
+            sync_to_disk_inode(&inode);
+        }
+    }
+
+    uint32_t begin_block_index = get_block_index_in_dir(&inode, begin_block);
+    uint32_t end_block_index = get_block_index_in_dir(&inode, end_block);
+
+    int i = 0;
+    for(i = begin_block_index; i <= end_block_index; i++){
+        read_block(i, fwrite_buffer + (i - begin_block_index)*BLOCK_SIZE);
+    }
+
+    memcpy(fwrite_buffer + (file_descriptor_table[fd].fd_w_offset % BLOCK_SIZE), buffer, length);
+
+    file_descriptor_table[fd].fd_w_offset += length;
+
+    // int i = 0;
+    for(i = begin_block_index; i <= end_block_index; i++){
+        write_block(i, fwrite_buffer + (i - begin_block_index)*BLOCK_SIZE);
+    }
+
+    // vt100_move_cursor(1, 35);
+    // printk("%s", buffer);
+    // vt100_move_cursor(1, 45);
+    // printk("%s", fwrite_buffer);
+
+    return length;
 }
 
-void do_fread(int fd, char *buffer, int length)
+int do_fread(int fd, char *buffer, int length)
 {
+    bzero(fread_buffer, FILE_READ_MAX_LENGTH);
 
+    uint32_t begin_block = file_descriptor_table[fd].fd_r_offset / BLOCK_SIZE;
+    uint32_t end_block = (file_descriptor_table[fd].fd_r_offset + length) / BLOCK_SIZE;
+
+    inode_t inode;
+    sync_from_disk_inode(file_descriptor_table[fd].fd_inum, &inode);
+
+    uint32_t begin_block_index = get_block_index_in_dir(&inode, begin_block);
+    uint32_t end_block_index = get_block_index_in_dir(&inode, end_block);
+
+    int i = 0;
+    for(i = begin_block_index; i <= end_block_index; i++){
+        read_block(i, fread_buffer + (i - begin_block_index)*BLOCK_SIZE);
+    }
+
+    memcpy(buffer, fread_buffer + (file_descriptor_table[fd].fd_r_offset % BLOCK_SIZE), length);
+
+    // vt100_move_cursor(1, 35);
+    // printk("%s", buffer);
+    // vt100_move_cursor(1, 45);
+    // printk("%s", fread_buffer);
+
+    file_descriptor_table[fd].fd_r_offset += length;
+
+    return length;
 }
 
 void do_fclose(int fd)
 {
-
+    file_descriptor_t file_descriptor;
+    bzero(&file_descriptor, sizeof(file_descriptor_t));
+    memcpy((uint8_t *)&file_descriptor_table[fd], (uint8_t *)&file_descriptor, sizeof(file_descriptor_t));
 }
 
-void do_touch(char *name)
+int do_touch(char *name, mode_t mode)
 {
+    bzero(parent_buffer, MAX_PATH_LENGTH);
+    bzero(path_buffer, MAX_PATH_LENGTH);
+    bzero(name_buffer, MAX_NAME_LENGTH);
 
+    // memcpy((uint8_t *)path_buffer, (uint8_t *)path, strlen((char *)path));
+    // path_buffer[strlen((char *)path)] = '\0';
+
+    char *p = "./";
+    strcpy(path_buffer, p);
+    strcpy(path_buffer+2, name);
+
+    // separate_path(path, parent, name);
+    separate_path(path_buffer, parent_buffer, name_buffer);
+
+    uint32_t parent_inum = 0, free_inum, free_block_index;
+    // parent_inum = parse_path(parent, current_dir_ptr);
+    parent_inum = find_file(current_dir_ptr, parent_buffer);
+    
+    sync_from_disk_block_bmp();
+    sync_from_disk_inode_bmp();
+
+    inode_t parent_inode, new_inode;
+    sync_from_disk_inode(parent_inum, &parent_inode);
+
+    if(find_dentry(&parent_inode, name_buffer) != -1){
+        vt100_move_cursor(1, 45);
+        printk("[FS ERROR] ERROR_DUP_DIR_NAME\n");
+        return ERROR_DUP_DIR_NAME;
+    }
+
+    free_inum = find_free_inode();
+    set_inode_bmp(free_inum);
+    sync_to_disk_inode_bmp();
+
+    superblock_ptr->s_free_inode_cnt--;
+    sync_to_disk_superblock();
+
+    // free_block_index = find_free_block();
+    // set_block_bmp(free_block_index);
+    // sync_to_disk_block_bmp();
+
+    // superblock_ptr->s_free_blocks_cnt--;
+    // sync_to_disk_superblock();    
+
+    // new_inode.i_fmode = S_IFDIR | mode;
+    new_inode.i_fmode = S_IFREG | mode;
+    new_inode.i_links_cnt = 1;
+    // new_inode.i_fsize = BLOCK_SIZE;
+    new_inode.i_fsize = 0;
+    new_inode.i_fnum = 0;
+    new_inode.i_atime = get_ticks();
+    new_inode.i_ctime = get_ticks();
+    new_inode.i_mtime = get_ticks();
+    bzero(new_inode.i_direct_table, MAX_DIRECT_NUM*sizeof(uint32_t));
+    // new_inode.i_direct_table[0] = free_block_index;
+    new_inode.i_indirect_block_1_ptr = NULL;
+    new_inode.i_indirect_block_2_ptr = NULL;
+    new_inode.i_indirect_block_3_ptr = NULL;
+    new_inode.i_num = free_inum;
+    bzero(new_inode.padding, 10*sizeof(uint32_t));
+
+    sync_to_disk_inode(&new_inode);
+
+    // bzero(dentry_block_buffer, BLOCK_SIZE);
+    // dentry_t *new_dentry_table = (dentry_t *)dentry_block_buffer;
+    // new_dentry_table[0].d_inum = free_inum;
+    // strcpy(new_dentry_table[0].d_name, ".");
+    // new_dentry_table[1].d_inum = parent_inum;
+    // strcpy(new_dentry_table[1].d_name, "..");
+    // sync_to_disk_dentry(free_block_index);
+
+    dentry_t parent_dentry;
+    parent_dentry.d_inum = free_inum;
+    strcpy(parent_dentry.d_name, name_buffer);
+    write_dentry(&parent_inode, parent_inode.i_fnum+2, &parent_dentry);
+
+    vt100_move_cursor(1, 31);
+    printk("[DEBUG 3 touch]  free_inum:%d           \n", free_inum);
+    // printk("                free_block_index:%d    \n", free_block_index);
+    printk("                 parent_inum:%d         \n", parent_inum);
+
+    return 0;
 }
 
 void do_cat(char *name)
 {
+    bzero(cat_buffer, CAT_MAX_LENGTH);
 
+    int fd = do_fopen(name, O_RDWR);
+
+    // inode_t inode;
+    // sync_from_disk_inode(file_descriptor_table[fd].fd_inum, &inode);
+
+    do_fread(fd, cat_buffer, 200);
+    cat_buffer[200] = '\0';
+
+    // char Buff[64];
+    // int i, j;
+
+    // for (i = 0; i < 10; i++)
+    // {
+    //     sys_fread(fd, Buff, 13);
+    //     sys_move_cursor(1,i);
+    //     for (j = 0; j < 13; j++)
+    //     {
+    //         printf("%c", Buff[j]);
+    //     }
+    // }
+
+//     vt100_move_cursor(1, 35);
+//     printk("%s", cat_buffer);
+//     vt100_move_cursor(1, 45);
+//     printk("%s", fread_buffer);
+
+//     vt100_move_cursor(1, 33);
+//     // int j = 0;
+//     printk("cat output:\n");
+//     // while(cat_buffer[j]){
+//     //     printk("%c", cat_buffer[j]);
+//     // }
+//     printk("%c", cat_buffer[0]);
+//     printk("%c", cat_buffer[1]);
+//     printk("%c", cat_buffer[2]);
+//     printk("%c", cat_buffer[3]);
+
+//     vt100_move_cursor(1, 35);
+//     printk("[DEBUG 3 cat]  fd:%d           \n", fd);
+//     printk("[DEBUG 3 cat]  fd_table[fd].fd_inum:%d\n", file_descriptor_table[fd].fd_inum);
+//     printk("               inode.i_fsize:%d  \n", inode.i_fsize);
 }
 

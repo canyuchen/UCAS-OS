@@ -258,7 +258,8 @@ void sys_ls()
 
 void sys_touch(char *name)
 {
-    invoke_syscall(SYSCALL_FS_TOUCH, (int)name, IGNORE, IGNORE);
+    int mode = 0;
+    invoke_syscall(SYSCALL_FS_TOUCH, (int)name, mode, IGNORE);
 }
 
 void sys_cat(char *name)
