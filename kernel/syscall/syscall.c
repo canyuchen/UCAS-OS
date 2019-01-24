@@ -277,3 +277,12 @@ void sys_rename(char *old_name, char *new_name)
     invoke_syscall(SYSCALL_FS_RENAME, (int)old_name, (int)new_name, IGNORE);
 }
 
+void sys_link(char *src_path, char *new_path)
+{
+    invoke_syscall(SYSCALL_FS_LINK, (int)src_path, (int)new_path, IGNORE);
+}
+
+void sys_symlink(char *src_path, char *new_path)
+{
+    invoke_syscall(SYSCALL_FS_SYM_LINK, (int)src_path, (int)new_path, IGNORE);
+}

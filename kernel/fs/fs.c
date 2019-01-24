@@ -1576,9 +1576,15 @@ void do_rename(char *old_name, char *new_name)
 }
 
 
+void do_link(char *src_path, char *new_path)
+{
 
+}
 
-
+void do_symlink(char *src_path, char *new_path)
+{
+    
+}
 
 
 

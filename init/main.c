@@ -273,6 +273,10 @@ static void init_syscall(void)
 
 	syscall[SYSCALL_FS_FIND] = (int (*)()) &do_find;
 	syscall[SYSCALL_FS_RENAME] = (int (*)()) &do_rename;
+
+	syscall[SYSCALL_FS_LINK] = (int (*)()) &do_link;
+	syscall[SYSCALL_FS_SYM_LINK] = (int (*)()) &do_symlink;
+
 }
 
 // jump from bootloader.

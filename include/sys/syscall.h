@@ -97,6 +97,9 @@
 #define SYSCALL_FS_FIND 67
 #define SYSCALL_FS_RENAME 68
 
+#define SYSCALL_FS_LINK 69
+#define SYSCALL_FS_SYM_LINK 70
+
 /* syscall function pointer */
 extern int (*syscall[NUM_SYSCALLS])();
 
@@ -164,4 +167,9 @@ extern void sys_touch(char *name);
 extern void sys_cat(char *name);
 extern int sys_find(char *path, char *name);
 extern void sys_rename(char *old_name, char *new_name);
+
+extern void sys_link(char *src_path, char *new_path);
+extern void sys_symlink(char *src_path, char *new_path);
+
+
 #endif
