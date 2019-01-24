@@ -534,9 +534,41 @@ int find_dentry(inode_t* inode_ptr, const char* name) {
     return -1;
 }
 
+// uint32_t parse_path(const char *path, inode_t *inode_ptr)
+// {
+//     return find_file(inode_ptr, (char *)path);
+// }
+
 uint32_t parse_path(const char *path, inode_t *inode_ptr)
 {
-    return find_file(inode_ptr, (char *)path);
+    bzero(parse_file_buffer, MAX_PATH_LENGTH);
+
+    char *p = "./";
+    char *p_ = "/";
+    strcpy(parse_file_buffer, p);
+    strcpy(parse_file_buffer+2, (char *)path);
+    strcpy(parse_file_buffer+strlen(parse_file_buffer), p_);
+
+    int i = 0;
+    char *_p = &parse_file_buffer[0];
+
+    inode_t _inode;
+    uint32_t inum;
+    memcpy((uint8_t *)&_inode, (uint8_t *)inode_ptr, INODE_SIZE);
+
+    uint32_t l = strlen(parse_file_buffer);
+    for(; i < l; i++){
+        if(parse_file_buffer[i] == '/'){
+            parse_file_buffer[i] = '\0';
+
+            inum = find_file(&_inode, _p);
+            sync_from_disk_inode(inum, &_inode);
+
+            _p = &parse_file_buffer[i+1];
+        }
+        i++;
+    }
+    return inum;
 }
 
 int find_free_inode()
@@ -1578,12 +1610,89 @@ void do_rename(char *old_name, char *new_name)
 
 void do_link(char *src_path, char *new_path)
 {
+    bzero(parent_buffer, MAX_PATH_LENGTH);
+    bzero(path_buffer, MAX_PATH_LENGTH);
+    bzero(name_buffer, MAX_NAME_LENGTH);
 
+    uint32_t src_inum = parse_path(src_path, current_dir_ptr);
+
+    inode_t src_inode;
+    sync_from_disk_inode(src_inum, &src_inode);
+
+    char *p = "./";
+    strcpy(path_buffer, p);
+    strcpy(path_buffer+2, new_path);
+
+    // separate_path(path, parent, name);
+    separate_path(path_buffer, parent_buffer, name_buffer); 
+
+    uint32_t parent_inum = parse_path(parent_buffer, current_dir_ptr);
+
+    inode_t parent_inode;
+    sync_from_disk_inode(parent_inum, &parent_inode);
+
+    src_inode.i_links_cnt++;
+    sync_to_disk_inode(&src_inode);
+
+    dentry_t parent_den;
+    parent_den.d_inum = src_inum;
+    strcpy(parent_den.d_name, name_buffer);
+    write_dentry(&parent_inode, parent_inode.i_fnum+2, &parent_den);
+
+    return;
 }
 
 void do_symlink(char *src_path, char *new_path)
 {
-    
+    bzero(parent_buffer, MAX_PATH_LENGTH);
+    bzero(path_buffer, MAX_PATH_LENGTH);
+    bzero(name_buffer, MAX_NAME_LENGTH);
+
+    if(count_char_in_string('/', src_path) == 0){
+        char *p = "./";
+        strcpy(path_buffer, p);
+        strcpy(path_buffer+2, src_path);
+
+        // separate_path(path, parent, name);
+        separate_path(path_buffer, parent_buffer, name_buffer);
+
+        uint32_t parent_inum = 0;
+        // parent_inum = parse_path(parent, current_dir_ptr);
+        parent_inum = find_file(current_dir_ptr, parent_buffer);
+
+        inode_t parent_inode;
+        sync_from_disk_inode(parent_inum, &parent_inode);
+
+        inode_t child_inode;
+        uint32_t child_inum = 0;
+        child_inum = find_file(&parent_inode, name_buffer);
+
+        sync_from_disk_inode(child_inum, &child_inode);
+    }
+    else if(count_char_in_string('/', src_path) == 1){
+        // char *p = "./";
+        // strcpy(path_buffer, p);
+        strcpy(path_buffer, src_path);
+
+        // separate_path(path, parent, name);
+        separate_path(path_buffer, parent_buffer, name_buffer);
+
+        uint32_t parent_inum = 0;
+        // parent_inum = parse_path(parent, current_dir_ptr);
+        parent_inum = find_file(current_dir_ptr, parent_buffer);
+
+        inode_t parent_inode;
+        sync_from_disk_inode(parent_inum, &parent_inode);
+
+        inode_t child_inode;
+        uint32_t child_inum = 0;
+        child_inum = find_file(&parent_inode, name_buffer);
+
+        sync_from_disk_inode(child_inum, &child_inode);
+    }
+    else if(count_char_in_string('/', src_path) == 2){
+
+    }
 }
 
 
