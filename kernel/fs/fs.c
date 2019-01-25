@@ -40,6 +40,9 @@ inode_t *root_inode_ptr = &root_inode;
 inode_t current_dir;
 inode_t *current_dir_ptr = &current_dir;
 
+inode_t current_dir_link;
+inode_t *current_dir_link_ptr = &current_dir_link;
+
 uint8_t cat_buffer[CAT_MAX_LENGTH] = {0};
 
 uint8_t fread_buffer[FILE_READ_MAX_LENGTH];
@@ -987,11 +990,6 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     set_inode_bmp(free_inum);
     sync_to_disk_inode_bmp();
 
-    // //debug
-    // vt100_move_cursor(1, 35);
-    // printk("[DEBUG 12 mkdir] free_inum:%d, inodebmp_block_buffer[0]:0x%x", \
-    //                          free_inum, inodebmp_block_buffer[0]);
-
     superblock_ptr->s_free_inode_cnt--;
     sync_to_disk_superblock();
 
@@ -1108,26 +1106,71 @@ void do_ls()
     bzero(find_file_buffer, BLOCK_SIZE);
     bzero(ls_buffer, MAX_LS_NUM * sizeof(dentry_t));
     dentry_t* p = (dentry_t *)find_file_buffer;
-    for(i = 0;i < MAX_BLOCK_INDEX; i++) {
 
-        // sync_from_disk_inode(0, current_dir_ptr);
+    bzero(data_block_buffer, BLOCK_SIZE);
 
-        uint32_t block_index = get_block_index_in_inode(current_dir_ptr, i);
+    if(S_ISLNK(current_dir_ptr->i_fmode)){
+        uint32_t block_index = current_dir_ptr->i_direct_table[0];
+        sync_from_disk_file_data(block_index);
 
-        read_block(block_index, find_file_buffer);
+        char *_p = ".";
+        strcpy(path_buffer, _p);
+        strcpy(path_buffer+1, data_block_buffer + sizeof(dentry_t)*2);
 
-        for(j = 0; j < DENTRY_NUM_PER_BLOCK;j++) {
-            // if(is_empty_dnetry(&p[j]) != 0){
-            //!!!!!!!!!
-            // if(is_empty_dnetry(&p[j]) == 0){
-            if(!is_empty_dnetry(&p[j])){
-                memcpy((uint8_t *)&ls_buffer[k], (uint8_t *)&p[j], sizeof(dentry_t));
-                k++;
-            } 
-            else if(is_empty_dnetry(&p[j]) && is_empty_dnetry(&p[j+1]) && is_empty_dnetry(&p[j+2])){
-                return;
+        uint32_t inum = parse_path(path_buffer, root_inode_ptr);
+        inode_t inode;
+        sync_from_disk_inode(inum, &inode);
+
+        memcpy((int8_t *)current_dir_link_ptr, (int8_t *)&inode, sizeof(inode_t));
+
+        for(i = 0;i < MAX_BLOCK_INDEX; i++) {
+
+            // sync_from_disk_inode(0, current_dir_ptr);
+
+            uint32_t block_index = get_block_index_in_inode(current_dir_link_ptr, i);
+
+            read_block(block_index, find_file_buffer);
+
+            for(j = 0; j < DENTRY_NUM_PER_BLOCK;j++) {
+                // if(is_empty_dnetry(&p[j]) != 0){
+                //!!!!!!!!!
+                // if(is_empty_dnetry(&p[j]) == 0){
+                if(!is_empty_dnetry(&p[j])){
+                    memcpy((uint8_t *)&ls_buffer[k], (uint8_t *)&p[j], sizeof(dentry_t));
+                    k++;
+                } 
+                else if(is_empty_dnetry(&p[j]) && is_empty_dnetry(&p[j+1]) && is_empty_dnetry(&p[j+2])){
+                    return;
+                }
+            }
+        }  
+
+        return;
+    }
+    else{
+        for(i = 0;i < MAX_BLOCK_INDEX; i++) {
+
+            // sync_from_disk_inode(0, current_dir_ptr);
+
+            uint32_t block_index = get_block_index_in_inode(current_dir_ptr, i);
+
+            read_block(block_index, find_file_buffer);
+
+            for(j = 0; j < DENTRY_NUM_PER_BLOCK;j++) {
+                // if(is_empty_dnetry(&p[j]) != 0){
+                //!!!!!!!!!
+                // if(is_empty_dnetry(&p[j]) == 0){
+                if(!is_empty_dnetry(&p[j])){
+                    memcpy((uint8_t *)&ls_buffer[k], (uint8_t *)&p[j], sizeof(dentry_t));
+                    k++;
+                } 
+                else if(is_empty_dnetry(&p[j]) && is_empty_dnetry(&p[j+1]) && is_empty_dnetry(&p[j+2])){
+                    return;
+                }
             }
         }
+
+        return;        
     }
 }
 
@@ -1665,6 +1708,12 @@ void do_link(char *src_path, char *new_path)
     inode_t src_inode;
     sync_from_disk_inode(src_inum, &src_inode);
 
+    if(S_ISDIR(src_inode.i_fmode)){
+        vt100_move_cursor(1, 45);
+        printk("[FS ERROR] ERROR_LINK_CANNOT_BE_DIR\n");
+        return ;        
+    }
+
     // char *p = "./";
     // strcpy(path_buffer, p);
     // strcpy(path_buffer+2, new_path);
@@ -1708,52 +1757,80 @@ void do_symlink(char *src_path, char *new_path)
     bzero(parent_buffer, MAX_PATH_LENGTH);
     bzero(path_buffer, MAX_PATH_LENGTH);
     bzero(name_buffer, MAX_NAME_LENGTH);
+    bzero(data_block_buffer, BLOCK_SIZE);
 
-    if(count_char_in_string('/', src_path) == 0){
-        char *p = "./";
-        strcpy(path_buffer, p);
-        strcpy(path_buffer+2, src_path);
+    // memcpy((uint8_t *)path_buffer, (uint8_t *)new_path, strlen((char *)new_path));
+    // path_buffer[strlen((char *)new_path)] = '\0';
 
-        // separate_path(path, parent, name);
-        separate_path(path_buffer, parent_buffer, name_buffer);
+    // // separate_path(path, parent, name);
+    // separate_path(path_buffer, parent_buffer, name_buffer);
 
-        uint32_t parent_inum = 0;
-        // parent_inum = parse_path(parent, current_dir_ptr);
-        parent_inum = find_file(current_dir_ptr, parent_buffer);
+    char *_p = ".";
+    strcpy(path_buffer, _p);
+    strcpy(path_buffer+1, src_path);
+    separate_path(path_buffer, parent_buffer, name_buffer);
 
-        inode_t parent_inode;
-        sync_from_disk_inode(parent_inum, &parent_inode);
+    uint32_t parent_inum = 0, free_inum, free_block_index;
+    // // parent_inum = parse_path(parent, current_dir_ptr);
+    // parent_inum = find_file(current_dir_ptr, parent_buffer);
+    parent_inum = parse_path(new_path, current_dir_ptr);
+    
+    sync_from_disk_block_bmp();
+    sync_from_disk_inode_bmp();
 
-        inode_t child_inode;
-        uint32_t child_inum = 0;
-        child_inum = find_file(&parent_inode, name_buffer);
+    inode_t parent_inode, new_inode;
+    sync_from_disk_inode(parent_inum, &parent_inode);
 
-        sync_from_disk_inode(child_inum, &child_inode);
-    }
-    else if(count_char_in_string('/', src_path) == 1){
-        // char *p = "./";
-        // strcpy(path_buffer, p);
-        strcpy(path_buffer, src_path);
+    free_inum = find_free_inode();
+    set_inode_bmp(free_inum);
+    sync_to_disk_inode_bmp();
 
-        // separate_path(path, parent, name);
-        separate_path(path_buffer, parent_buffer, name_buffer);
+    superblock_ptr->s_free_inode_cnt--;
+    sync_to_disk_superblock();
 
-        uint32_t parent_inum = 0;
-        // parent_inum = parse_path(parent, current_dir_ptr);
-        parent_inum = find_file(current_dir_ptr, parent_buffer);
+    free_block_index = find_free_block();
+    set_block_bmp(free_block_index);
+    sync_to_disk_block_bmp();
 
-        inode_t parent_inode;
-        sync_from_disk_inode(parent_inum, &parent_inode);
+    superblock_ptr->s_free_blocks_cnt--;
+    sync_to_disk_superblock();    
 
-        inode_t child_inode;
-        uint32_t child_inum = 0;
-        child_inum = find_file(&parent_inode, name_buffer);
+    new_inode.i_fmode = S_IFLNK;
+    new_inode.i_links_cnt = 1;
+    new_inode.i_fsize = BLOCK_SIZE;
+    new_inode.i_fnum = 0;
+    new_inode.i_atime = get_ticks();
+    new_inode.i_ctime = get_ticks();
+    new_inode.i_mtime = get_ticks();
+    bzero(new_inode.i_direct_table, MAX_DIRECT_NUM*sizeof(uint32_t));
+    new_inode.i_direct_table[0] = free_block_index;
+    new_inode.i_indirect_block_1_ptr = NULL;
+    new_inode.i_indirect_block_2_ptr = NULL;
+    new_inode.i_indirect_block_3_ptr = NULL;
+    new_inode.i_num = free_inum;
+    bzero(new_inode.padding, 10*sizeof(uint32_t));
 
-        sync_from_disk_inode(child_inum, &child_inode);
-    }
-    else if(count_char_in_string('/', src_path) == 2){
+    sync_to_disk_inode(&new_inode);
 
-    }
+    bzero(dentry_block_buffer, BLOCK_SIZE);
+    dentry_t *new_dentry_table = (dentry_t *)dentry_block_buffer;
+    new_dentry_table[0].d_inum = free_inum;
+    strcpy(new_dentry_table[0].d_name, ".");
+    new_dentry_table[1].d_inum = parent_inum;
+    strcpy(new_dentry_table[1].d_name, "..");
+    sync_to_disk_dentry(free_block_index);
+
+    sync_from_disk_file_data(free_block_index);
+    memcpy(data_block_buffer + sizeof(dentry_t)*2, (uint8_t *)src_path, strlen(src_path));
+    data_block_buffer[sizeof(dentry_t)*2 + strlen(src_path)] = '\0';
+    sync_to_disk_file_data(free_block_index);
+
+    dentry_t parent_dentry;
+    parent_dentry.d_inum = free_inum;
+    strcpy(parent_dentry.d_name, name_buffer);
+    write_dentry(&parent_inode, parent_inode.i_fnum+2, &parent_dentry);
+
+    return;
 }
 
 
