@@ -568,9 +568,9 @@ int find_dentry(inode_t* inode_ptr, const char* name) {
 uint32_t parse_path(const char *path, inode_t *inode_ptr)
 {
 
-    //debug
-    vt100_move_cursor(1, 29);
-    printk("[DEBUG 3 parse_path]");
+    // //debug
+    // vt100_move_cursor(1, 29);
+    // printk("[DEBUG 3 parse_path]");
 
     bzero(parse_file_buffer, MAX_PATH_LENGTH);
 /*
@@ -586,29 +586,29 @@ uint32_t parse_path(const char *path, inode_t *inode_ptr)
     // strcpy(parse_file_buffer+2, (char *)path);
     strcpy(parse_file_buffer, (char *)path);
 
-    //debug
-    vt100_move_cursor(1, 1);
-    printk("[DEBUG 3 parse_path] strlen(parse_file_buffer):%d \n", strlen(parse_file_buffer));
-    printk("[DEBUG 3 parse_file_buffer:%s", parse_file_buffer);
-    printk("\n");
+    // //debug
+    // vt100_move_cursor(1, 1);
+    // printk("[DEBUG 3 parse_path] strlen(parse_file_buffer):%d \n", strlen(parse_file_buffer));
+    // printk("[DEBUG 3 parse_file_buffer:%s", parse_file_buffer);
+    // printk("\n");
 
     strcpy(parse_file_buffer+strlen(parse_file_buffer), p_);
 
-    //debug
-    vt100_move_cursor(1, 3);
-    printk("[DEBUG 3 parse_path] strlen(parse_file_buffer):%d \n", strlen(parse_file_buffer));
-    printk("[DEBUG 3 parse_file_buffer:%s", parse_file_buffer);
-    printk("\n");
+    // //debug
+    // vt100_move_cursor(1, 3);
+    // printk("[DEBUG 3 parse_path] strlen(parse_file_buffer):%d \n", strlen(parse_file_buffer));
+    // printk("[DEBUG 3 parse_file_buffer:%s", parse_file_buffer);
+    // printk("\n");
 
     int i = 0;
     char *_p = &parse_file_buffer[0];
 
-    //debug
-    vt100_move_cursor(1, 5);
-    printk("[DEBUG 3 _p:%s", _p);
-    printk("\n");
-    printk("[DEBUG 3 parse_file_buffer:%s", parse_file_buffer);
-    printk("\n");
+    // //debug
+    // vt100_move_cursor(1, 5);
+    // printk("[DEBUG 3 _p:%s", _p);
+    // printk("\n");
+    // printk("[DEBUG 3 parse_file_buffer:%s", parse_file_buffer);
+    // printk("\n");
 
     inode_t _inode;
     uint32_t inum;
@@ -630,23 +630,23 @@ uint32_t parse_path(const char *path, inode_t *inode_ptr)
             inum = find_file(&_inode, _p);
             sync_from_disk_inode(inum, &_inode);
 
-            //debug
-            vt100_move_cursor(1, 40 + i*10);
-            printk("[DEBUG 3 link] inum:%d \n", inum);
-            printk("               _inode.i_num:%d \n", _inode.i_num);
-            printk("               _p:%s", _p);
-            printk("\n");
-            printk("               parse_file_buffer:%s", parse_file_buffer);
-            printk("\n");
-            printk("               path:%s", path);
-            printk("\n");
-            printk("               current_dir_ptr->i_num:%d \n", current_dir_ptr->i_num);
-            printk("               _inode.i_num:%d \n", _inode.i_num);
-            printk("               inode_ptr->i_num:%d \n", inode_ptr->i_num);
+            // //debug
+            // vt100_move_cursor(1, 40 + i*10);
+            // printk("[DEBUG 3 link] inum:%d \n", inum);
+            // printk("               _inode.i_num:%d \n", _inode.i_num);
+            // printk("               _p:%s", _p);
+            // printk("\n");
+            // printk("               parse_file_buffer:%s", parse_file_buffer);
+            // printk("\n");
+            // printk("               path:%s", path);
+            // printk("\n");
+            // printk("               current_dir_ptr->i_num:%d \n", current_dir_ptr->i_num);
+            // printk("               _inode.i_num:%d \n", _inode.i_num);
+            // printk("               inode_ptr->i_num:%d \n", inode_ptr->i_num);
 
             _p = &parse_file_buffer[i+1];
 
-            printk("               _p:%s", _p);
+            // printk("               _p:%s", _p);
         }
         // i++;
         //BUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1723,19 +1723,19 @@ void do_link(char *src_path, char *new_path)
     inode_t parent_inode;
     sync_from_disk_inode(parent_inum, &parent_inode);
 
-    //debug
-    vt100_move_cursor(1, 30);
-    printk("[DEBUG 3 link] parent_inum:%d \n", parent_inum);
-    printk("               src_inum:%d \n", src_inum);
-    printk("               parent_buffer:%s", parent_buffer);
-    printk("\n");
-    printk("               new_path:%s", new_path);
-    printk("\n");
-    printk("               src_path:%s", src_path);
-    printk("\n");
-    printk("               current_dir_ptr->i_num:%d \n", current_dir_ptr->i_num);
-    printk("               parent_inode.i_num:%d \n", parent_inode.i_num);
-    printk("               src_inode.i_num:%d \n", src_inode.i_num);
+    // //debug
+    // vt100_move_cursor(1, 30);
+    // printk("[DEBUG 3 link] parent_inum:%d \n", parent_inum);
+    // printk("               src_inum:%d \n", src_inum);
+    // printk("               parent_buffer:%s", parent_buffer);
+    // printk("\n");
+    // printk("               new_path:%s", new_path);
+    // printk("\n");
+    // printk("               src_path:%s", src_path);
+    // printk("\n");
+    // printk("               current_dir_ptr->i_num:%d \n", current_dir_ptr->i_num);
+    // printk("               parent_inode.i_num:%d \n", parent_inode.i_num);
+    // printk("               src_inode.i_num:%d \n", src_inode.i_num);
 
     src_inode.i_links_cnt++;
     sync_to_disk_inode(&src_inode);
