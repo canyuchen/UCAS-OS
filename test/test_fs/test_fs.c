@@ -23,12 +23,12 @@ void test_fs(void)
     for (i = 0; i < 10; i++)
     {
         sys_fread(fd, Buff, 13);
-        vt100_move_cursor(1,i);
-        // sys_move_cursor(1,i);
+        // vt100_move_cursor(1,i);
+        sys_move_cursor(1,i);
         for (j = 0; j < 13; j++)
         {
-            // printf("%c", Buff[j]);
-            printk("%c", Buff[j]);
+            printf("%c", Buff[j]);
+            // printk("%c", Buff[j]);
         }
     }
 

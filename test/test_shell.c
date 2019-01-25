@@ -299,7 +299,15 @@ void test_shell()
                     // printf("test_tasks[k]->task_name:%s", test_tasks[k]->task_name);
                     // printf("\n");
                     // BUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+                    int screen_cursor_x_saved = screen_cursor_x;
+                    int screen_cursor_y_saved = screen_cursor_y;
+
                     sys_spawn(test_tasks[k]);
+
+                    screen_cursor_x = screen_cursor_x_saved;
+                    screen_cursor_y = screen_cursor_y_saved;
+                    
                     printf("> root@UCAS_OS: ");
                 }                 
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'k' 
