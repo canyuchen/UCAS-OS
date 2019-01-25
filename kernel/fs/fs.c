@@ -567,11 +567,6 @@ int find_dentry(inode_t* inode_ptr, const char* name) {
 
 uint32_t parse_path(const char *path, inode_t *inode_ptr)
 {
-
-    // //debug
-    // vt100_move_cursor(1, 29);
-    // printk("[DEBUG 3 parse_path]");
-
     bzero(parse_file_buffer, MAX_PATH_LENGTH);
 /*
     char *p = "./";
@@ -586,29 +581,10 @@ uint32_t parse_path(const char *path, inode_t *inode_ptr)
     // strcpy(parse_file_buffer+2, (char *)path);
     strcpy(parse_file_buffer, (char *)path);
 
-    // //debug
-    // vt100_move_cursor(1, 1);
-    // printk("[DEBUG 3 parse_path] strlen(parse_file_buffer):%d \n", strlen(parse_file_buffer));
-    // printk("[DEBUG 3 parse_file_buffer:%s", parse_file_buffer);
-    // printk("\n");
-
     strcpy(parse_file_buffer+strlen(parse_file_buffer), p_);
-
-    // //debug
-    // vt100_move_cursor(1, 3);
-    // printk("[DEBUG 3 parse_path] strlen(parse_file_buffer):%d \n", strlen(parse_file_buffer));
-    // printk("[DEBUG 3 parse_file_buffer:%s", parse_file_buffer);
-    // printk("\n");
 
     int i = 0;
     char *_p = &parse_file_buffer[0];
-
-    // //debug
-    // vt100_move_cursor(1, 5);
-    // printk("[DEBUG 3 _p:%s", _p);
-    // printk("\n");
-    // printk("[DEBUG 3 parse_file_buffer:%s", parse_file_buffer);
-    // printk("\n");
 
     inode_t _inode;
     uint32_t inum;
@@ -616,33 +592,12 @@ uint32_t parse_path(const char *path, inode_t *inode_ptr)
 
     uint32_t l = strlen(parse_file_buffer);
 
-    // //debug
-    // vt100_move_cursor(1, 5);
-    // printk("[DEBUG 3 _p:%s", _p);
-    // printk("\n");
-    // printk("[DEBUG 3 parse_file_buffer:%s", parse_file_buffer);
-    // printk("\n");
-
     for(; i < l; i++){
         if(parse_file_buffer[i] == '/'){
             parse_file_buffer[i] = '\0';
 
             inum = find_file(&_inode, _p);
             sync_from_disk_inode(inum, &_inode);
-
-            // //debug
-            // vt100_move_cursor(1, 40 + i*10);
-            // printk("[DEBUG 3 link] inum:%d \n", inum);
-            // printk("               _inode.i_num:%d \n", _inode.i_num);
-            // printk("               _p:%s", _p);
-            // printk("\n");
-            // printk("               parse_file_buffer:%s", parse_file_buffer);
-            // printk("\n");
-            // printk("               path:%s", path);
-            // printk("\n");
-            // printk("               current_dir_ptr->i_num:%d \n", current_dir_ptr->i_num);
-            // printk("               _inode.i_num:%d \n", _inode.i_num);
-            // printk("               inode_ptr->i_num:%d \n", inode_ptr->i_num);
 
             _p = &parse_file_buffer[i+1];
 
