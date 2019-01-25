@@ -1529,6 +1529,7 @@ void do_cat(char *name)
     // sync_from_disk_inode(file_descriptor_table[fd].fd_inum, &inode);
 
     file_descriptor_table[fd].fd_r_offset = 0;
+    //important!!!!
 
     do_fread(fd, cat_buffer, CAT_LENGTH);
     cat_buffer[CAT_LENGTH] = '\0';
@@ -1745,7 +1746,7 @@ void do_link(char *src_path, char *new_path)
 
     src_inode.i_links_cnt++;
     sync_to_disk_inode(&src_inode);
-
+/*
     bzero(parent_buffer, MAX_PATH_LENGTH);
     bzero(path_buffer, MAX_PATH_LENGTH);
     bzero(name_buffer, MAX_NAME_LENGTH);
@@ -1753,7 +1754,7 @@ void do_link(char *src_path, char *new_path)
     strcpy(path_buffer, src_path);
 
     separate_path(path_buffer, parent_buffer, name_buffer); 
-
+*/
     dentry_t parent_den;
     parent_den.d_inum = src_inum;
     strcpy(parent_den.d_name, name_buffer);
