@@ -9656,7 +9656,7 @@ a08093a4:	2442e1f0 	addiu	v0,v0,-7696
 a08093a8:	afc20014 	sw	v0,20(s8)
 a08093ac:	8fc40030 	lw	a0,48(s8)
 a08093b0:	8fc5001c 	lw	a1,28(s8)
-a08093b4:	0c2025be 	jal	a08096f8 <get_block_index_in_dir>
+a08093b4:	0c2025be 	jal	a08096f8 <get_block_index_in_inode>
 a08093b8:	00000000 	nop
 a08093bc:	14400024 	bnez	v0,a0809450 <write_dentry+0x184>
 a08093c0:	00000000 	nop
@@ -9678,7 +9678,7 @@ a08093fc:	00000000 	nop
 a0809400:	8fc40030 	lw	a0,48(s8)
 a0809404:	8fc5001c 	lw	a1,28(s8)
 a0809408:	8fc60010 	lw	a2,16(s8)
-a080940c:	0c2026af 	jal	a0809abc <write_block_index_in_dir>
+a080940c:	0c2026af 	jal	a0809abc <write_block_index_in_inode>
 a0809410:	00000000 	nop
 a0809414:	8fc20030 	lw	v0,48(s8)
 a0809418:	8c420004 	lw	v0,4(v0)
@@ -9705,7 +9705,7 @@ a0809468:	0c202496 	jal	a0809258 <sync_to_disk_inode>
 a080946c:	00000000 	nop
 a0809470:	8fc40030 	lw	a0,48(s8)
 a0809474:	8fc5001c 	lw	a1,28(s8)
-a0809478:	0c2025be 	jal	a08096f8 <get_block_index_in_dir>
+a0809478:	0c2025be 	jal	a08096f8 <get_block_index_in_inode>
 a080947c:	00000000 	nop
 a0809480:	00402021 	move	a0,v0
 a0809484:	3c02a084 	lui	v0,0xa084
@@ -9724,7 +9724,7 @@ a08094b4:	0c203ade 	jal	a080eb78 <memcpy>
 a08094b8:	00000000 	nop
 a08094bc:	8fc40030 	lw	a0,48(s8)
 a08094c0:	8fc5001c 	lw	a1,28(s8)
-a08094c4:	0c2025be 	jal	a08096f8 <get_block_index_in_dir>
+a08094c4:	0c2025be 	jal	a08096f8 <get_block_index_in_inode>
 a08094c8:	00000000 	nop
 a08094cc:	00402021 	move	a0,v0
 a08094d0:	3c02a084 	lui	v0,0xa084
@@ -9800,7 +9800,7 @@ a08095d4:	2442f1f0 	addiu	v0,v0,-3600
 a08095d8:	afc20010 	sw	v0,16(s8)
 a08095dc:	8fc40028 	lw	a0,40(s8)
 a08095e0:	8fc50018 	lw	a1,24(s8)
-a08095e4:	0c2025be 	jal	a08096f8 <get_block_index_in_dir>
+a08095e4:	0c2025be 	jal	a08096f8 <get_block_index_in_inode>
 a08095e8:	00000000 	nop
 a08095ec:	00402021 	move	a0,v0
 a08095f0:	3c02a084 	lui	v0,0xa084
@@ -9872,7 +9872,7 @@ a08096ec:	27bd0020 	addiu	sp,sp,32
 a08096f0:	03e00008 	jr	ra
 a08096f4:	00000000 	nop
 
-a08096f8 <get_block_index_in_dir>:
+a08096f8 <get_block_index_in_inode>:
 a08096f8:	27bdffe0 	addiu	sp,sp,-32
 a08096fc:	afbf001c 	sw	ra,28(sp)
 a0809700:	afbe0018 	sw	s8,24(sp)
@@ -9896,7 +9896,7 @@ a0809744:	0c203b17 	jal	a080ec5c <bzero>
 a0809748:	00000000 	nop
 a080974c:	8fc20024 	lw	v0,36(s8)
 a0809750:	2c42000c 	sltiu	v0,v0,12
-a0809754:	1040000a 	beqz	v0,a0809780 <get_block_index_in_dir+0x88>
+a0809754:	1040000a 	beqz	v0,a0809780 <get_block_index_in_inode+0x88>
 a0809758:	00000000 	nop
 a080975c:	8fc20024 	lw	v0,36(s8)
 a0809760:	8fc30020 	lw	v1,32(s8)
@@ -9905,19 +9905,19 @@ a0809768:	00021080 	sll	v0,v0,0x2
 a080976c:	00621021 	addu	v0,v1,v0
 a0809770:	8c420000 	lw	v0,0(v0)
 a0809774:	afc20010 	sw	v0,16(s8)
-a0809778:	082026a6 	j	a0809a98 <get_block_index_in_dir+0x3a0>
+a0809778:	082026a6 	j	a0809a98 <get_block_index_in_inode+0x3a0>
 a080977c:	00000000 	nop
 a0809780:	8fc20024 	lw	v0,36(s8)
 a0809784:	2c42040c 	sltiu	v0,v0,1036
-a0809788:	1040001b 	beqz	v0,a08097f8 <get_block_index_in_dir+0x100>
+a0809788:	1040001b 	beqz	v0,a08097f8 <get_block_index_in_inode+0x100>
 a080978c:	00000000 	nop
 a0809790:	8fc20020 	lw	v0,32(s8)
 a0809794:	8c420048 	lw	v0,72(v0)
-a0809798:	14400005 	bnez	v0,a08097b0 <get_block_index_in_dir+0xb8>
+a0809798:	14400005 	bnez	v0,a08097b0 <get_block_index_in_inode+0xb8>
 a080979c:	00000000 	nop
 a08097a0:	2402ffff 	li	v0,-1
 a08097a4:	afc20010 	sw	v0,16(s8)
-a08097a8:	082026a6 	j	a0809a98 <get_block_index_in_dir+0x3a0>
+a08097a8:	082026a6 	j	a0809a98 <get_block_index_in_inode+0x3a0>
 a08097ac:	00000000 	nop
 a08097b0:	8fc20020 	lw	v0,32(s8)
 a08097b4:	8c430048 	lw	v1,72(v0)
@@ -9935,21 +9935,21 @@ a08097e0:	246203f0 	addiu	v0,v1,1008
 a08097e4:	00821021 	addu	v0,a0,v0
 a08097e8:	8c420000 	lw	v0,0(v0)
 a08097ec:	afc20010 	sw	v0,16(s8)
-a08097f0:	082026a6 	j	a0809a98 <get_block_index_in_dir+0x3a0>
+a08097f0:	082026a6 	j	a0809a98 <get_block_index_in_inode+0x3a0>
 a08097f4:	00000000 	nop
 a08097f8:	8fc30024 	lw	v1,36(s8)
 a08097fc:	3c020010 	lui	v0,0x10
 a0809800:	3442040c 	ori	v0,v0,0x40c
 a0809804:	0062102b 	sltu	v0,v1,v0
-a0809808:	10400038 	beqz	v0,a08098ec <get_block_index_in_dir+0x1f4>
+a0809808:	10400038 	beqz	v0,a08098ec <get_block_index_in_inode+0x1f4>
 a080980c:	00000000 	nop
 a0809810:	8fc20020 	lw	v0,32(s8)
 a0809814:	8c420048 	lw	v0,72(v0)
-a0809818:	14400005 	bnez	v0,a0809830 <get_block_index_in_dir+0x138>
+a0809818:	14400005 	bnez	v0,a0809830 <get_block_index_in_inode+0x138>
 a080981c:	00000000 	nop
 a0809820:	2402ffff 	li	v0,-1
 a0809824:	afc20010 	sw	v0,16(s8)
-a0809828:	082026a6 	j	a0809a98 <get_block_index_in_dir+0x3a0>
+a0809828:	082026a6 	j	a0809a98 <get_block_index_in_inode+0x3a0>
 a080982c:	00000000 	nop
 a0809830:	8fc20020 	lw	v0,32(s8)
 a0809834:	8c430048 	lw	v1,72(v0)
@@ -9967,11 +9967,11 @@ a0809860:	00022080 	sll	a0,v0,0x2
 a0809864:	246203f0 	addiu	v0,v1,1008
 a0809868:	00821021 	addu	v0,a0,v0
 a080986c:	8c420000 	lw	v0,0(v0)
-a0809870:	14400005 	bnez	v0,a0809888 <get_block_index_in_dir+0x190>
+a0809870:	14400005 	bnez	v0,a0809888 <get_block_index_in_inode+0x190>
 a0809874:	00000000 	nop
 a0809878:	2402ffff 	li	v0,-1
 a080987c:	afc20010 	sw	v0,16(s8)
-a0809880:	082026a6 	j	a0809a98 <get_block_index_in_dir+0x3a0>
+a0809880:	082026a6 	j	a0809a98 <get_block_index_in_inode+0x3a0>
 a0809884:	00000000 	nop
 a0809888:	8fc20024 	lw	v0,36(s8)
 a080988c:	2442fbf4 	addiu	v0,v0,-1036
@@ -9996,21 +9996,21 @@ a08098d4:	246213f0 	addiu	v0,v1,5104
 a08098d8:	00821021 	addu	v0,a0,v0
 a08098dc:	8c420000 	lw	v0,0(v0)
 a08098e0:	afc20010 	sw	v0,16(s8)
-a08098e4:	082026a6 	j	a0809a98 <get_block_index_in_dir+0x3a0>
+a08098e4:	082026a6 	j	a0809a98 <get_block_index_in_inode+0x3a0>
 a08098e8:	00000000 	nop
 a08098ec:	8fc30024 	lw	v1,36(s8)
 a08098f0:	3c024010 	lui	v0,0x4010
 a08098f4:	3442040c 	ori	v0,v0,0x40c
 a08098f8:	0062102b 	sltu	v0,v1,v0
-a08098fc:	10400064 	beqz	v0,a0809a90 <get_block_index_in_dir+0x398>
+a08098fc:	10400064 	beqz	v0,a0809a90 <get_block_index_in_inode+0x398>
 a0809900:	00000000 	nop
 a0809904:	8fc20020 	lw	v0,32(s8)
 a0809908:	8c420048 	lw	v0,72(v0)
-a080990c:	14400005 	bnez	v0,a0809924 <get_block_index_in_dir+0x22c>
+a080990c:	14400005 	bnez	v0,a0809924 <get_block_index_in_inode+0x22c>
 a0809910:	00000000 	nop
 a0809914:	2402ffff 	li	v0,-1
 a0809918:	afc20010 	sw	v0,16(s8)
-a080991c:	082026a6 	j	a0809a98 <get_block_index_in_dir+0x3a0>
+a080991c:	082026a6 	j	a0809a98 <get_block_index_in_inode+0x3a0>
 a0809920:	00000000 	nop
 a0809924:	8fc20020 	lw	v0,32(s8)
 a0809928:	8c430048 	lw	v1,72(v0)
@@ -10030,11 +10030,11 @@ a080995c:	00022080 	sll	a0,v0,0x2
 a0809960:	246203f0 	addiu	v0,v1,1008
 a0809964:	00821021 	addu	v0,a0,v0
 a0809968:	8c420000 	lw	v0,0(v0)
-a080996c:	14400005 	bnez	v0,a0809984 <get_block_index_in_dir+0x28c>
+a080996c:	14400005 	bnez	v0,a0809984 <get_block_index_in_inode+0x28c>
 a0809970:	00000000 	nop
 a0809974:	2402ffff 	li	v0,-1
 a0809978:	afc20010 	sw	v0,16(s8)
-a080997c:	082026a6 	j	a0809a98 <get_block_index_in_dir+0x3a0>
+a080997c:	082026a6 	j	a0809a98 <get_block_index_in_inode+0x3a0>
 a0809980:	00000000 	nop
 a0809984:	8fc30024 	lw	v1,36(s8)
 a0809988:	3c02ffef 	lui	v0,0xffef
@@ -10065,11 +10065,11 @@ a08099e8:	00022080 	sll	a0,v0,0x2
 a08099ec:	246213f0 	addiu	v0,v1,5104
 a08099f0:	00821021 	addu	v0,a0,v0
 a08099f4:	8c420000 	lw	v0,0(v0)
-a08099f8:	14400005 	bnez	v0,a0809a10 <get_block_index_in_dir+0x318>
+a08099f8:	14400005 	bnez	v0,a0809a10 <get_block_index_in_inode+0x318>
 a08099fc:	00000000 	nop
 a0809a00:	2402ffff 	li	v0,-1
 a0809a04:	afc20010 	sw	v0,16(s8)
-a0809a08:	082026a6 	j	a0809a98 <get_block_index_in_dir+0x3a0>
+a0809a08:	082026a6 	j	a0809a98 <get_block_index_in_inode+0x3a0>
 a0809a0c:	00000000 	nop
 a0809a10:	8fc30024 	lw	v1,36(s8)
 a0809a14:	3c02ffef 	lui	v0,0xffef
@@ -10101,9 +10101,9 @@ a0809a78:	246223f0 	addiu	v0,v1,9200
 a0809a7c:	00821021 	addu	v0,a0,v0
 a0809a80:	8c420000 	lw	v0,0(v0)
 a0809a84:	afc20010 	sw	v0,16(s8)
-a0809a88:	082026a6 	j	a0809a98 <get_block_index_in_dir+0x3a0>
+a0809a88:	082026a6 	j	a0809a98 <get_block_index_in_inode+0x3a0>
 a0809a8c:	00000000 	nop
-a0809a90:	082026a8 	j	a0809aa0 <get_block_index_in_dir+0x3a8>
+a0809a90:	082026a8 	j	a0809aa0 <get_block_index_in_inode+0x3a8>
 a0809a94:	00000000 	nop
 a0809a98:	8fc20010 	lw	v0,16(s8)
 a0809a9c:	afc20014 	sw	v0,20(s8)
@@ -10115,7 +10115,7 @@ a0809ab0:	27bd0020 	addiu	sp,sp,32
 a0809ab4:	03e00008 	jr	ra
 a0809ab8:	00000000 	nop
 
-a0809abc <write_block_index_in_dir>:
+a0809abc <write_block_index_in_inode>:
 a0809abc:	27bdffd8 	addiu	sp,sp,-40
 a0809ac0:	afbf0024 	sw	ra,36(sp)
 a0809ac4:	afbe0020 	sw	s8,32(sp)
@@ -10140,7 +10140,7 @@ a0809b0c:	0c203b17 	jal	a080ec5c <bzero>
 a0809b10:	00000000 	nop
 a0809b14:	8fc2002c 	lw	v0,44(s8)
 a0809b18:	2c42000c 	sltiu	v0,v0,12
-a0809b1c:	1040000d 	beqz	v0,a0809b54 <write_block_index_in_dir+0x98>
+a0809b1c:	1040000d 	beqz	v0,a0809b54 <write_block_index_in_inode+0x98>
 a0809b20:	00000000 	nop
 a0809b24:	8fc2002c 	lw	v0,44(s8)
 a0809b28:	8fc30028 	lw	v1,40(s8)
@@ -10152,15 +10152,15 @@ a0809b3c:	ac620000 	sw	v0,0(v1)
 a0809b40:	8fc40028 	lw	a0,40(s8)
 a0809b44:	0c202496 	jal	a0809258 <sync_to_disk_inode>
 a0809b48:	00000000 	nop
-a0809b4c:	0820288d 	j	a080a234 <write_block_index_in_dir+0x778>
+a0809b4c:	0820288d 	j	a080a234 <write_block_index_in_inode+0x778>
 a0809b50:	00000000 	nop
 a0809b54:	8fc2002c 	lw	v0,44(s8)
 a0809b58:	2c42040c 	sltiu	v0,v0,1036
-a0809b5c:	1040003c 	beqz	v0,a0809c50 <write_block_index_in_dir+0x194>
+a0809b5c:	1040003c 	beqz	v0,a0809c50 <write_block_index_in_inode+0x194>
 a0809b60:	00000000 	nop
 a0809b64:	8fc20028 	lw	v0,40(s8)
 a0809b68:	8c420048 	lw	v0,72(v0)
-a0809b6c:	1440001e 	bnez	v0,a0809be8 <write_block_index_in_dir+0x12c>
+a0809b6c:	1440001e 	bnez	v0,a0809be8 <write_block_index_in_inode+0x12c>
 a0809b70:	00000000 	nop
 a0809b74:	0c202a1a 	jal	a080a868 <find_free_block>
 a0809b78:	00000000 	nop
@@ -10215,17 +10215,17 @@ a0809c38:	00602021 	move	a0,v1
 a0809c3c:	00402821 	move	a1,v0
 a0809c40:	0c20231c 	jal	a0808c70 <write_block>
 a0809c44:	00000000 	nop
-a0809c48:	0820288d 	j	a080a234 <write_block_index_in_dir+0x778>
+a0809c48:	0820288d 	j	a080a234 <write_block_index_in_inode+0x778>
 a0809c4c:	00000000 	nop
 a0809c50:	8fc3002c 	lw	v1,44(s8)
 a0809c54:	3c020010 	lui	v0,0x10
 a0809c58:	3442040c 	ori	v0,v0,0x40c
 a0809c5c:	0062102b 	sltu	v0,v1,v0
-a0809c60:	10400084 	beqz	v0,a0809e74 <write_block_index_in_dir+0x3b8>
+a0809c60:	10400084 	beqz	v0,a0809e74 <write_block_index_in_inode+0x3b8>
 a0809c64:	00000000 	nop
 a0809c68:	8fc20028 	lw	v0,40(s8)
 a0809c6c:	8c42004c 	lw	v0,76(v0)
-a0809c70:	1440001e 	bnez	v0,a0809cec <write_block_index_in_dir+0x230>
+a0809c70:	1440001e 	bnez	v0,a0809cec <write_block_index_in_inode+0x230>
 a0809c74:	00000000 	nop
 a0809c78:	0c202a1a 	jal	a080a868 <find_free_block>
 a0809c7c:	00000000 	nop
@@ -10272,7 +10272,7 @@ a0809d1c:	00022080 	sll	a0,v0,0x2
 a0809d20:	246203f0 	addiu	v0,v1,1008
 a0809d24:	00821021 	addu	v0,a0,v0
 a0809d28:	8c420000 	lw	v0,0(v0)
-a0809d2c:	1440002c 	bnez	v0,a0809de0 <write_block_index_in_dir+0x324>
+a0809d2c:	1440002c 	bnez	v0,a0809de0 <write_block_index_in_inode+0x324>
 a0809d30:	00000000 	nop
 a0809d34:	0c202a1a 	jal	a080a868 <find_free_block>
 a0809d38:	00000000 	nop
@@ -10358,11 +10358,11 @@ a0809e74:	8fc3002c 	lw	v1,44(s8)
 a0809e78:	3c024010 	lui	v0,0x4010
 a0809e7c:	3442040c 	ori	v0,v0,0x40c
 a0809e80:	0062102b 	sltu	v0,v1,v0
-a0809e84:	104000eb 	beqz	v0,a080a234 <write_block_index_in_dir+0x778>
+a0809e84:	104000eb 	beqz	v0,a080a234 <write_block_index_in_inode+0x778>
 a0809e88:	00000000 	nop
 a0809e8c:	8fc20028 	lw	v0,40(s8)
 a0809e90:	8c420050 	lw	v0,80(v0)
-a0809e94:	1440001e 	bnez	v0,a0809f10 <write_block_index_in_dir+0x454>
+a0809e94:	1440001e 	bnez	v0,a0809f10 <write_block_index_in_inode+0x454>
 a0809e98:	00000000 	nop
 a0809e9c:	0c202a1a 	jal	a080a868 <find_free_block>
 a0809ea0:	00000000 	nop
@@ -10411,7 +10411,7 @@ a0809f48:	00022080 	sll	a0,v0,0x2
 a0809f4c:	246203f0 	addiu	v0,v1,1008
 a0809f50:	00821021 	addu	v0,a0,v0
 a0809f54:	8c420000 	lw	v0,0(v0)
-a0809f58:	1440002e 	bnez	v0,a080a014 <write_block_index_in_dir+0x558>
+a0809f58:	1440002e 	bnez	v0,a080a014 <write_block_index_in_inode+0x558>
 a0809f5c:	00000000 	nop
 a0809f60:	0c202a1a 	jal	a080a868 <find_free_block>
 a0809f64:	00000000 	nop
@@ -10487,7 +10487,7 @@ a080a078:	00022080 	sll	a0,v0,0x2
 a080a07c:	246213f0 	addiu	v0,v1,5104
 a080a080:	00821021 	addu	v0,a0,v0
 a080a084:	8c420000 	lw	v0,0(v0)
-a080a088:	14400039 	bnez	v0,a080a170 <write_block_index_in_dir+0x6b4>
+a080a088:	14400039 	bnez	v0,a080a170 <write_block_index_in_inode+0x6b4>
 a080a08c:	00000000 	nop
 a080a090:	0c202a1a 	jal	a080a868 <find_free_block>
 a080a094:	00000000 	nop
@@ -10623,7 +10623,7 @@ a080a290:	00000000 	nop
 a080a294:	8fc20018 	lw	v0,24(s8)
 a080a298:	8fc40030 	lw	a0,48(s8)
 a080a29c:	00402821 	move	a1,v0
-a080a2a0:	0c2025be 	jal	a08096f8 <get_block_index_in_dir>
+a080a2a0:	0c2025be 	jal	a08096f8 <get_block_index_in_inode>
 a080a2a4:	00000000 	nop
 a080a2a8:	afc20010 	sw	v0,16(s8)
 a080a2ac:	8fc40010 	lw	a0,16(s8)
@@ -10700,7 +10700,7 @@ a080a3bc:	00000000 	nop
 a080a3c0:	8fc20018 	lw	v0,24(s8)
 a080a3c4:	8fc40030 	lw	a0,48(s8)
 a080a3c8:	00402821 	move	a1,v0
-a080a3cc:	0c2025be 	jal	a08096f8 <get_block_index_in_dir>
+a080a3cc:	0c2025be 	jal	a08096f8 <get_block_index_in_inode>
 a080a3d0:	00000000 	nop
 a080a3d4:	afc20010 	sw	v0,16(s8)
 a080a3d8:	8fc40010 	lw	a0,16(s8)
@@ -10775,7 +10775,7 @@ a080a4e0:	00000000 	nop
 a080a4e4:	8fc20018 	lw	v0,24(s8)
 a080a4e8:	8fc40030 	lw	a0,48(s8)
 a080a4ec:	00402821 	move	a1,v0
-a080a4f0:	0c2025be 	jal	a08096f8 <get_block_index_in_dir>
+a080a4f0:	0c2025be 	jal	a08096f8 <get_block_index_in_inode>
 a080a4f4:	00000000 	nop
 a080a4f8:	afc20010 	sw	v0,16(s8)
 a080a4fc:	8fc40010 	lw	a0,16(s8)
@@ -12586,7 +12586,7 @@ a080c0d4:	3c02a081 	lui	v0,0xa081
 a080c0d8:	8c4273e8 	lw	v0,29672(v0)
 a080c0dc:	00402021 	move	a0,v0
 a080c0e0:	8fc50020 	lw	a1,32(s8)
-a080c0e4:	0c2025be 	jal	a08096f8 <get_block_index_in_dir>
+a080c0e4:	0c2025be 	jal	a08096f8 <get_block_index_in_inode>
 a080c0e8:	00000000 	nop
 a080c0ec:	afc20010 	sw	v0,16(s8)
 a080c0f0:	8fc40010 	lw	a0,16(s8)
@@ -13293,13 +13293,13 @@ a080cbc0:	00000000 	nop
 a080cbc4:	27c20038 	addiu	v0,s8,56
 a080cbc8:	00402021 	move	a0,v0
 a080cbcc:	8fc50034 	lw	a1,52(s8)
-a080cbd0:	0c2025be 	jal	a08096f8 <get_block_index_in_dir>
+a080cbd0:	0c2025be 	jal	a08096f8 <get_block_index_in_inode>
 a080cbd4:	00000000 	nop
 a080cbd8:	afc20028 	sw	v0,40(s8)
 a080cbdc:	27c20038 	addiu	v0,s8,56
 a080cbe0:	00402021 	move	a0,v0
 a080cbe4:	8fc50030 	lw	a1,48(s8)
-a080cbe8:	0c2025be 	jal	a08096f8 <get_block_index_in_dir>
+a080cbe8:	0c2025be 	jal	a08096f8 <get_block_index_in_inode>
 a080cbec:	00000000 	nop
 a080cbf0:	afc20024 	sw	v0,36(s8)
 a080cbf4:	afc00020 	sw	zero,32(s8)
@@ -13442,13 +13442,13 @@ a080ce0c:	00000000 	nop
 a080ce10:	27c20024 	addiu	v0,s8,36
 a080ce14:	00402021 	move	a0,v0
 a080ce18:	8fc50020 	lw	a1,32(s8)
-a080ce1c:	0c2025be 	jal	a08096f8 <get_block_index_in_dir>
+a080ce1c:	0c2025be 	jal	a08096f8 <get_block_index_in_inode>
 a080ce20:	00000000 	nop
 a080ce24:	afc20018 	sw	v0,24(s8)
 a080ce28:	27c20024 	addiu	v0,s8,36
 a080ce2c:	00402021 	move	a0,v0
 a080ce30:	8fc5001c 	lw	a1,28(s8)
-a080ce34:	0c2025be 	jal	a08096f8 <get_block_index_in_dir>
+a080ce34:	0c2025be 	jal	a08096f8 <get_block_index_in_inode>
 a080ce38:	00000000 	nop
 a080ce3c:	afc20014 	sw	v0,20(s8)
 a080ce40:	afc00010 	sw	zero,16(s8)

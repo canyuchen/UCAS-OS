@@ -249,7 +249,7 @@ static int write_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry_ptr)
     bzero(dentry_block_buffer, BLOCK_SIZE);
     dentry_t *dentry_table = (dentry_t *)dentry_block_buffer;
 
-    if(get_block_index_in_dir(inode_ptr, major_index) == 0){
+    if(get_block_index_in_inode(inode_ptr, major_index) == 0){
         uint32_t free_block_index = find_free_block();
         set_block_bmp(free_block_index);
         sync_to_disk_block_bmp();
@@ -257,7 +257,7 @@ static int write_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry_ptr)
         superblock_ptr->s_free_blocks_cnt--;
         sync_to_disk_superblock();
 
-        write_block_index_in_dir(inode_ptr, major_index, free_block_index);
+        write_block_index_in_inode(inode_ptr, major_index, free_block_index);
         inode_ptr->i_fsize += BLOCK_SIZE;
         inode_ptr->i_fnum++;
         sync_to_disk_inode(inode_ptr);
@@ -266,10 +266,10 @@ static int write_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry_ptr)
         inode_ptr->i_fnum++;
         sync_to_disk_inode(inode_ptr);
 
-        read_block(get_block_index_in_dir(inode_ptr, major_index), dentry_block_buffer);
+        read_block(get_block_index_in_inode(inode_ptr, major_index), dentry_block_buffer);
     }
     memcpy((uint8_t *)(&(dentry_table[minor_index])), (uint8_t *)dentry_ptr, DENTRY_SIZE);
-    write_block(get_block_index_in_dir(inode_ptr, major_index), dentry_block_buffer);
+    write_block(get_block_index_in_inode(inode_ptr, major_index), dentry_block_buffer);
 
     return;
 }
@@ -292,7 +292,7 @@ void read_dentry(inode_t* inode_ptr, uint32_t dnum, dentry_t* dentry_ptr)
     minor_loc = dnum % DENTRY_NUM_PER_BLOCK;
     bzero(find_file_buffer, BLOCK_SIZE);
     dentry_t *den_tmp =(dentry_t *)find_file_buffer;
-    read_block(get_block_index_in_dir(inode_ptr, major_loc), find_file_buffer);
+    read_block(get_block_index_in_inode(inode_ptr, major_loc), find_file_buffer);
     memcpy((void*)dentry_ptr, (void*)&(den_tmp[minor_loc]), sizeof(dentry_t));
     return;
 }
@@ -313,7 +313,7 @@ void separate_path(const char *path, char *parent, char *name)
     return;
 }
 
-int get_block_index_in_dir(inode_t *inode_ptr, uint32_t idx)
+int get_block_index_in_inode(inode_t *inode_ptr, uint32_t idx)
 {
     bzero(buffer1, POINTER_PER_BLOCK*sizeof(uint32_t));
     bzero(buffer2, POINTER_PER_BLOCK*sizeof(uint32_t));
@@ -357,7 +357,7 @@ int get_block_index_in_dir(inode_t *inode_ptr, uint32_t idx)
     }   
 }
 
-void write_block_index_in_dir(inode_t *inode_ptr, uint32_t idx, uint32_t block_index)
+void write_block_index_in_inode(inode_t *inode_ptr, uint32_t idx, uint32_t block_index)
 {
     bzero(buffer1, POINTER_PER_BLOCK*sizeof(uint32_t));
     bzero(buffer2, POINTER_PER_BLOCK*sizeof(uint32_t));
@@ -494,7 +494,7 @@ int find_file(inode_t *inode_ptr, char *name)
     dentry_t *p = (dentry_t *)find_file_buffer;
     int i = 0, j = 0;
     for(; i < MAX_BLOCK_INDEX; i++){
-        uint32_t block_index = get_block_index_in_dir(inode_ptr, i);
+        uint32_t block_index = get_block_index_in_inode(inode_ptr, i);
         read_block(block_index, find_file_buffer);
 
         // for(; j < POINTER_PER_BLOCK; j++){
@@ -520,7 +520,7 @@ static int _find_file(inode_t *inode_ptr, char *name)
     dentry_t *p = (dentry_t *)find_file_buffer;
     int i = 0, j = 0;
     for(; i < 2; i++){
-        uint32_t block_index = get_block_index_in_dir(inode_ptr, i);
+        uint32_t block_index = get_block_index_in_inode(inode_ptr, i);
         read_block(block_index, find_file_buffer);
 
         // for(; j < POINTER_PER_BLOCK; j++){
@@ -548,7 +548,7 @@ int find_dentry(inode_t* inode_ptr, const char* name) {
     //MAX_BLOCK_INDEX is TOO BIG!!!!!!!!
     // for(; i < FIRST_POINTER; i++){
     for(; i < MAX_DENTRY_BLOCK_NUM; i++){
-        uint32_t block_index = get_block_index_in_dir(inode_ptr, i);
+        uint32_t block_index = get_block_index_in_inode(inode_ptr, i);
         read_block(block_index, find_file_buffer);
         // for(; j < POINTER_PER_BLOCK; j++){
         for(; j < DENTRY_NUM_PER_BLOCK; j++){
@@ -1100,7 +1100,7 @@ void do_ls()
 
         // sync_from_disk_inode(0, current_dir_ptr);
 
-        uint32_t block_index = get_block_index_in_dir(current_dir_ptr, i);
+        uint32_t block_index = get_block_index_in_inode(current_dir_ptr, i);
 
         read_block(block_index, find_file_buffer);
 
@@ -1316,8 +1316,8 @@ int do_fwrite(int fd, char *buffer, int length)
         }
     }
 
-    uint32_t begin_block_index = get_block_index_in_dir(&inode, begin_block);
-    uint32_t end_block_index = get_block_index_in_dir(&inode, end_block);
+    uint32_t begin_block_index = get_block_index_in_inode(&inode, begin_block);
+    uint32_t end_block_index = get_block_index_in_inode(&inode, end_block);
 
     int i = 0;
     for(i = begin_block_index; i <= end_block_index; i++){
@@ -1351,8 +1351,8 @@ int do_fread(int fd, char *buffer, int length)
     inode_t inode;
     sync_from_disk_inode(file_descriptor_table[fd].fd_inum, &inode);
 
-    uint32_t begin_block_index = get_block_index_in_dir(&inode, begin_block);
-    uint32_t end_block_index = get_block_index_in_dir(&inode, end_block);
+    uint32_t begin_block_index = get_block_index_in_inode(&inode, begin_block);
+    uint32_t end_block_index = get_block_index_in_inode(&inode, end_block);
 
     int i = 0;
     for(i = begin_block_index; i <= end_block_index; i++){
