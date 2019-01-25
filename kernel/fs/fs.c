@@ -1534,39 +1534,6 @@ void do_cat(char *name)
     do_fread(fd, cat_buffer, CAT_LENGTH);
     cat_buffer[CAT_LENGTH] = '\0';
 
-    // char Buff[64];
-    // int i, j;
-
-    // for (i = 0; i < 10; i++)
-    // {
-    //     sys_fread(fd, Buff, 13);
-    //     sys_move_cursor(1,i);
-    //     for (j = 0; j < 13; j++)
-    //     {
-    //         printf("%c", Buff[j]);
-    //     }
-    // }
-
-//     vt100_move_cursor(1, 35);
-//     printk("%s", cat_buffer);
-//     vt100_move_cursor(1, 45);
-//     printk("%s", fread_buffer);
-
-//     vt100_move_cursor(1, 33);
-//     // int j = 0;
-//     printk("cat output:\n");
-//     // while(cat_buffer[j]){
-//     //     printk("%c", cat_buffer[j]);
-//     // }
-//     printk("%c", cat_buffer[0]);
-//     printk("%c", cat_buffer[1]);
-//     printk("%c", cat_buffer[2]);
-//     printk("%c", cat_buffer[3]);
-
-//     vt100_move_cursor(1, 35);
-//     printk("[DEBUG 3 cat]  fd:%d           \n", fd);
-//     printk("[DEBUG 3 cat]  fd_table[fd].fd_inum:%d\n", file_descriptor_table[fd].fd_inum);
-//     printk("               inode.i_fsize:%d  \n", inode.i_fsize);
 }
 
 //-------------------------------------BONUS----------------------------------------------
