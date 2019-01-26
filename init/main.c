@@ -276,6 +276,8 @@ static void init_syscall(void)
 
 	syscall[SYSCALL_FS_LINK] = (int (*)()) &do_link;
 	syscall[SYSCALL_FS_SYM_LINK] = (int (*)()) &do_symlink;
+	
+	syscall[SYSCALL_FS_PWD] = (int (*)()) &do_pwd;
 
 }
 

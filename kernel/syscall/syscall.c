@@ -286,3 +286,21 @@ void sys_symlink(char *src_path, char *new_path)
 {
     invoke_syscall(SYSCALL_FS_SYM_LINK, (int)src_path, (int)new_path, IGNORE);
 }
+
+void sys_pwd()
+{
+    invoke_syscall(SYSCALL_FS_PWD, IGNORE, IGNORE, IGNORE);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

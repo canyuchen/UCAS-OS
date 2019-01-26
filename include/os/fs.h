@@ -241,6 +241,9 @@ void do_rename(char *old_name, char *new_name);
 void do_link(char *src_path, char *new_path);
 void do_symlink(char *src_path, char *new_path);
 
+void do_pwd();
+
+
 //only for FS
 
 void separate_path(const char *path, char *parent, char *name);

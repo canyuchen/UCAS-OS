@@ -307,7 +307,7 @@ void test_shell()
 
                     screen_cursor_x = screen_cursor_x_saved;
                     screen_cursor_y = screen_cursor_y_saved;
-                    
+
                     printf("> root@UCAS_OS: ");
                 }                 
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'k' 
@@ -475,7 +475,7 @@ void test_shell()
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'p' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'w'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'd'){
-                    
+                    sys_pwd();
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'd' 

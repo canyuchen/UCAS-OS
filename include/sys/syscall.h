@@ -100,6 +100,9 @@
 #define SYSCALL_FS_LINK 69
 #define SYSCALL_FS_SYM_LINK 70
 
+#define SYSCALL_FS_PWD 71
+
+
 /* syscall function pointer */
 extern int (*syscall[NUM_SYSCALLS])();
 
@@ -170,6 +173,15 @@ extern void sys_rename(char *old_name, char *new_name);
 
 extern void sys_link(char *src_path, char *new_path);
 extern void sys_symlink(char *src_path, char *new_path);
+
+extern void sys_pwd();
+
+
+
+
+
+
+
 
 
 #endif

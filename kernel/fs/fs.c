@@ -1814,7 +1814,11 @@ void do_symlink(char *src_path, char *new_path)
 
 
 
+//--------------------------------MY OWN COMMAND---------------------------------------
 
 
-
+void do_pwd()
+{
+    
+}
 
