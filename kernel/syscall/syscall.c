@@ -292,9 +292,50 @@ void sys_pwd()
     invoke_syscall(SYSCALL_FS_PWD, IGNORE, IGNORE, IGNORE);
 }
 
+void sys_man(char *command)
+{
+    invoke_syscall(SYSCAL_FS_MAN, (int)command, IGNORE, IGNORE);
+}
 
+void sys_du()   
+{
+    invoke_syscall(SYSCALL_FS_DU, IGNORE, IGNORE, IGNORE);
+}
 
+void sys_df()    
+{
+    invoke_syscall(SYSCALL_FS_DF, IGNORE, IGNORE, IGNORE);
+}
 
+void sys_diff(char *name_1, char *name_2) 
+{
+    invoke_syscall(SYSCALL_FS_DIFF, (int)name_1, (int)name_2, IGNORE);
+}
+
+void sys_wc(char *name) 
+{
+    invoke_syscall(SYSCALL_FS_WC, (int)name, IGNORE, IGNORE);
+}
+
+void sys_rm(char *name)
+{
+    invoke_syscall(SYSCALL_FS_RM, (int)name, IGNORE, IGNORE);
+}
+
+void sys_mv(char *path_1, char *path_2)
+{
+    invoke_syscall(SYSCALL_FS_MV, (int)path_1, (int)path_2, IGNORE);
+}
+
+void sys_cp(char *path_1, char *path_2) 
+{
+    invoke_syscall(SYSCALL_FS_CP, (int)path_1, (int)path_2, IGNORE);
+}
+
+void sys_chmod(char *name) 
+{
+    invoke_syscall(SYSCALL_FS_CHMOD, (int)name, IGNORE, IGNORE);
+}
 
 
 

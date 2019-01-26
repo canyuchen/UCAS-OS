@@ -487,12 +487,12 @@ void test_shell()
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'd' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'u'){
-                    
+                    sys_du();                       
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'd' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'f'){
-                    
+                    sys_df();                     
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'd' 
@@ -500,30 +500,39 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'f'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'f'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == ' '){
-                    
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5);
+                    separate_params(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5);
+                    sys_diff(&(param_buffer[0].param[0]), &(param_buffer[1].param[0]));                     
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'w' 
-                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'c'){
-                    
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'c'
+                && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == ' '){
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3);
+                    sys_wc(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3);                    
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'r' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'm'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == ' '){
-                    
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3);
+                    sys_rm(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3);                    
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'm' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'v'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == ' '){
-                    
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3);
+                    separate_params(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3);
+                    sys_mv(&(param_buffer[0].param[0]), &(param_buffer[1].param[0]));                 
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'c' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'p'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == ' '){
-                    
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3);
+                    separate_params(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3);
+                    sys_cp(&(param_buffer[0].param[0]), &(param_buffer[1].param[0]));                 
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'c' 
@@ -532,14 +541,16 @@ void test_shell()
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == 'o'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4) == 'd'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 5) == ' '){
-                    
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 6);
+                    sys_chmod(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 6);                    
                     printf("> root@UCAS_OS: ");
                 }
                 else if(*(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer) == 'm' 
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 1) == 'a'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 2) == 'n'
                 && *(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 3) == ' '){
-                    
+                    handle_input(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4);
+                    sys_man(inputBuffer_ptr->buffer + inputBuffer_ptr->pointer + 4);
                     printf("> root@UCAS_OS: ");
                 }
 

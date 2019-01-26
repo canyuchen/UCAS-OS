@@ -101,7 +101,16 @@
 #define SYSCALL_FS_SYM_LINK 70
 
 #define SYSCALL_FS_PWD 71
+#define SYSCAL_FS_MAN 72
 
+#define SYSCALL_FS_DU 73
+#define SYSCALL_FS_DF 74
+#define SYSCALL_FS_DIFF 75
+#define SYSCALL_FS_WC 76
+#define SYSCALL_FS_RM 77
+#define SYSCALL_FS_MV 78
+#define SYSCALL_FS_CP 79
+#define SYSCALL_FS_CHMOD 80
 
 /* syscall function pointer */
 extern int (*syscall[NUM_SYSCALLS])();
@@ -175,13 +184,15 @@ extern void sys_link(char *src_path, char *new_path);
 extern void sys_symlink(char *src_path, char *new_path);
 
 extern void sys_pwd();
+extern void sys_man(char *command);
 
-
-
-
-
-
-
-
+extern void sys_du();   
+extern void sys_df();    
+extern void sys_diff(char *name_1, char *name_2); 
+extern void sys_wc(char *name); 
+extern void sys_rm(char *name);
+extern void sys_mv(char *path_1, char *path_2);
+extern void sys_cp(char *path_1, char *path_2); 
+extern void sys_chmod(char *name); 
 
 #endif

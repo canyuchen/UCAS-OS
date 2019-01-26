@@ -242,7 +242,15 @@ void do_link(char *src_path, char *new_path);
 void do_symlink(char *src_path, char *new_path);
 
 void do_pwd();
-
+void do_man(char *command);
+void do_du();   
+void do_df();    
+void do_diff(char *name_1, char *name_2); 
+void do_wc(char *name); 
+void do_rm(char *name);
+void do_mv(char *path_1, char *path_2);
+void do_cp(char *path_1, char *path_2); 
+void do_chmod(char *name); 
 
 //only for FS
 

@@ -278,6 +278,16 @@ static void init_syscall(void)
 	syscall[SYSCALL_FS_SYM_LINK] = (int (*)()) &do_symlink;
 	
 	syscall[SYSCALL_FS_PWD] = (int (*)()) &do_pwd;
+	syscall[SYSCAL_FS_MAN] = (int (*)()) &do_man;
+
+	syscall[SYSCALL_FS_DU] = (int (*)()) &do_du;
+	syscall[SYSCALL_FS_DF] = (int (*)()) &do_df;
+	syscall[SYSCALL_FS_DIFF] = (int (*)()) &do_diff;
+	syscall[SYSCALL_FS_WC] = (int (*)()) &do_wc;
+	syscall[SYSCALL_FS_RM] = (int (*)()) &do_rm;
+	syscall[SYSCALL_FS_MV] = (int (*)()) &do_mv;
+	syscall[SYSCALL_FS_CP] = (int (*)()) &do_cp;
+	syscall[SYSCALL_FS_CHMOD] = (int (*)()) &do_chmod;
 
 }
 
