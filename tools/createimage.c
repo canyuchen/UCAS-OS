@@ -101,22 +101,22 @@ void record_kernel_sectors(FILE **image_file_ptrr, Elf32_Ehdr *kernel_ehdr_ptr, 
 
 void extended_opt(Elf32_Phdr *boot_phdr_ptr, int k_phnum, Elf32_Phdr *kernel_phdr_ptr, int num_sec)
 {	
-	printf("Number of disk sectors:%d\n", 1 + num_sec);
-	printf("bootblock image info\n");
-	printf("\tsectors:  1\n");
-	printf("\toffset of segment in the file: 0x%X\n", boot_phdr_ptr->p_offset);
-	printf("\tthe image\'s vatural address of segment in memory: 0x%X\n", boot_phdr_ptr->p_vaddr);
-	printf("\tthe file image size of segment:  0x%X\n", boot_phdr_ptr->p_filesz); 
-	printf("\tthe memory image size of segment:  0x%X\n", boot_phdr_ptr->p_memsz);
-	printf("\tthe size of write to the OS image:  0x%X\n", boot_phdr_ptr->p_filesz);
-	printf("kernel image info\n");
-	printf("\tsectors:  %d\n", num_sec);
-	printf("\toffset of segment in the file: 0x%X\n", kernel_phdr_ptr->p_offset);
-	printf("\tthe image\'s vatural address of segment in memory: 0x%X\n", kernel_phdr_ptr->p_vaddr);
-	printf("\tthe file image size of segment:  0x%X\n", kernel_phdr_ptr->p_filesz); 
-	printf("\tthe memory image size of segment:  0x%X\n", kernel_phdr_ptr->p_memsz);
+	printf("Number of disk sectors:%d                                   \n", 1 + num_sec);
+	printf("bootblock image info                                        \n");
+	printf("\tsectors:  1                                               \n");
+	printf("\toffset of segment in the file: 0x%X                       \n", boot_phdr_ptr->p_offset);
+	printf("\tthe image\'s vatural address of segment in memory: 0x%X   \n", boot_phdr_ptr->p_vaddr);
+	printf("\tthe file image size of segment:  0x%X                     \n", boot_phdr_ptr->p_filesz); 
+	printf("\tthe memory image size of segment:  0x%X                   \n", boot_phdr_ptr->p_memsz);
+	printf("\tthe size of write to the OS image:  0x%X                  \n", boot_phdr_ptr->p_filesz);
+	printf("kernel image info                                           \n");
+	printf("\tsectors:  %d                                              \n", num_sec);
+	printf("\toffset of segment in the file: 0x%X                       \n", kernel_phdr_ptr->p_offset);
+	printf("\tthe image\'s vatural address of segment in memory: 0x%X   \n", kernel_phdr_ptr->p_vaddr);
+	printf("\tthe file image size of segment:  0x%X                     \n", kernel_phdr_ptr->p_filesz); 
+	printf("\tthe memory image size of segment:  0x%X                   \n", kernel_phdr_ptr->p_memsz);
 	//printf("\tthe size of write to the OS image:  0x%X\n", kernel_phdr_ptr->p_filesz);
-	printf("\tthe size of write to the OS image:  0x%X\n", kernel_phdr_ptr->p_memsz);
+	printf("\tthe size of write to the OS image:  0x%X                  \n", kernel_phdr_ptr->p_memsz);
 	return;
 }
 
