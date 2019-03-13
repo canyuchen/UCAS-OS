@@ -29,6 +29,12 @@
             - [x] **rename [old name] [new name]** : rename a file or directory
             - [x] **ln [src path] [new path]** : create a link
             - [x] **ln -s [src path] [new path]** : create a symble link
+            - [] **pwd**
+            - [] **dump**
+            - [] **du**
+            - [] **df**
+            - [] **diff [file name] [file name]**
+            - [] **wc [file name]**
 
 
 
