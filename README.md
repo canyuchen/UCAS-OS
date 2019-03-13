@@ -1,6 +1,6 @@
 # UCAS-OS
 
-## Project 6 : File System
+## Part 6 : File System
 
 ### Features:
 
@@ -86,7 +86,7 @@
 
 ![6-4](/resources/4.gif)
 
-## Project 5 : Device Driver
+## Part 5 : Device Driver
 
 ### Core Features 
 
@@ -104,7 +104,7 @@
 
     ![6-0](/resources/driver.png)
 
-## Project 4 : Virtual Memory
+## Part 4 : Virtual Memory
 
 ### Core Features
 
@@ -121,7 +121,7 @@
 * Implement page fault handler with TLB miss and page fault, capable of isolating different processes
 * Implement the page replacement when the required memory size exceeds the physical memory size. Choose an algorithm for the page replacement algorithm other than FIFO (my choice is clock algorithm)
 
-## Project 3 : Interactive OS and Process Management
+## Part 3 : Interactive OS and Process Management
 
 ### Core Features
 
@@ -142,7 +142,7 @@
     * semaphores
     * barriers
 
-## Project 2 : A Simple Kernel
+## Part 2 : A Simple Kernel
 
 ### Core Features
 
@@ -156,7 +156,7 @@
     * Support system calls
 
 
-## Project 1 : Bootloader
+## Part 1 : Bootloader
 
 ### Core Features
 
