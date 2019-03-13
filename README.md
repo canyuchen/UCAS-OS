@@ -106,12 +106,41 @@
 
 ## Project 4 : Virtual Memory
 
+### Core Features
 
+* Implement virtual memory management for user process
+    * Setup page table and TLB entries
+    * Handle TLB exception to support TLB refill and invalid TLB exceptions
+    * Handle page fault to support on demand paging assuming physical memory is enough
+* Design virtual memory structure
+    * Page tables
+        * The data structure to store the mapping between virtual addresses and physical addresses
+        * Each mapping is a page table entry
+    * MMU and TLB
+        * MMU stores a cache of recently used mappings from the page table, which is called translation lookaside buffer (TLB)
+* Implement page fault handler with TLB miss and page fault, capable of isolating different processes
+* Implement the page replacement when the required memory size exceeds the physical memory size. Choose an algorithm for the page replacement algorithm other than FIFO (my choice is clock algorithm)
 
 ## Project 3 : Interactive OS and Process Management
 
+### Core Feature
 
-
+* Support interactive operation and basic process management
+    * Implement a simple terminal and basic user commands
+    * Implement four system calls: spawn, kill, wait, and exit
+    * Implement three synchronization primitives
+    * Implement inter-process communication mechanism: mailbox and use it to solve Producer-consumer problem
+* Design Simple terminal
+    * Screen
+        * Use the provided printf to show input command
+    * Shell
+        * A user level process
+        * Parse input command and invoke corresponding syscalls
+        * Show the input command
+* Implement synchronization primitives
+    * condition variable
+    * semaphores
+    * barriers
 
 ## Project 2 : A Simple Kernel
 
