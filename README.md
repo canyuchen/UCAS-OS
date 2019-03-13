@@ -11,7 +11,7 @@
     * Design and implement mkfs and statfs
     * Design and implement directory operations
     * Design and implement file operations
-* Common file system operations and unix-like commands:
+* Support common file system operations and unix-like commands:
     * FILE SYSTEM OPERATIONS :
         - [x] **mkfs** : create a file system
         - [x] **statfs** : print the information related to the file system including : size of the file system, number of inodes, start address of inodes, etc.
@@ -74,7 +74,7 @@
 
 
 
-### Features Test :
+### Features Test on Hardware:
 
 ![6-0](/resources/disk.jpg)
 
@@ -88,7 +88,21 @@
 
 ## Project 5 : Device Driver
 
+### Core Features 
 
+* Implement driver for network card
+    * Setup MAC controller registers to allow network card initialization, and sending/receiving data without interrupt
+    * Implement sending/receiving data with blocking
+    * Implement network interrupt handler to serve receiving data
+* Design Device Driver Structure
+    * MAC controller : Include two parts of registers
+        * MAC registers
+        * DMA registers
+    * Direct Memory Access
+    * DMA descriptor
+    * MAC interrupt handler
+
+    ![6-0](/resources/driver.png)
 
 ## Project 4 : Virtual Memory
 
