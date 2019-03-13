@@ -123,7 +123,7 @@
 
 ## Project 3 : Interactive OS and Process Management
 
-### Core Feature
+### Core Features
 
 * Support interactive operation and basic process management
     * Implement a simple terminal and basic user commands
@@ -144,7 +144,31 @@
 
 ## Project 2 : A Simple Kernel
 
+### Core Features
 
+* Write a simple kernel (non-preemptive)
+    * Start a set of user processes and kernel threads
+    * Perform context switches between processes and threads
+    * Provide non-preemptive kernel support with context switch
+    * Support basic mutex to allow BLOCK state of processes/threads
+* Write a simple kernel (preemptive)
+    * Provide preemptive kernel support with clock interrupt handler and priority based scheduling
+    * Support system calls
 
 
 ## Project 1 : Bootloader
+
+### Core Features
+
+* Write a bootloader to start a simple kernel based on Openloongson SoC board
+    * BIOS
+        * Basic Input/Output System
+        * Firmware used to perform hardware initialization after power-on
+        * Load bootloader
+    * Bootblock
+        * Loaded by BIOS
+        * Hard disk
+    * Bootloader
+        * A small program to enable operating system
+        * Load the kernel
+        * Switch control to the kernel
