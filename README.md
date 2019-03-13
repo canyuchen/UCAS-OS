@@ -7,40 +7,51 @@
 * Implement a simple file system
     * Disk and File system metadata management
     * Hierarchical directory structure
-    * Common file system operations and unix-like commands:
-        * FILE SYSTEM OPERATIONS :
-            - [x] **mkfs** : create a file system
-            - [x] **statfs** : print the information related to the file system including : size of the file system, number of inodes, start address of inodes, etc.
-        * DIRECTORY OPERATIONS :
-            - [x] **cd [directory name] or cd ./[directory name] or cd ./[directory name]/[directory name]** : enter a directory
-            - [x] **mkdir [directory name] or mkdir ./[directory name]** : create a directory
-            - [x] **rmdir [directory name] or rmdir ./[directory name]** : delete a directory
-            - [x] **ls** : print the directory entries in the current directory
-        * FILE OPERATIONS :
-            - [x] **touch [file name]** : create a file
-            - [x] **cat [file name]** : print the content of the file in shell
-        * FILE FUNCTIONS :
-            - [x] int fopen(char *name, uint32_t mode)
-            - [x] int fwrite(int fd, char *buffer, int length)
-            - [x] int fread(int fd, char *buffer, int length)
-            - [x] void fclose(int fd)
-        * ADDITIONAL OPERATIONS :
-            - [x] **find [path] [name]** : find out whether the file exists in the directory 
-            - [x] **rename [old name] [new name]** : rename a file or directory
-            - [x] **ln [src path] [new path]** : create a link
-            - [x] **ln -s [src path] [new path]** : create a symble link
-            - [ ] **pwd**
-            - [ ] **dump**
-            - [ ] **du**
-            - [ ] **df**
-            - [ ] **diff [file name] [file name]**
-            - [ ] **wc [file name]**
-            - [ ] **rm [file name]**
-            - [ ] **cp [file name] [file name]**
-            - [ ] **mv [file name] [file name]**
-            - [ ] **chmod [file name]**
-            - [ ] **man [command name]**
-
+    * Use the SD card as the disk for your file system
+    * Design and implement mkfs and statfs
+    * Design and implement directory operations
+    * Design and implement file operations
+* Common file system operations and unix-like commands:
+    * FILE SYSTEM OPERATIONS :
+        - [x] **mkfs** : create a file system
+        - [x] **statfs** : print the information related to the file system including : size of the file system, number of inodes, start address of inodes, etc.
+    * DIRECTORY OPERATIONS :
+        - [x] **cd [directory name] or cd ./[directory name] or cd ./[directory name]/[directory name]** : enter a directory
+        - [x] **mkdir [directory name] or mkdir ./[directory name]** : create a directory
+        - [x] **rmdir [directory name] or rmdir ./[directory name]** : delete a directory
+        - [x] **ls** : print the directory entries in the current directory
+    * FILE OPERATIONS :
+        - [x] **touch [file name]** : create a file
+        - [x] **cat [file name]** : print the content of the file in shell
+    * FILE FUNCTIONS :
+        - [x] int fopen(char *name, uint32_t mode)
+        - [x] int fwrite(int fd, char *buffer, int length)
+        - [x] int fread(int fd, char *buffer, int length)
+        - [x] void fclose(int fd)
+    * ADDITIONAL OPERATIONS :
+        - [x] **find [path] [name]** : find out whether the file exists in the directory 
+        - [x] **rename [old name] [new name]** : rename a file or directory
+        - [x] **ln [src path] [new path]** : create a link
+        - [x] **ln -s [src path] [new path]** : create a symble link
+        - [ ] **pwd**
+        - [ ] **dump**
+        - [ ] **du**
+        - [ ] **df**
+        - [ ] **diff [file name] [file name]**
+        - [ ] **wc [file name]**
+        - [ ] **rm [file name]**
+        - [ ] **cp [file name] [file name]**
+        - [ ] **mv [file name] [file name]**
+        - [ ] **chmod [file name]**
+        - [ ] **man [command name]**
+* Design file system structure:
+    * Superblock : Metadata to describe the structure of the file system
+    * Inodes : Metadata to describe file/directory
+    * File descriptor table : Keeping information of opening files
+    * Directories : A special file containing list of files and directories
+    * Block bitmap : Allocation bitmap of all the blocks of the whole file system
+    * Inode bitmap ; Allocation bitmap of the inodes of all the inodes of the whole file system
+    * Inode table : Table of all the inodes
 
 
 ### Disk Layout:
@@ -60,8 +71,6 @@
 * --------------------------------------------------------------------------------
 */
 ```
-
-### Structure :
 
 
 
