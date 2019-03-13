@@ -35,6 +35,11 @@
             - [] **df**
             - [] **diff [file name] [file name]**
             - [] **wc [file name]**
+            - [] **rm [file name]**
+            - [] **cp [file name] [file name]**
+            - [] **mv [file name] [file name]**
+            - [] **chmod [file name]**
+            - [] **man [command name]**
 
 
 
