@@ -56,7 +56,7 @@
 
 ### Features Test :
 
-
+![6-0](/resources/disk.jpg)
 
 ![6-1](/resources/1.gif)
 
