@@ -110,15 +110,6 @@ static struct task_info *test_tasks[24] = {&task1, &task2, &task3,
                                            &task13, &task14, &task15,
                                            &task16, &task17, &task18, &task19,
                                            &task5_1, &task5_2, &task5_3, &task5_bonus,
-                                        //    &test_fs, &test_fs_1
-
-//-------------------------------------------------------------------------------
-//BUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//WARNING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//./test/test_shell.c:113: warning: initialization from incompatible pointer type
-//&test_fs NO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//------------------------------------------------------------------------------
-
                                            &task_fs
                                            };
 
@@ -192,17 +183,6 @@ static void handle_input(char *name)
 
 #define MAX_PARAMETER_LENGTH 20
 #define MAX_PARAMETER_NUM 10
-
-// char param_buffer_char_1[MAX_PARAMETER_LENGTH];
-// char param_buffer_char_2[MAX_PARAMETER_LENGTH];
-
-// typedef struct string {
-//     char str[MAX_PARAMETER_LENGTH];
-// } string_t;
-
-// string_t param_buffer_string[MAX_PARAMETER_NUM];
-
-// int param_buffer_int[MAX_PARAMETER_NUM];
 
 typedef struct param {
     char param[MAX_PARAMETER_LENGTH];

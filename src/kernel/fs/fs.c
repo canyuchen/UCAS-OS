@@ -1,3 +1,29 @@
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * *
+ *            Copyright (C) 2018 University of Chinese Academy of Sciences, UCAS
+ *               Author : Chen Canyu (email : chencanyu@mails.ucas.ac.cn)		
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * *
+ *                          the file system part of the whole OS
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * *
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this 
+ * software and associated documentation files (the "Software"), to deal in the Software 
+ * without restriction, including without limitation the rights to use, copy, modify, 
+ * merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit 
+ * persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE. 
+ * 
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * */
+
 #include "fs.h"
 #include "time.h"
 /*
@@ -604,10 +630,7 @@ uint32_t parse_path(const char *path, inode_t *inode_ptr)
 
             _p = &parse_file_buffer[i+1];
 
-            // printk("               _p:%s", _p);
         }
-        // i++;
-        //BUG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     }
     return inum;
 }
@@ -616,11 +639,6 @@ int find_free_inode()
 {
     int i = 0, j = 0;
     for(; i < INODE_BITMAP_SIZE; i++){        
-
-        // //debug
-        // vt100_move_cursor(1, 35);
-        // printk("[DEBUG 12 mkdir] inodebmp_block_buffer[i]:0x%x, check_inode_bmp(j):%d", \
-        //                          inodebmp_block_buffer[i], check_inode_bmp(j));
 
         if(inodebmp_block_buffer[i] != 0xff){
             while(check_inode_bmp(j) == 1){
@@ -822,26 +840,12 @@ void do_mkfs()
     sync_to_disk_superblock();
 
     int i = 0;
-    // for(; i++; i < INODE_TABLE_BLOCK_INDEX){
-    // for(; i++; i < DATA_BLOCK_INDEX){
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //WTF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
     for(; i < DATA_BLOCK_INDEX; i++){
         set_block_bmp(i);
     }
 
-    // //debug
-    // vt100_move_cursor(1, 33);
-    // printk("[DEBUG 11 mkdir] blockbmp_buffer[0]:0x%x, blockbmp_buffer[33]:0x%x, blockbmp_buffer[34]:0x%x, inodebmp_block_buffer[0]:0x%x", 
-    //         blockbmp_buffer[0], blockbmp_buffer[33], blockbmp_buffer[34], inodebmp_block_buffer[0]);
-
     sync_to_disk_block_bmp();
-
-    // sync_from_disk_block_bmp();
-    // sync_from_disk_inode_bmp();
-    // vt100_move_cursor(1, 34);
-    // printk("[DEBUG 11 mkdir] blockbmp_buffer[32]:0x%x, blockbmp_buffer[33]:0x%x, blockbmp_buffer[34]:0x%x, inodebmp_block_buffer[0]:0x%x", 
-    //         blockbmp_buffer[32], blockbmp_buffer[33], blockbmp_buffer[34], inodebmp_block_buffer[0]);
 
     //init root dir
     uint32_t root_inum = 0;
@@ -880,13 +884,7 @@ void do_mkfs()
 
     // memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(dentry_t));
     memcpy((uint8_t *)&current_dir, (uint8_t *)&root_inode, sizeof(inode_t));
-    // current_dir_ptr = root_inode_ptr;
 
-    // //debug
-    // vt100_move_cursor(1, 22);
-    // printk("[DEBUG 2 mkfs] block_index:%d root_dentry_table[0].d_name:%s", DATA_BLOCK_INDEX, root_dentry_table[0].d_name);
-
-    //print FS info
     vt100_move_cursor(1, 1);    
     printk("[FS] Starting initialize file system!      \n");
     printk("[FS] Setting superblock...                 \n");
@@ -953,32 +951,11 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     // parent_inum = parse_path(parent, current_dir_ptr);
     parent_inum = find_file(current_dir_ptr, parent_buffer);
     
-    //debug
-    // vt100_move_cursor(1, 31);
-    // printk("[DEBUG 9 mkdir] parent_inum:%d, parent:%s", parent_inum, parent_buffer);
-    // printk(" name:%s", name_buffer);
-    // printk(" path:%s", path);
-    // printk(" path_buffer:%s", path_buffer);
-
-    // //debug
-    // vt100_move_cursor(1, 33);
-    // printk("[DEBUG 11 mkdir] blockbmp_buffer[32]:0x%x, blockbmp_buffer[33]:0x%x, blockbmp_buffer[34]:0x%x, inodebmp_block_buffer[0]:0x%x", \
-    //         blockbmp_buffer[32], blockbmp_buffer[33], blockbmp_buffer[34], inodebmp_block_buffer[0]);
     sync_from_disk_block_bmp();
     sync_from_disk_inode_bmp();
-    // vt100_move_cursor(1, 34);
-    // printk("[DEBUG 11 mkdir] blockbmp_buffer[32]:0x%x, blockbmp_buffer[33]:0x%x, blockbmp_buffer[34]:0x%x, inodebmp_block_buffer[0]:0x%x", \
-    //         blockbmp_buffer[32], blockbmp_buffer[33], blockbmp_buffer[34], inodebmp_block_buffer[0]);
 
     inode_t parent_inode, new_inode;
     sync_from_disk_inode(parent_inum, &parent_inode);
-
-    // //debug
-    // vt100_move_cursor(1, 36);
-    // printk("[DEBUG 12 mkdir] parent_inode.i_num:%d", \
-    //                          parent_inode.i_num);
-    // printk("[DEBUG 12 mkdir] find_dentry(&parent_inode, name):%d", \
-    //                          find_dentry(&parent_inode, name_buffer));
 
     if(find_dentry(&parent_inode, name_buffer) != -1){
         vt100_move_cursor(1, 45);
@@ -999,11 +976,6 @@ uint32_t do_mkdir(const char *path, mode_t mode)
 
     superblock_ptr->s_free_blocks_cnt--;
     sync_to_disk_superblock();    
-
-    // //debug
-    // vt100_move_cursor(1, 32);
-    // printk("[DEBUG 10 mkdir] free_block_index:%d free_inum:%d", 
-    //                          free_block_index, free_inum);
 
     new_inode.i_fmode = S_IFDIR | mode;
     new_inode.i_links_cnt = 1;
@@ -1030,20 +1002,10 @@ uint32_t do_mkdir(const char *path, mode_t mode)
     strcpy(new_dentry_table[1].d_name, "..");
     sync_to_disk_dentry(free_block_index);
 
-    // //debug
-    // vt100_move_cursor(1, 30);
-    // printk("[DEBUG 3 mkdir] block_index:%d new_dentry_table[0].d_name:%s", free_block_index, new_dentry_table[0].d_name);
-
     dentry_t parent_dentry;
     parent_dentry.d_inum = free_inum;
     strcpy(parent_dentry.d_name, name_buffer);
     write_dentry(&parent_inode, parent_inode.i_fnum+2, &parent_dentry);
-
-    // vt100_move_cursor(1, 31);
-    // printk("[DEBUG 3 mkdir] free_inum:%d           \n", free_inum);
-    // printk("                free_block_index:%d    \n", free_block_index);
-    // printk("                parent_inum:%d         \n", parent_inum);
-
 
     return 0;
 }
@@ -1082,18 +1044,9 @@ void do_rmdir(const char *path)
     release_inode_block(&child_inode);
     sync_to_disk_block_bmp();
 
-    // // //debug
-    // vt100_move_cursor(1, 29);
-    // printk("[DEBUG 3 rmdir] find_dentry(&parent_inode, name_buffer):%d", find_dentry(&parent_inode, name_buffer));
-
     uint32_t dnum = find_dentry(&parent_inode, name_buffer);
     remove_dentry(&parent_inode, dnum);
     sync_to_disk_inode(&parent_inode);
-
-    // // //debug
-    // vt100_move_cursor(1, 30);
-    // printk("[DEBUG 3 rmdir] find_dentry(&parent_inode, name_buffer):%d", find_dentry(&parent_inode, name_buffer));
-
 
     return;
 }
@@ -1132,9 +1085,7 @@ void do_ls()
             read_block(block_index, find_file_buffer);
 
             for(j = 0; j < DENTRY_NUM_PER_BLOCK;j++) {
-                // if(is_empty_dnetry(&p[j]) != 0){
-                //!!!!!!!!!
-                // if(is_empty_dnetry(&p[j]) == 0){
+
                 if(!is_empty_dnetry(&p[j])){
                     memcpy((uint8_t *)&ls_buffer[k], (uint8_t *)&p[j], sizeof(dentry_t));
                     k++;
@@ -1150,16 +1101,12 @@ void do_ls()
     else{
         for(i = 0;i < MAX_BLOCK_INDEX; i++) {
 
-            // sync_from_disk_inode(0, current_dir_ptr);
-
             uint32_t block_index = get_block_index_in_inode(current_dir_ptr, i);
 
             read_block(block_index, find_file_buffer);
 
             for(j = 0; j < DENTRY_NUM_PER_BLOCK;j++) {
-                // if(is_empty_dnetry(&p[j]) != 0){
-                //!!!!!!!!!
-                // if(is_empty_dnetry(&p[j]) == 0){
+
                 if(!is_empty_dnetry(&p[j])){
                     memcpy((uint8_t *)&ls_buffer[k], (uint8_t *)&p[j], sizeof(dentry_t));
                     k++;
@@ -1186,10 +1133,6 @@ void do_cd(char *name)
     parent_buffer[strlen(name)] = '\0';
 
     char c = '/';
-
-    // // //debug
-    // vt100_move_cursor(1, 30);
-    // printk("[DEBUG 3 cd] count_char_in_string(c, path_buffer):%d ", count_char_in_string(c, path_buffer));
 
     if(count_char_in_string(c, path_buffer) == 0){
         uint32_t inum;
@@ -1263,14 +1206,6 @@ int do_fopen(char *name, uint32_t mode)
     bzero(path_buffer, MAX_PATH_LENGTH);
     bzero(name_buffer, MAX_NAME_LENGTH);
 
-    // vt100_move_cursor(1, 29);
-    // printk("[DEBUG 3 fopen]  fd_table[0].fd_inum:%d", file_descriptor_table[0].fd_inum);
-    // printk("  fd_table[0].fd_r_offset:%d", file_descriptor_table[0].fd_r_offset);
-    // printk("  fd_table[0].fd_w_offset:%d", file_descriptor_table[0].fd_w_offset);
-
-    // memcpy((uint8_t *)path_buffer, (uint8_t *)path, strlen((char *)path));
-    // path_buffer[strlen((char *)path)] = '\0';
-
     char *p = "./";
     strcpy(path_buffer, p);
     strcpy(path_buffer+2, name);
@@ -1308,11 +1243,6 @@ int do_fopen(char *name, uint32_t mode)
         file_descriptor_table[j].fd_r_offset = 0;
         file_descriptor_table[j].fd_w_offset = 0;
     }
-
-    // vt100_move_cursor(1, 30);
-    // printk("[DEBUG 3 fopen]  fd_table[0].fd_inum:%d", file_descriptor_table[0].fd_inum);
-    // printk("  fd_table[0].fd_r_offset:%d", file_descriptor_table[0].fd_r_offset);
-    // printk("  fd_table[0].fd_w_offset:%d", file_descriptor_table[0].fd_w_offset);
 
     return j;
 }
@@ -1387,12 +1317,6 @@ int do_fwrite(int fd, char *buffer, int length)
     for(i = begin_block_index; i <= end_block_index; i++){
         write_block(i, fwrite_buffer + (i - begin_block_index)*BLOCK_SIZE);
     }
-
-    // vt100_move_cursor(1, 35);
-    // printk("%s", buffer);
-    // vt100_move_cursor(1, 45);
-    // printk("%s", fwrite_buffer);
-
     return length;
 }
 
@@ -1416,11 +1340,6 @@ int do_fread(int fd, char *buffer, int length)
 
     memcpy(buffer, fread_buffer + (file_descriptor_table[fd].fd_r_offset % BLOCK_SIZE), length);
 
-    // vt100_move_cursor(1, 35);
-    // printk("%s", buffer);
-    // vt100_move_cursor(1, 45);
-    // printk("%s", fread_buffer);
-
     file_descriptor_table[fd].fd_r_offset += length;
 
     return length;
@@ -1438,9 +1357,6 @@ int do_touch(char *name, mode_t mode)
     bzero(parent_buffer, MAX_PATH_LENGTH);
     bzero(path_buffer, MAX_PATH_LENGTH);
     bzero(name_buffer, MAX_NAME_LENGTH);
-
-    // memcpy((uint8_t *)path_buffer, (uint8_t *)path, strlen((char *)path));
-    // path_buffer[strlen((char *)path)] = '\0';
 
     char *p = "./";
     strcpy(path_buffer, p);
@@ -1472,13 +1388,6 @@ int do_touch(char *name, mode_t mode)
     superblock_ptr->s_free_inode_cnt--;
     sync_to_disk_superblock();
 
-    // free_block_index = find_free_block();
-    // set_block_bmp(free_block_index);
-    // sync_to_disk_block_bmp();
-
-    // superblock_ptr->s_free_blocks_cnt--;
-    // sync_to_disk_superblock();    
-
     // new_inode.i_fmode = S_IFDIR | mode;
     new_inode.i_fmode = S_IFREG | mode;
     new_inode.i_links_cnt = 1;
@@ -1498,23 +1407,10 @@ int do_touch(char *name, mode_t mode)
 
     sync_to_disk_inode(&new_inode);
 
-    // bzero(dentry_block_buffer, BLOCK_SIZE);
-    // dentry_t *new_dentry_table = (dentry_t *)dentry_block_buffer;
-    // new_dentry_table[0].d_inum = free_inum;
-    // strcpy(new_dentry_table[0].d_name, ".");
-    // new_dentry_table[1].d_inum = parent_inum;
-    // strcpy(new_dentry_table[1].d_name, "..");
-    // sync_to_disk_dentry(free_block_index);
-
     dentry_t parent_dentry;
     parent_dentry.d_inum = free_inum;
     strcpy(parent_dentry.d_name, name_buffer);
     write_dentry(&parent_inode, parent_inode.i_fnum+2, &parent_dentry);
-
-    // vt100_move_cursor(1, 31);
-    // printk("[DEBUG 3 touch]  free_inum:%d           \n", free_inum);
-    // // printk("                free_block_index:%d    \n", free_block_index);
-    // printk("                 parent_inum:%d         \n", parent_inum);
 
     return 0;
 }
@@ -1524,9 +1420,6 @@ void do_cat(char *name)
     bzero(cat_buffer, CAT_MAX_LENGTH);
 
     int fd = do_fopen(name, O_RDWR);
-
-    // inode_t inode;
-    // sync_from_disk_inode(file_descriptor_table[fd].fd_inum, &inode);
 
     file_descriptor_table[fd].fd_r_offset = 0;
     //important!!!!
@@ -1554,10 +1447,6 @@ int do_find(char *path, char *name)
     inode_t _current_dir;
     inode_t *_current_dir_ptr = &_current_dir;
     memcpy((uint8_t *)_current_dir_ptr, (uint8_t *)current_dir_ptr, INODE_SIZE);
-
-    // // //debug
-    // vt100_move_cursor(1, 30);
-    // printk("[DEBUG 3 cd] count_char_in_string(c, path_buffer):%d ", count_char_in_string(c, path_buffer));
 
     if(count_char_in_string(c, path_buffer) == 0){
         uint32_t inum;
@@ -1684,9 +1573,6 @@ void do_link(char *src_path, char *new_path)
         return ;        
     }
 
-    // char *p = "./";
-    // strcpy(path_buffer, p);
-    // strcpy(path_buffer+2, new_path);
     strcpy(path_buffer, new_path);
 
     // separate_path(path, parent, name);
@@ -1697,31 +1583,9 @@ void do_link(char *src_path, char *new_path)
     inode_t parent_inode;
     sync_from_disk_inode(parent_inum, &parent_inode);
 
-    // //debug
-    // vt100_move_cursor(1, 30);
-    // printk("[DEBUG 3 link] parent_inum:%d \n", parent_inum);
-    // printk("               src_inum:%d \n", src_inum);
-    // printk("               parent_buffer:%s", parent_buffer);
-    // printk("\n");
-    // printk("               new_path:%s", new_path);
-    // printk("\n");
-    // printk("               src_path:%s", src_path);
-    // printk("\n");
-    // printk("               current_dir_ptr->i_num:%d \n", current_dir_ptr->i_num);
-    // printk("               parent_inode.i_num:%d \n", parent_inode.i_num);
-    // printk("               src_inode.i_num:%d \n", src_inode.i_num);
-
     src_inode.i_links_cnt++;
     sync_to_disk_inode(&src_inode);
-/*
-    bzero(parent_buffer, MAX_PATH_LENGTH);
-    bzero(path_buffer, MAX_PATH_LENGTH);
-    bzero(name_buffer, MAX_NAME_LENGTH);
 
-    strcpy(path_buffer, src_path);
-
-    separate_path(path_buffer, parent_buffer, name_buffer); 
-*/
     dentry_t parent_den;
     parent_den.d_inum = src_inum;
     strcpy(parent_den.d_name, name_buffer);
@@ -1736,12 +1600,6 @@ void do_symlink(char *src_path, char *new_path)
     bzero(path_buffer, MAX_PATH_LENGTH);
     bzero(name_buffer, MAX_NAME_LENGTH);
     bzero(data_block_buffer, BLOCK_SIZE);
-
-    // memcpy((uint8_t *)path_buffer, (uint8_t *)new_path, strlen((char *)new_path));
-    // path_buffer[strlen((char *)new_path)] = '\0';
-
-    // // separate_path(path, parent, name);
-    // separate_path(path_buffer, parent_buffer, name_buffer);
 
     char *_p = ".";
     strcpy(path_buffer, _p);

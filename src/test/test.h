@@ -23,8 +23,6 @@
  * 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * */
 
-//#define _PROJECT_3_
-// #undef _PROJECT_3_
 #define _PROJECT_4_
 
 #ifdef _PROJECT_4_
@@ -45,45 +43,6 @@ extern void swap_process();
 
 extern struct task_info task_swap;
 
-// extern struct task_info *test_tasks[17];
-
 #endif
 
 #endif
-
-// #ifdef _PROJECT_3_
-
-// #ifndef INCLUDE_TEST_H_
-// #define INCLUDE_TEST_H_
-
-// #include "test_project3/test3.h"
-
-// extern void test_shell();
-
-// #endif
-
-// #endif
-
-// #ifdef _PROJECT_2_
-
-// #ifndef INCLUDE_TEST_H_
-// #define INCLUDE_TEST_H_
-
-// #include "test2.h"
-// #include "sched.h"
-
-// extern struct task_info *sched1_tasks[16];
-// extern int num_sched1_tasks;
-
-// extern struct task_info *lock_tasks[16];
-// extern int num_lock_tasks;
-
-// extern struct task_info *timer_tasks[16];
-// extern int num_timer_tasks;
-
-// extern struct task_info *sched2_tasks[16];
-// extern int num_sched2_tasks;
-
-// #endif
-
-// #endif
