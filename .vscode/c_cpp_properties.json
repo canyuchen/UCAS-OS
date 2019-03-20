@@ -73,7 +73,13 @@
             "name": "Win32",
             "includePath": [
                 "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
-                "${workspaceFolder}"
+                "${workspaceFolder}",
+                "${workspaceFolder}/src/include",
+                "${workspaceFolder}/src/include/os",
+                "${workspaceFolder}/src/arch/mips/include",
+                "${workspaceFolder}/src/drivers",
+                "${workspaceFolder}/src/include/sys",
+                "${workspaceFolder}/src/libs"
             ],
             "defines": [
                 "_DEBUG",
