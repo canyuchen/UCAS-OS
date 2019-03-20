@@ -1,6 +1,10 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * *
  *            Copyright (C) 2018 Institute of Computing Technology, CAS
  *               Author : Han Shukai (email : hanshukai@ict.ac.cn)
+ * 
+ *            Copyright (C) 2018 University of Chinese Academy of Sciences, UCAS
+ *               Author : Chen Canyu (email : chencanyu@mails.ucas.ac.cn)	
+ * 
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  * * * * * * * * * * *
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
