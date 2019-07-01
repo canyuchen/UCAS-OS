@@ -75,7 +75,7 @@ END(enable_clock_interrupt)
     // TODO save context
     // k0,k1 deal with operating system & exception handling retention 
     // These two registers will not be used during normal operation. 
-    // so these two registers needn't be saved
+    // so these two registers donot need be saved
 
     /* zero register, its content is always 0 */
     lw k0, current_running
