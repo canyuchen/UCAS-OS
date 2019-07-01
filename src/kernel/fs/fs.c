@@ -214,7 +214,8 @@ static void sync_from_disk_dentry(uint32_t block_index)
     read_block(block_index, dentry_block_buffer);
 }
 
-static bool_t count_char_in_string(char c, char *str)
+// static bool_t count_char_in_string(char c, char *str)
+static int count_char_in_string(char c, char *str)
 {
     int i = 0, cnt = 0;
     while(str[i] != '\0'){
